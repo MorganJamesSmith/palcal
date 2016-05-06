@@ -544,7 +544,7 @@ void pal_output_date_line(const GDate* date)
     gint diff = 0;
 
     GDate* today = g_date_new();
-    g_date_set_time(today, time(NULL));
+    g_date_set_time_t(today, time(NULL));
 
     g_date_strftime(pretty_date, 128, settings->date_fmt, date);
 

@@ -220,8 +220,8 @@ void pal_html_out()
 
     if(settings->query_date == NULL)
     {
-	g_date_set_time(today, time(NULL));
-	g_date_set_time(date, time(NULL));
+	g_date_set_time_t(today, time(NULL));
+	g_date_set_time_t(date, time(NULL));
     }
     else
     {

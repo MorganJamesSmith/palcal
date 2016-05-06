@@ -81,7 +81,7 @@ GDate* get_query_date(gchar* in_string, gboolean show_error)
     g_strstrip(date_string);
 
     to_show = g_date_new();
-    g_date_set_time(to_show, time(NULL));
+    g_date_set_time_t(to_show, time(NULL));
 
     /* these could be better... */
     if(strncmp(date_string, _("tomorrow"), strlen(_("tomorrow"))) == 0)
@@ -393,7 +393,7 @@ static void view_details(void)
 	if(to_show == NULL) /* if -d isn't used, start from current date */
 	{
 	    starting_date = g_date_new();
-	    g_date_set_time(starting_date, time(NULL));
+	    g_date_set_time_t(starting_date, time(NULL));
 	}
 	else /* otherwise, start from date specified */
 	    starting_date = g_memdup(to_show, sizeof(GDate));
@@ -706,7 +706,7 @@ int main(gint argc, gchar** argv)
     gint on_arg = 1;
     GDate* today = g_date_new();
 
-    g_date_set_time(today, time(NULL));
+    g_date_set_time_t(today, time(NULL));
 
     settings = g_malloc(sizeof(Settings));
     settings->cal_lines           = 5;

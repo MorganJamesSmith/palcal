@@ -387,9 +387,9 @@ static void pal_manage_scan_for_event( GDate **date, int *eventnum, int dir )
 void pal_manage(void)
 {
     selected_day = g_date_new();
-    g_date_set_time(selected_day, time(NULL));
+    g_date_set_time_t(selected_day, time(NULL));
     today = g_date_new();
-    g_date_set_time(today, time(NULL));
+    g_date_set_time_t(today, time(NULL));
 
     colorize_xterm_title(_("pal calendar"));
     
@@ -502,7 +502,7 @@ void pal_manage(void)
 
 	    case 't': /* today */
 	    case 'T':
-		g_date_set_time(selected_day, time(NULL));
+		g_date_set_time_t(selected_day, time(NULL));
 		pal_manage_refresh();
 		break;
 

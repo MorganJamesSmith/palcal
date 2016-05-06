@@ -189,7 +189,7 @@ void pal_latex_out(void)
     if( settings->query_date )
 	memcpy( date, settings->query_date, sizeof(GDate) );
     else
-	g_date_set_time(date, time(NULL));
+	g_date_set_time_t(date, time(NULL));
 
     g_print("%s%s\n", "% Generated with pal ", PAL_VERSION);
 

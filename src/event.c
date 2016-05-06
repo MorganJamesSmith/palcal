@@ -152,7 +152,7 @@ static gboolean is_valid_todo(const gchar* date_string)
 static gboolean get_key_todo(const GDate* date, gchar *buffer)
 {
     GDate* today = g_date_new();
-    g_date_set_time(today, time(NULL));
+    g_date_set_time_t(today, time(NULL));
     if(g_date_days_between(today, date) != 0)
     {
 	g_date_free(today);

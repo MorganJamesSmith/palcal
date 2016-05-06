@@ -299,7 +299,7 @@ PalEvent* pal_rl_get_event(GDate** d, gboolean allow_global)
 	    gchar* search_string = g_strdup(s);
 	    gint event_num = -1;
 	    GDate* date = g_date_new();
-	    g_date_set_time(date,  time(NULL));
+	    g_date_set_time_t(date,  time(NULL));
 
 	    if(pal_search_view(search_string, date, 365, TRUE) == 0)
 		continue;
