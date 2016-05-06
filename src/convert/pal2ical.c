@@ -35,14 +35,14 @@ extern char *tzname[2];
 
 void begin_vevent(PalEvent* event)
 {
-    g_print("BEGIN:VEVENT\n");
-    g_print("UID:%d\n", ical_uid++);
-    g_print("SUMMARY:%s\n", event->text);
+    g_print("BEGIN:VEVENT\r\n");
+    g_print("UID:%d\r\n", ical_uid++);
+    g_print("SUMMARY:%s\r\n", event->text);
 }
 
 void end_vevent()
 {
-    g_print("END:VEVENT\n");
+    g_print("END:VEVENT\r\n");
 }
 
 void print_dtstartend(gchar* start_date, PalTime* start_time, PalTime* end_time)
@@ -50,35 +50,27 @@ void print_dtstartend(gchar* start_date, PalTime* start_time, PalTime* end_time)
     /* if start time is NULL, end_time must be NULL too */
     if(start_time == NULL)
     {
-	int date_int;
-	g_print("DTSTART;VALUE=DATE:%s\n", start_date);
+	/* int date_int; */
+	g_print("DTSTART;VALUE=DATE:%s\r\n", start_date);
 
 	/* assume the event is an all day event since there are no times for it */
 	GDate* d = get_date(start_date);
 	g_date_add_days(d, 1);
 
-	g_print("DTEND;VALUE=DATE:%s\n", get_key(d));
+	g_print("DTEND;VALUE=DATE:%s\r\n", get_key(d));
     }
 
     else
     {
 
-	g_print("DTSTART;TZID=%s:%sT%02d%02d00\n", tzname[0], start_date, start_time->hour, start_time->min);
+	g_print("DTSTART;TZID=%s:%sT%02d%02d00\r\n", tzname[0], start_date, start_time->hour, start_time->min);
 
 	g_print("DTEND;TZID=%s:%sT", tzname[0], start_date);
 	if(end_time == NULL)
-	    g_print("%02d%02d00\n", start_time->hour, start_time->min);
+	    g_print("%02d%02d00\r\n", start_time->hour, start_time->min);
 	else
-	    g_print("%02d%02d00\n", end_time->hour, end_time->min);
+	    g_print("%02d%02d00\r\n", end_time->hour, end_time->min);
     }
-}
-
-void print_vtodo(PalEvent *event)
-{
-    g_print("BEGIN:VTODO\n");
-    g_print("UID:%d\n", ical_uid++);
-    g_print("SUMMARY:%s\n", event->text);
-    g_print("END:VTODO\n");
 }
 
 
@@ -88,6 +80,8 @@ int main(int argc, char* argv[])
     char* line;
     FILE* stream;
     int error_count = 0;
+    char time_stamp[17];
+    time_t time_of_day;
 
     if(argc == 1)
     {
@@ -112,16 +106,24 @@ int main(int argc, char* argv[])
 
     /* initialize the timezone information (tzname external variable) */
     tzset();
+    time(&time_of_day);
+    if (strftime(time_stamp, 17, "%Y%m%dT%H%M%SZ", gmtime(&time_of_day)) != 16)
+    {
+	g_printerr("Can't format timestamp for file.\n");
+	exit(1);
+    }
+    time_stamp[16] = '\0';
 
     pal_input_skip_comments(stream, NULL);
     PalEvent* head = pal_input_read_head(stream, NULL, argv[1]);
     pal_input_skip_comments(stream, NULL);
 
-    g_print("BEGIN:VCALENDAR\n");
-    g_print("VERSION: 2.0\n");
-    g_print("CALSCALE:GREGORIAN\n");
-    g_print("PRODID:-//pal calendar/pal2ical %s//EN\n", PAL_VERSION);
-    g_print("X-WR-CALNAME;VALUE=TEXT:%s\n", head->type);
+    g_print("BEGIN:VCALENDAR\r\n");
+    g_print("VERSION:2.0\r\n");
+    g_print("CALSCALE:GREGORIAN\r\n");
+    g_print("PRODID:-//pal calendar/pal2ical %s//EN\r\n", PAL_VERSION);
+    g_print("DTSTAMP:%s\r\n", time_stamp);
+    g_print("X-WR-CALNAME;VALUE=TEXT:%s\r\n", head->type);
     
     PalEvent* empty_event = pal_event_init();
     PalEvent* event = pal_input_read_event(stream, NULL, argv[1], empty_event, NULL);
@@ -130,7 +132,7 @@ int main(int argc, char* argv[])
     {
 
 	/* convert one-time events of format yyyymmdd */
-	if(is_valid_yyyymmdd(event->date_string, 0))
+	if(is_valid_yyyymmdd(event->date_string))
 	{
 	    begin_vevent(event);
 	    print_dtstartend(event->date_string, event->start_time, event->end_time);
@@ -146,18 +148,11 @@ int main(int argc, char* argv[])
 		print_dtstartend(g_strconcat("1700", event->date_string+4, NULL), event->start_time, event->end_time);
 
 	    if(event->end_date != NULL)
-		g_print("RRULE:FREQ=YEARLY;UNTIL=%s\n", get_key(event->end_date));
+		g_print("RRULE:FREQ=YEARLY;UNTIL=%s\r\n", get_key(event->end_date));
 	    else
-		g_print("RRULE:FREQ=YEARLY\n");
+		g_print("RRULE:FREQ=YEARLY\r\n");
 
 	    end_vevent();
-	}
-
-	/* TODO event */
-	else if(event->is_todo) {
-
-	    print_vtodo(event);
-	    
 	}
 
 	else
@@ -172,7 +167,7 @@ int main(int argc, char* argv[])
 
     }
 
-    g_print("END:VCALENDAR\n");
+    g_print("END:VCALENDAR\r\n");
 
 
     g_printerr("DONE!\n\n");
