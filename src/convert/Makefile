@@ -1,7 +1,7 @@
 include ../Makefile.defs
 
 INCLDIR = -I${prefix}/include `pkg-config --cflags glib-2.0`
-LIBDIR  =
+LIBDIR  = -L${prefix}/lib
 
 
 SRC     = ical2pal.c pal2ical.c
@@ -20,14 +20,14 @@ help:
 ical: ical2pal pal2ical
 
 ical2pal: ical2pal.o
-	$(CC) $(CFLAGS) ical2pal.o -lical -lpthread -o ical2pal
+	$(CC) $(CFLAGS) ical2pal.o $(LIBDIR) -lical -lpthread -o ical2pal
 ifneq ($(DEBUG),1)
 	strip ical2pal
 endif
 
 
 pal2ical: pal2ical.o
-	cd .. && make libpal.a
+	cd .. && $(MAKE) libpal.a
 	$(CC) $(CFLAGS) pal2ical.o -L.. -lpal  `pkg-config --libs glib-2.0` -lreadline -lncurses -o pal2ical
 ifneq ($(DEBUG),1)
 	strip pal2ical

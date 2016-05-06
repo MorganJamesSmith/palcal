@@ -1,5 +1,5 @@
 pal:
-	make -C src
+	$(MAKE) -C src
 
 %:
-	make -C src $@
+	$(MAKE) -C src $@
