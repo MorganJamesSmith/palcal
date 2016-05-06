@@ -36,4 +36,8 @@ GDate* get_date(const gchar* key);
 gchar* pal_event_date_string_to_key(const gchar* date_string);
 PalEvent* pal_event_copy(PalEvent* orig);
 gchar* pal_event_escape(const PalEvent* event, const GDate* today);
+
+gboolean is_valid_yyyymmdd(const gchar* date_string);
+gboolean is_valid_0000mmdd(const gchar* date_string);
+
 #endif

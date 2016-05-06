@@ -190,7 +190,7 @@ static gchar *get_descr_daily(const GDate *date)
     return g_strdup("Daily");
 }
 
-static gboolean is_valid_yyyymmdd(const gchar* date_string)
+gboolean is_valid_yyyymmdd(const gchar* date_string)
 {
     gint d[8];
 
@@ -305,7 +305,7 @@ static gchar *get_descr_000000dd(const GDate* date)
     return g_strdup(buf);
 }
 
-static gboolean is_valid_0000mmdd(const gchar* date_string)
+gboolean is_valid_0000mmdd(const gchar* date_string)
 {
     gint d[8];
 
