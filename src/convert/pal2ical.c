@@ -162,8 +162,8 @@ int main(int argc, char* argv[])
 	    error_count++;
 	}
 
-	event = pal_input_read_event(stream, NULL, argv[1], empty_event, NULL);
 	pal_input_skip_comments(stream, NULL);
+	event = pal_input_read_event(stream, NULL, argv[1], empty_event, NULL);
 
     }
 
