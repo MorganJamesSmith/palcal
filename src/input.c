@@ -321,9 +321,16 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, gchar* filename, PalE
 	pal_output_error(  "       %s: %s\n", _("FILE"), file);
 	pal_output_error(  "       %s: %s\n", _("LINE"), s);
     }
-    pal_event->text = g_strdup(text_string);
     pal_event->start_time = pal_input_get_time(text_string, 1);
     pal_event->end_time   = pal_input_get_time(text_string, 2);
+    tmp = g_strstr_len(text_string, -1, " %%");
+    if (tmp == NULL) {
+	tmp = g_strstr_len(text_string, -1, "%%");
+    }
+    if (tmp != NULL) {
+	*tmp = '\0';
+    }
+    pal_event->text = g_strdup(text_string);
     pal_event->date_string = g_strdup(date_string);
 
 

@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include "ical.h"
+#include "libical/ical.h"
 
 #include <stdlib.h>
 
