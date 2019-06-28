@@ -26,6 +26,8 @@
 
 #include <term.h>
 
+#include <string.h>
+
 
 #include "output.h"
 #include "rl.h"
@@ -39,7 +41,7 @@ char* pal_rl_no_match()
 { return NULL; }
 
 
-void pal_rl_default_text_fn()
+void pal_rl_default_text_fn(void)
 {
     gchar* locale_default_text = g_locale_from_utf8(pal_rl_default_text, -1,
 						    NULL, NULL, NULL);
@@ -74,7 +76,7 @@ gchar* pal_rl_get_raw_line(const char* prompt, const int row, const int col)
         clrtoeol();
         move(row,col);
 	pal_output_fg(BRIGHT, GREEN, "%s", prompt);
-	
+
         refresh();
 
         line = readline("");
@@ -118,10 +120,10 @@ gchar* pal_rl_get_line(const char* prompt, const int row, const int col)
     do {
         if( line )
             g_free(line);
-            
+
         line = pal_rl_get_raw_line(prompt, row, col);
     } while( *line == '\0' );
-    
+
     return line;
 }
 
@@ -130,13 +132,17 @@ gchar* pal_rl_get_line(const char* prompt, const int row, const int col)
 gchar* pal_rl_get_line_default(const char* prompt, const int row, const int col, const char* default_text)
 {
     gchar* desc = NULL;
-    
-    pal_rl_default_text = strdup(default_text);
-    rl_pre_input_hook = (rl_hook_func_t*) pal_rl_default_text_fn;
+
+	if(default_text != NULL) {
+    	pal_rl_default_text = strdup(default_text);
+    	rl_pre_input_hook = (rl_hook_func_t*) pal_rl_default_text_fn;
+	}
 
     desc = pal_rl_get_line(prompt, row, col);
 
-    g_free(pal_rl_default_text);
+	if(default_text != NULL) {
+    	g_free(pal_rl_default_text);
+	}
     rl_pre_input_hook = NULL;
 
     return desc;
@@ -155,7 +161,7 @@ void pal_rl_completions_output(char **matches, int num_matches, int max_length )
 
     int y,x;
     getyx( stdscr, y, x );
-    
+
     max_length += 2;   /* Two spaces between lists */
     matches_per_line = settings->term_cols / max_length;
 
@@ -173,12 +179,12 @@ void pal_rl_ncurses_hack(void)
 {
     int half = (settings->term_cols - readline_x) / 2 - 3;
     int start, end;
-    
+
     move(readline_y, readline_x);
     clrtoeol();
     move(readline_y, readline_x);
 
-      
+
     /* Move back to the nearest "half" boundary and another block. If we go
      * past the start of the string, reset to the start */
     start = rl_point - (rl_point % half) - half;
@@ -191,10 +197,10 @@ void pal_rl_ncurses_hack(void)
     if( end > strlen( rl_line_buffer ) )
         end = -1;
 
-    /* If we're not starting at the beginning, display marker */    
+    /* If we're not starting at the beginning, display marker */
     if( start > 0 )
         addch( '<' );
-         
+
     /* Display string, including marker if went off end */
     if( end > 0 )
         printw( "%.*s>", end - start, rl_line_buffer + start);

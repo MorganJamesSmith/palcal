@@ -28,7 +28,7 @@
 void pal_output_handler( const gchar *instr );
 
 void pal_output_attr(gint attr, gchar *formatString, ...);
-void pal_output_fg(gint attr, gint color, gchar *formatString,...);
+void pal_output_fg(gint attr, gint color, const gchar *formatString,...);
 void pal_output_error(char *formatString, ... );
 
 void pal_output_cal(gint num_weeks, GDate* today);

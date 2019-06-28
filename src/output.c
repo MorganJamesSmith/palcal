@@ -40,12 +40,12 @@ void pal_output_handler( const gchar *instr )
 {
     gsize strsize;
     char *outstr = g_locale_from_utf8(instr, -1, NULL, &strsize, NULL);
-    
+
     if(settings->curses)
 	waddnstr(pal_curwin, outstr, strsize);
     else
 	fputs(outstr, stdout);
-    
+
     g_free(outstr);
 }
 
@@ -281,7 +281,7 @@ static void pal_output_text_week(GDate* date, gboolean force_month_label,
 
 static void pal_output_week(GDate* date, gboolean force_month_label, const GDate* today)
 {
-    
+
     pal_output_text_week(date, force_month_label, today);
 
     if(!settings->no_columns && settings->term_cols >= 77)
@@ -313,7 +313,7 @@ void pal_output_cal(gint num_lines, const GDate* today)
 
     if(num_lines <= 0)
 	return;
-    
+
     date = g_date_new();
     memcpy(date, today, sizeof(GDate));
 
@@ -384,7 +384,7 @@ static gint pal_output_wordlen(gchar* string)
  * should be stripped from 'string' before this is called.
  * "chars_used" indicates the number of characters already used on the
  * line that "string" will be printed out on.
- * Returns the number of lines printed. 
+ * Returns the number of lines printed.
  */
 int pal_output_wrap(gchar* string, gint chars_used, gint indent)
 {
@@ -458,7 +458,7 @@ int pal_output_wrap(gchar* string, gint chars_used, gint indent)
 
 	    numlines++;
 	    g_print("\n");
-			
+
 	    chars_used = width;
 	}
 
@@ -466,7 +466,7 @@ int pal_output_wrap(gchar* string, gint chars_used, gint indent)
 	if(*s != '\0')
 	{
 	    gint i;
-	    
+
 	    /* now, chars_used == width, onto the next line! */
 	    chars_used = indent;
 
@@ -477,7 +477,7 @@ int pal_output_wrap(gchar* string, gint chars_used, gint indent)
     }
 
     return numlines;
-    
+
 }
 
 
@@ -512,12 +512,12 @@ int pal_output_event(const PalEvent* event, const GDate* date, const gboolean se
 	g_date_strftime(date_text, 128,
 			settings->compact_date_fmt, date);
 	pal_output_attr(BRIGHT, "%s ", date_text);
-	
+
 	if(settings->hide_event_type)
 	    s = g_strconcat(event_text, NULL);
 	else
 	    s = g_strconcat(event->type, ": ", event_text, NULL);
-	
+
 	numlines += pal_output_wrap(s, indent+g_utf8_strlen(date_text,-1)+1, indent);
 	g_free(s);
     }
@@ -609,9 +609,9 @@ int pal_output_date(GDate* date, gboolean show_empty_days, int selected_event)
 				settings->compact_date_fmt, date);
 		pal_output_attr(BRIGHT, "  %s ", pretty_date);
 		g_print("%s\n", _("No events."));
-		
+
 		numlines++;
-	    } 
+	    }
 	    else
 	    {
 		g_print("%s\n", _("No events."));

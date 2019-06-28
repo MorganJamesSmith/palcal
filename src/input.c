@@ -100,7 +100,7 @@ static PalTime* pal_input_get_time(gchar* s, gint n)
 
 	    /* get the minutes digits */
 	    m2 = g_utf8_find_next_char(s, NULL);
-	    if(m2 == '\0')
+	    if(*m2 == '\0')
 		return NULL;  /* hit end of line, done */
 	    m1 = g_utf8_find_next_char(m2, NULL);
 

@@ -44,7 +44,7 @@ static GList* pal_search_get_results(const gchar* search, const GDate* date, con
     gint i,j;
     GList* hit_list = NULL;
     GDate *searchdate = g_date_new();
-    
+
     memcpy( searchdate, date, sizeof( GDate ) );
 
     if(settings->reverse_order)
@@ -161,7 +161,7 @@ int pal_search_view(const gchar* search_string, GDate* date, const gint window, 
     pal_output_attr(BRIGHT, _("[ End search results: %s ]"), search_string);
     pal_output_attr(BRIGHT, ngettext("[ %d event found ]\n", "[ %d events found ]\n",
 				     hit_count), hit_count);
-    
+
     return hit_count;
 }
 
@@ -221,7 +221,7 @@ gboolean pal_search_isearch_event( GDate **date, gint *selected, gchar *string, 
 	    {
 	        gchar *string = g_strconcat( ((PalEvent*) (item->data))->type, ": ", ((PalEvent*) (item->data))->text, NULL );
 	        gchar *string2 = g_utf8_casefold(string,-1);
-	        
+
 	        if( strstr( string2, searchstring ) )
                 {
                     *selected = j;
@@ -234,7 +234,7 @@ gboolean pal_search_isearch_event( GDate **date, gint *selected, gchar *string, 
 	    }
 	    g_list_free( events );
 	}
-	
+
 	if( found )
 	    break;
 

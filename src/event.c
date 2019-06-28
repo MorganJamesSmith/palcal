@@ -901,7 +901,7 @@ GList* get_events(const GDate* date)
             continue;
 
         days_events = g_hash_table_lookup(ht,eventkey);
-	
+
         if(days_events != NULL)
             list = g_list_concat(list, g_list_copy(days_events));
     }

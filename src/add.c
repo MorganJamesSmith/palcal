@@ -73,7 +73,7 @@ static gchar* pal_add_get_range( GDate *date )
 
 	gint x,y;
 	getyx( stdscr, y, x );
-	
+
 	do
 	{
 	    /* set back to null for loop to work properly */
@@ -92,7 +92,7 @@ static gchar* pal_add_get_range( GDate *date )
 
 
 #if 0
-		
+
 	        pal_rl_default_text = buf;
 	        rl_pre_input_hook = (rl_hook_func_t*) pal_rl_default_text_fn;
 
@@ -142,7 +142,7 @@ static gchar* pal_add_get_range( GDate *date )
 
 	    move(y,0);
 	    clrtobot();
-	    
+
 	    g_date_strftime(buf, 1024, "%a %e %b %Y", d1);
 	    pal_output_fg(BRIGHT, GREEN, _("Start date: "));
 	    g_print("%s\n", buf);
@@ -175,7 +175,7 @@ static gchar* pal_add_get_recur(GDate* date)
 
     gint x,y;
     getyx( stdscr, y, x );
-    
+
     pal_output_fg(BRIGHT, GREEN, "> ");
     g_print(_("Select how often this event occurs\n"));
 
@@ -256,8 +256,8 @@ static gchar* pal_add_get_desc(void)
 	clrtobot();
 
 	olddesc = desc;
-	
-#if 0	
+
+#if 0
 	if(desc != NULL)
 	{
 	    pal_rl_default_text = desc;
@@ -269,7 +269,7 @@ static gchar* pal_add_get_desc(void)
 #endif
 	desc = pal_rl_get_line_default(_("Description: "), y, x, olddesc);
 	g_free(olddesc);
-	
+
 	g_print("\n");
     }
     while(!pal_rl_get_y_n(_("Is this description correct? [y/n]: ")));
@@ -289,20 +289,20 @@ static gchar* pal_add_get_file(void)
 
     int y,x;
     getyx( stdscr, y, x );
-    
+
     /* get the filename */
     do
     {
 	rl_completion_entry_function = rl_filename_completion_function;
-	
+
 	prompt_again = FALSE;
 
 	filename = pal_rl_get_line_default(_("Filename: "), y, 0, g_strdup("~/.pal/"));
-	
+
 
 	/* clear any filename completions */
 	clrtobot();
-	
+
 	/* if first character is ~, replace it with the home directory */
 	if(*filename == '~')
 	{
@@ -373,8 +373,8 @@ static gchar* pal_add_get_file(void)
 		    pal_output_fg(BRIGHT, RED, "> ");
 		    g_print("%s\n", _("If you want events in this new calendar file to appear when you run pal,\n  you need to manually update ~/.pal/pal.conf"));
 		    g_print("%s\n", _("Press any key to continue."));
-		    getch();		    
-		    
+		    getch();
+
 		    fputs(top_line, file);
 
 		    g_free(top_line);

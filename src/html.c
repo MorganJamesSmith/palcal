@@ -87,7 +87,7 @@ static void pal_html_month(GDate* date, gboolean force_month_label,
     	if(g_date_get_weekday(date) != 1)
     	{
 	    fputs("<tr>\n", stdout);
-	    
+
 	    for(i=0; i<g_date_get_weekday(date)-1; i++)
 	    {
 	    	fputs("<td class='pal-blank'>&nbsp;</td>\n", stdout);
@@ -99,7 +99,7 @@ static void pal_html_month(GDate* date, gboolean force_month_label,
 	if(g_date_get_weekday(date) != 7)
 	{
 	    fputs("<tr>\n", stdout);
-	    
+
 	    for(i=0; i<g_date_get_weekday(date); i++)
 	    {
 		fputs("<td class='pal-blank'>&nbsp;</td>\n", stdout);

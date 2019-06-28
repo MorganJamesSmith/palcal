@@ -3,7 +3,7 @@
 
 # directory to install to. Depending on your distribution, you might
 # want to change this to /usr/local
-prefix = /usr/local
+prefix = /usr
 CC      = gcc
 
 PAL_VERSION = 0.4.2
@@ -14,7 +14,17 @@ DESTDIR =
 # optimizations/warnings
 OPT     = -O2 -Wall
 ifeq ($(DEBUG),1)
-OPT     = -g -Wall -pedantic -Wstrict-prototypes
+OPT  = -pipe -pedantic -Wall -Wno-deprecated-declarations -Os
+OPT += -fno-stack-protector
+OPT += -funsigned-char -g
+OPT += -fno-strict-aliasing -ffunction-sections -fdata-sections
+OPT += --param max-inline-insns-single=500
+OPT += -gstrict-dwarf
+OPT += -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith
+OPT += -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type
+OPT += -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast
+OPT += -Wwrite-strings -Wsign-compare -Wmissing-declarations -Wformat -Wmissing-format-attribute
+OPT += -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wunreachable-code -Wcast-align
 endif
 
 # defines

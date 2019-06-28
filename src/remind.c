@@ -56,7 +56,7 @@ static void pal_remind_event(void)
     FILE* tmp_stream;
     int return_val;
     gchar* email_add;
-    G_CONST_RETURN gchar *charset;
+    const gchar *charset;
     at_string = g_malloc(1024*sizeof(gchar));
 
     pal_output_fg(BRIGHT, GREEN, "* * * ");
@@ -106,7 +106,7 @@ static void pal_remind_event(void)
     email_add = pal_rl_get_line(_("Username on local machine or email address: "), settings->term_rows-2, 0);
     rl_pre_input_hook = NULL;
 #endif
-    
+
     email_add = pal_rl_get_line_default(_("Username on local machine or email address: "), settings->term_rows-2, 0, g_strdup(g_get_user_name()));
 
     mkstemp(tmp_name);

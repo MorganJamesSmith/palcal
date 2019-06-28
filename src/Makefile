@@ -100,7 +100,7 @@ install: install-no-rm
 	@echo " that you need these files, you should probably delete them"
 	@echo " by always answering 'y'."
 	@# prompt about removing old doc directories
-	@find ${prefix}/share/doc -name pal-[0-9].[0-9].[0-9]\* -a \! -name pal-$(PAL_VERSION) -a -type d -maxdepth 1 -exec rm -ri {} \;;
+	@find ${prefix}/share/doc -maxdepth 1 -name 'pal-[0-9].[0-9].[0-9]\*' -a \! -name pal-$(PAL_VERSION) -a -type d -exec rm -ri {} \;;
 	@# Remove pal.conf from its old location
 	@rm -f ${prefix}/share/pal/pal.conf;
 	@echo
@@ -179,12 +179,12 @@ uninstall: uninstall-mo uninstall-man
 	@echo " --- Check for doc directories for other versions of pal --- "
 	@echo " NOTE: If you don't have other copies of pal installed, you can"
 	@echo " safely delete the directories listed below:"
-	@find ${prefix}/share/doc -name pal-[0-9].[0-9].[0-9]\* -type d -maxdepth 1;
+	@find ${prefix}/share/doc -maxdepth 1 -name 'pal-[0-9].[0-9].[0-9]\*' -type d;
 
 # uninstall locale information
 uninstall-mo:
 	@echo " --- Removing locale info --- "
-	cd ${prefix}/share/locale/; find -name pal.mo -exec rm {} \;;
+	cd ${prefix}/share/locale/; find -name 'pal.mo' -exec rm {} \;;
 	@echo
 
 # uninstall man page

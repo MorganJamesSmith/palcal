@@ -27,5 +27,4 @@ void pal_input_skip_comments(FILE* file, FILE* out_file);
 PalEvent* pal_input_read_head(FILE* file, FILE* out_file, gchar* filename);
 PalEvent* pal_input_read_event(FILE* file, FILE* out_file, gchar* filename, PalEvent* event_head, PalEvent* del_event);
 gboolean pal_input_eof(FILE* file);
-void pal_input_skip_comments(FILE* file, FILE* out_file);
 #endif

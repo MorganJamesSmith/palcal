@@ -114,7 +114,7 @@ gchar* pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
 
 }
 
-void pal_edit_init()
+void pal_edit_init(void)
 {
     PalViewEvent initfieldlist[NUM_FIELDS] = {
 	{ _("Event Description"), TRUE, FALSE },
@@ -132,7 +132,7 @@ void pal_edit_init()
 
 
     selectedField = 0;
-    
+
     fieldlist = g_malloc(sizeof(PalViewEvent)*NUM_FIELDS);
     memcpy(fieldlist, initfieldlist, sizeof(PalViewEvent)*NUM_FIELDS);
 }
@@ -145,7 +145,7 @@ void pal_edit_refresh(PalEvent* event, GDate *d)
 
 
     move(0,0);
-    
+
     for(i=0; i<NUM_FIELDS; i++)
     {
 	gchar *prompt = NULL;
@@ -159,7 +159,7 @@ void pal_edit_refresh(PalEvent* event, GDate *d)
 	g_print("%s\n", fieldval);
 	g_free(fieldval);
     }
-    
+
     clrtobot();
 }
 
@@ -172,11 +172,11 @@ void pal_edit_event(PalEvent* event, GDate *d)
     pal_edit_init();
 
 
-    
+
     for(;;)
     {
 	int c;
-	
+
 	pal_edit_refresh(event, d);
 	while((c = getch()) == ERR);
 
@@ -214,13 +214,13 @@ void pal_edit_event(PalEvent* event, GDate *d)
 		g_free(prompt);
 		break;
 	    }
-		
+
 	    case 'q':
 	    case 'Q':
 		return;
 	}
     }
-    
+
 
 }
 

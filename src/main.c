@@ -417,7 +417,7 @@ static gint parse_arg(gchar** args, gint on_arg, gint total_args)
     args = args + on_arg;
     on_arg++;
 
-    
+
     if(strcmp(*args,"-h") == 0 ||
        strcmp(*args,"--help") == 0)
     {
@@ -702,7 +702,7 @@ void pal_main_reload(void)
 
 int main(gint argc, gchar** argv)
 {
-    G_CONST_RETURN gchar *charset = NULL;
+    const gchar *charset = NULL;
     gint on_arg = 1;
     GDate* today = g_date_new();
 
@@ -739,8 +739,8 @@ int main(gint argc, gchar** argv)
     settings->show_weeknum        = FALSE;
 
     g_set_print_handler( pal_output_handler );
-    g_set_printerr_handler( pal_output_handler ); 
-    
+    g_set_printerr_handler( pal_output_handler );
+
     textdomain("pal");
     bind_textdomain_codeset("pal", "utf-8");
     if(setlocale(LC_MESSAGES, "") == NULL ||
@@ -749,7 +749,7 @@ int main(gint argc, gchar** argv)
        setlocale(LC_CTYPE, "") == NULL)
 	pal_output_error("WARNING: Localization failed.\n");
 
-    
+
 #ifndef __CYGWIN__
     /* figure out the terminal width if possible */
     {

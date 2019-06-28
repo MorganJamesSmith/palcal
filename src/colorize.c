@@ -185,9 +185,9 @@ gchar* string_color_of(const int color)
 {
     if(color >=0 && color < 8)
 	return g_strdup(string_colors[color]);
-    
+
     else /* when in doubt, use default color */
-	return string_color_of(settings->event_color); 
+	return string_color_of(settings->event_color);
 }
 
 
