@@ -71,17 +71,16 @@ void set_colorize(const int in)
 static int get_curses_color(const int color)
 {
 
-    switch(color)
-    {
-	case BLACK:   return COLOR_BLACK;   break;
-	case RED:     return COLOR_RED;     break;
-	case GREEN:   return COLOR_GREEN;   break;
-	case YELLOW:  return COLOR_YELLOW;  break;
-	case BLUE:    return COLOR_BLUE;    break;
-	case MAGENTA: return COLOR_MAGENTA; break;
-	case CYAN:    return COLOR_CYAN;    break;
-	case WHITE:   return COLOR_WHITE;   break;
-	default: return COLOR_GREEN;
+    switch(color) {
+		case BLACK:     return COLOR_BLACK;     break;
+		case RED:       return COLOR_RED;       break;
+		case GREEN:     return COLOR_GREEN;     break;
+		case YELLOW:    return COLOR_YELLOW;    break;
+		case BLUE:      return COLOR_BLUE;      break;
+		case MAGENTA:   return COLOR_MAGENTA;   break;
+		case CYAN:      return COLOR_CYAN;      break;
+		case WHITE:     return COLOR_WHITE;     break;
+		default:        return COLOR_GREEN;
     }
 }
 
@@ -104,17 +103,17 @@ void colorize_fg(const int attribute, const int foreground)
 {
     /* determine use_colors variable if it isn't set yet. */
     if(use_colors == -1)
-	color_term();
+		color_term();
 
     /* don't do anything if not using colors */
     if(use_colors == 0 || use_colors == -2)
-	return;
+		return;
 
     /* Command is the control command to the terminal */
     if(settings->curses)
-	wattrset(pal_curwin, A_BOLD | COLOR_PAIR(get_curses_color(foreground)));
+		wattrset(pal_curwin, A_BOLD | COLOR_PAIR(get_curses_color(foreground)));
     else
-	printf("%c[%d;%dm", 0x1B, attribute, foreground+30);
+		printf("%c[%d;%dm", 0x1B, attribute, foreground+30);
 
 }
 
@@ -125,17 +124,17 @@ void colorize_bright(void)
 
     /* determine use_colors variable if it isn't set yet. */
     if(use_colors == -1)
-	color_term();
+		color_term();
 
     /* don't do anything if not using colors */
     if(use_colors == 0 || use_colors == -2)
-	return;
+		return;
 
     /* Command is the control command to the terminal */
     if(settings->curses)
-	wattrset(pal_curwin, A_BOLD);
+		wattrset(pal_curwin, A_BOLD);
     else
-	printf("%c[%dm", 0x1B, BRIGHT);
+		printf("%c[%dm", 0x1B, BRIGHT);
 
 }
 
@@ -143,33 +142,33 @@ void colorize_error(void)
 {
     /* determine use_colors variable if it isn't set yet. */
     if(use_colors == -1)
-	color_term();
+		color_term();
 
     /* don't do anything if not using colors */
     if(use_colors == 0 || use_colors == -2)
-	return;
+		return;
 
     /* Command is the control command to the terminal */
     if(settings->curses)
     	wattrset(pal_curwin, A_BOLD | COLOR_PAIR(COLOR_RED));
     else
-	g_printerr("%c[%d;%dm", 0x1B, BRIGHT, RED+30);
+		g_printerr("%c[%d;%dm", 0x1B, BRIGHT, RED+30);
 }
 
 void colorize_reset(void)
 {
     /* determine use_colors variable if it isn't set yet. */
     if(use_colors == -1)
-	color_term();
+		color_term();
 
     /* don't do anything if not using colors */
     if(use_colors == 0 || use_colors == -2)
-	return;
+		return;
 
     if(settings->curses)
-	wattrset(pal_curwin, A_NORMAL);
+		wattrset(pal_curwin, A_NORMAL);
     else
-	g_print("%c[0m", 0x1B);
+		g_print("%c[0m", 0x1B);
 }
 
 
@@ -177,17 +176,16 @@ void colorize_reset(void)
 
 
 static const char *string_colors[] = { "black", "red", "green",
-				       "yellow", "blue", "magenta",
-				       "cyan", "white" };
+                                       "yellow", "blue", "magenta",
+                                       "cyan", "white" };
 
 /* free returned string when done. */
 gchar* string_color_of(const int color)
 {
     if(color >=0 && color < 8)
-	return g_strdup(string_colors[color]);
-
+		return g_strdup(string_colors[color]);
     else /* when in doubt, use default color */
-	return string_color_of(settings->event_color);
+		return string_color_of(settings->event_color);
 }
 
 
@@ -195,10 +193,9 @@ gchar* string_color_of(const int color)
 int int_color_of(gchar* string)
 {
     int i;
-    for(i=0; i<8; i++)
-    {
-	if(g_ascii_strcasecmp(string, string_colors[i]) == 0)
-	    return i;
+    for(i=0; i<8; i++) {
+		if(g_ascii_strcasecmp(string, string_colors[i]) == 0)
+	    	return i;
     }
     return -1;
 }
