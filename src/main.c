@@ -29,6 +29,8 @@
 
 #include <ncurses.h>
 
+#include <getopt.h>
+
 #include "output.h"
 #include "main.h"
 #include "input.h"
@@ -391,221 +393,132 @@ static void view_details(void)
 
 
 
-static gint parse_arg(gchar** args, gint on_arg, gint total_args)
+static int
+parse_arg(int argc, char** argv)
 {
-	args = args + on_arg;
-	on_arg++;
+	char *token, *str, *tofree;
+	int opt;
+	while (1) {
 
+		static struct option long_options[] = {
+		  {"mail",     no_argument,   0, 'a'},
+		  {"color",    no_argument,   0, 'b'},
+		  {"version",  no_argument,   0, 'e'},
+		  {"nocolor",  no_argument,   0, 'g'},
+		  {"html",     no_argument,   0, 't'},
+		  {"latex",    no_argument,   0, 'l'},
+		  {"help",     no_argument,   0, 'h'},
+		  {0, 0, 0, 0}
+		};
 
-	if(strcmp(*args,"-h") == 0 ||
-	   strcmp(*args,"--help") == 0) {
-		g_print("%s %s - %s\n", "pal", PAL_VERSION, _("Copyright (C) 2006, Scott Kuhl"));
+		int option_index = 0;
 
-		g_print("  ");
-		pal_output_wrap(_("pal is licensed under the GNU General Public License and has NO WARRANTY."), 2, 2);
-		g_print("\n");
+		opt = getopt_long(argc, argv, "c:d:f:lmp:r:s:u:vh", long_options, &option_index);
 
-		pal_output_wrap(_(" -d date		 Show events on the given date.  Valid formats for date include: dd, mmdd, yyyymmdd, 'Jan 1 2000'.	Run 'man pal' for a list of all valid formats."), 0, 16);
-		pal_output_wrap(_(" -r n		 Display events within n days after today or a date used with -d. (default: n=0, show nothing)"), 0, 16);
-		pal_output_wrap(_(" -r p-n		 Display events within p days before and n days after today or a date used with -d."), 0, 16);
-		pal_output_wrap(_(" -s regex	 Search for events matching the regular expression. Use -r to select range of days to search."), 0, 16);
-		pal_output_wrap(_(" -x n		 Expunge events that are n or more days old."), 0, 16);
+ 		/* Detect the end of the options. */
+		if (opt == -1)
+			break;
 
-		pal_output_wrap(_(" -c n		 Display calendar with n lines. (default: 5)"), 0, 16);
-		pal_output_wrap(_(" -f file		 Load 'file' instead of ~/.pal/pal.conf"), 0, 16);
-		pal_output_wrap(_(" -u username  Load /home/username/.pal/pal.conf"), 0, 16);
-		pal_output_wrap(_(" -p palfile	 Load *.pal file only (overrides files loaded from pal.conf)"), 0, 16);
-		pal_output_wrap(_(" -m			 Add/Modify/Delete events interactively."), 0, 16);
-		pal_output_wrap(_(" --color		 Force colors, regardless of terminal type."), 0, 16);
-		pal_output_wrap(_(" --nocolor	 Force no colors, regardless of terminal type."), 0, 16);
-		pal_output_wrap(_(" --mail		 Generate output readable by sendmail."), 0, 16);
-		pal_output_wrap(_(" --html		 Generate HTML calendar.  Set size of calendar with -c."), 0, 16);
-		pal_output_wrap(_(" --latex		 Generate LaTeX calendar.  Set size of calendar with -c."), 0, 16);
-		pal_output_wrap(_(" -v			 Verbose output."), 0, 16);
-		pal_output_wrap(_(" --version	 Display version information."), 0, 16);
-		pal_output_wrap(_(" -h, --help	 Display this help message."), 0, 16);
+		switch (opt) {
+			case 'a': //--mail
+				set_colorize(-2); /* overrides a later --color argument */
+				settings->mail = TRUE;
+				break;
+			case 'b': //--color
+				set_colorize(1);
+				break;
+			case 'c':
+				settings->cal_lines = strtoull(optarg, NULL, 10);
+				break;
+			case 'd':
+				settings->query_date = get_query_date(optarg, TRUE);
+				if(settings->query_date == NULL)
+					pal_output_error(_("NOTE: Use quotes around the date if it has spaces.\n"));
+				break;
+			case 'e': //--version
+				g_print("pal %s\n", PAL_VERSION);
+				g_print(_("Compiled with prefix: %s\n"), PREFIX);
+				exit(0);
+				break;
+			case 'f':
+				free(settings->conf_file);
+				settings->conf_file = strdup(optarg);
+				settings->specified_conf_file = TRUE;
+				break;
+			case 'g': //--nocolor
+				set_colorize(0);
+				break;
+			case 'l': //--latex
+				settings->latex_out = TRUE;
+				break;
+			case 'm':
+				settings->manage_events = TRUE;
+				break;
+			case 'p':
+				settings->pal_file = strdup(optarg);
+				break;
+			case 'r':
+				tofree = str = strdup(optarg);
+				if((token = strsep(&str, "-"))) {
+					settings->range_days = strtoull(token, NULL, 10);
+					if (str) {
+						settings->range_neg_days = strtoull(str, NULL, 10);
+					}
+					free(tofree);
+				}
+				settings->range_arg = TRUE;
+				break;
+			case 's':
+				settings->search_string = g_strdup(optarg);
+				break;
+			case 't': //--html
+				settings->html_out = TRUE;
+				break;
+			case 'u':
+				free(settings->conf_file);
+				settings->conf_file = g_strconcat("/home/", optarg, "/.pal/pal.conf", NULL);
+				settings->specified_conf_file = TRUE;
+				break;
+			case 'v':
+				settings->verbose = TRUE;
+				break;
+			case 'x':
+				settings->expunge = strtoull(optarg, NULL, 10);
+				break;
+			case 'h': //fallthrough
+			default:
+				g_print("%s %s - %s\n", "pal", PAL_VERSION, _("Copyright (C) 2006, Scott Kuhl"));
 
-		g_print("\n");
-		pal_output_wrap(_("Type \"man pal\" for more information."), 0, 16);
-		exit(0);
-	}
+				g_print("  ");
+				pal_output_wrap(_("pal is licensed under the GNU General Public License and has NO WARRANTY."), 2, 2);
+				g_print("\n");
 
-	if(strcmp(*args,"-r") == 0) {
-		args++; on_arg++;
+				pal_output_wrap(_(" -d date		 Show events on the given date.  Valid formats for date include: dd, mmdd, yyyymmdd, 'Jan 1 2000'.	Run 'man pal' for a list of all valid formats."), 0, 16);
+				pal_output_wrap(_(" -r n		 Display events within n days after today or a date used with -d. (default: n=0, show nothing)"), 0, 16);
+				pal_output_wrap(_(" -r p-n		 Display events within p days before and n days after today or a date used with -d."), 0, 16);
+				pal_output_wrap(_(" -s regex	 Search for events matching the regular expression. Use -r to select range of days to search."), 0, 16);
+				pal_output_wrap(_(" -x n		 Expunge events that are n or more days old."), 0, 16);
 
-		if(on_arg > total_args	 || (sscanf(*args, "%d", &(settings->range_days)) != 1 &&
-						 sscanf(*args, "%d-%d", &(settings->range_neg_days),
-							&(settings->range_days)) != 2)) {
-			settings->range_days = 0;
-			settings->range_neg_days = 0;
+				pal_output_wrap(_(" -c n		 Display calendar with n lines. (default: 5)"), 0, 16);
+				pal_output_wrap(_(" -f file		 Load 'file' instead of ~/.pal/pal.conf"), 0, 16);
+				pal_output_wrap(_(" -u username  Load /home/username/.pal/pal.conf"), 0, 16);
+				pal_output_wrap(_(" -p palfile	 Load *.pal file only (overrides files loaded from pal.conf)"), 0, 16);
+				pal_output_wrap(_(" -m			 Add/Modify/Delete events interactively."), 0, 16);
+				pal_output_wrap(_(" --color		 Force colors, regardless of terminal type."), 0, 16);
+				pal_output_wrap(_(" --nocolor	 Force no colors, regardless of terminal type."), 0, 16);
+				pal_output_wrap(_(" --mail		 Generate output readable by sendmail."), 0, 16);
+				pal_output_wrap(_(" --html		 Generate HTML calendar.  Set size of calendar with -c."), 0, 16);
+				pal_output_wrap(_(" --latex		 Generate LaTeX calendar.  Set size of calendar with -c."), 0, 16);
+				pal_output_wrap(_(" -v			 Verbose output."), 0, 16);
+				pal_output_wrap(_(" --version	 Display version information."), 0, 16);
+				pal_output_wrap(_(" -h, --help	 Display this help message."), 0, 16);
 
-			pal_output_error("%s\n", _("ERROR: Number required after -r argument."));
-			pal_output_error("		 %s\n", _("Use --help for more information."));
-			return on_arg-1;
+				g_print("\n");
+				pal_output_wrap(_("Type \"man pal\" for more information."), 0, 16);
+				exit(0);
 		}
-
-		settings->range_arg = TRUE;
-
-		if(sscanf(*args, "%d-%d", &(settings->range_neg_days),
-			  &(settings->range_days)) == 2)
-			return on_arg;
-
-		if(sscanf(*args, "%d", &(settings->range_days)) == 1) {
-			settings->range_neg_days = 0;
-			return on_arg;
-		}
-
-		return on_arg;
 	}
-
-	if(strcmp(*args,"-c") == 0) {
-		args++; on_arg++;
-		if(on_arg > total_args || sscanf(*args, "%d", &(settings->cal_lines)) != 1) {
-			pal_output_error("%s\n", _("ERROR: Number required after -c argument."));
-			pal_output_error("		 %s\n", _("Use --help for more information."));
-			on_arg--;
-		}
-		return on_arg;
-	}
-
-	if(strcmp(*args,"-d") == 0) {
-		args++; on_arg++;
-		if(on_arg > total_args) {
-			pal_output_error("%s\n", _("ERROR: Date required after -d argument."));
-			pal_output_error("		 %s\n", _("Use --help for more information."));
-			on_arg--;
-		} else {
-			gchar *utf8arg = g_locale_to_utf8(*args, -1, NULL, NULL, NULL);
-			settings->query_date = get_query_date(utf8arg, TRUE);
-			g_free(utf8arg);
-			if(settings->query_date == NULL)
-			pal_output_error(_("NOTE: Use quotes around the date if it has spaces.\n"));
-		}
-		return on_arg;
-	}
-
-	if(strcmp(*args,"-v") == 0) {
-		settings->verbose = TRUE;
-		return on_arg;
-	}
-
-	if(strcmp(*args,"-a") == 0) {
-		settings->manage_events = TRUE;
-		pal_output_error(_("WARNING: -a is deprecated, use -m instead.\n"));
-		return on_arg;
-	}
-
-	if(strcmp(*args,"-m") == 0) {
-		settings->manage_events = TRUE;
-		return on_arg;
-	}
-
-
-	if(strcmp(*args,"--color") == 0) {
-		set_colorize(1);
-		return on_arg;
-	}
-
-	if(strcmp(*args,"--nocolor") == 0) {
-		set_colorize(0);
-		return on_arg;
-	}
-
-	if(strcmp(*args,"--mail") == 0) {
-		set_colorize(-2); /* overrides a later --color argument */
-		settings->mail = TRUE;
-		return on_arg;
-	}
-
-	if(strcmp(*args,"--html") == 0) {
-		settings->html_out = TRUE;
-		return on_arg;
-	}
-
-	if(strcmp(*args, "--latex") == 0) {
-		settings->latex_out = TRUE;
-		return on_arg;
-	}
-
-	if(strcmp(*args,"--version") == 0) {
-		g_print("pal %s\n", PAL_VERSION);
-		g_print(_("Compiled with prefix: %s\n"), PREFIX);
-		exit(0);
-	}
-
-	if(strcmp(*args,"-f") == 0) {
-		gchar tmp[16384];
-		args++; on_arg++;
-		if(on_arg > total_args || sscanf(*args, "%s", tmp) != 1)
-		{
-			pal_output_error("%s\n", _("ERROR: Pal conf file required after -f argument."));
-			pal_output_error("		 %s\n", _("Use --help for more information."));
-			return on_arg;
-		}
-
-		g_free(settings->conf_file);
-		settings->conf_file = g_strdup(tmp);
-		settings->specified_conf_file = TRUE;
-		return on_arg;
-	}
-
-	if(strcmp(*args,"-p") == 0) {
-		gchar tmp[16384];
-		args++; on_arg++;
-		if(on_arg > total_args || sscanf(*args, "%s", tmp) != 1) {
-			pal_output_error("%s\n", _("ERROR: *.pal file required after -p argument."));
-			pal_output_error("		 %s\n", _("Use --help for more information."));
-			return on_arg;
-		}
-
-		settings->pal_file = g_strdup(tmp);
-		return on_arg;
-	}
-
-	if(strcmp(*args,"-u") == 0) {
-	gchar username[256];
-	args++; on_arg++;
-	if(on_arg > total_args || sscanf(*args, "%s", username) != 1) {
-		pal_output_error("%s\n", _("ERROR: Username required after -u argument."));
-		pal_output_error("		 %s\n", _("Use --help for more information."));
-		return on_arg;
-	}
-
-	g_free(settings->conf_file);
-	settings->conf_file = g_strconcat("/home/", username, "/.pal/pal.conf", NULL);
-	settings->specified_conf_file = TRUE;
-	return on_arg;
-	}
-
-	if(strcmp(*args,"-s") == 0) {
-	args++; on_arg++;
-
-	if(on_arg > total_args) {
-		pal_output_error("%s\n", _("ERROR: Regular expression required after -s argument."));
-		pal_output_error("		 %s\n", _("Use --help for more information."));
-	}
-	else
-		settings->search_string = g_strdup(*args);
-
-	return on_arg;
-	}
-
-	if(strcmp(*args,"-x") == 0) {
-	args++; on_arg++;
-	if(on_arg > total_args || sscanf(*args, "%d", &(settings->expunge)) != 1) {
-		pal_output_error("%s\n", _("ERROR: Number required after -x argument."));
-		pal_output_error("		 %s\n", _("Use --help for more information."));
-		on_arg--;
-	}
-
-	return on_arg;
-	}
-
-
-	pal_output_error("%s %s\n", _("ERROR: Bad argument:"), *args);
-	pal_output_error("		 %s\n", _("Use --help for more information."));
-
-	return on_arg+1;
+return 0;
 }
 
 
@@ -650,43 +563,43 @@ void pal_main_reload(void)
 	ht = load_files();
 }
 
-int main(gint argc, char** argv)
+int
+main(int argc, char** argv)
 {
 	const char *charset = NULL;
-	int on_arg = 1;
 	GDate* today = g_date_new();
 
 	g_date_set_time_t(today, time(NULL));
 
-	settings = g_malloc(sizeof(Settings));
-	settings->cal_lines			  = 5;
-	settings->range_days		  = 0;
-	settings->range_neg_days	  = 0;
-	settings->range_arg			  = FALSE;
-	settings->search_string		  = NULL;
-	settings->verbose			  = FALSE;
-	settings->mail				  = FALSE;
-	settings->query_date		  = NULL;
-	settings->expunge			  = -1;
-	settings->date_fmt			  = g_strdup("%a %e %b %Y");
-	settings->week_start_monday   = FALSE;
-	settings->reverse_order		  = FALSE;
-	settings->cal_on_bottom		  = FALSE;
-	settings->specified_conf_file = FALSE;
-	settings->no_columns		  = FALSE;
-	settings->hide_event_type	  = FALSE;
-	settings->manage_events		  = FALSE;
-	settings->curses			  = FALSE;
-	settings->event_color		  = BLUE;
-	settings->pal_file			  = NULL;
-	settings->html_out			  = FALSE;
-	settings->latex_out			  = FALSE;
-	settings->compact_list		  = FALSE;
-	settings->term_cols			  = 80;
-	settings->term_rows			  = 24;
-	settings->compact_date_fmt	  = g_strdup("%m/%d/%Y");
-	settings->conf_file = g_strconcat(g_get_home_dir(), "/.pal/pal.conf", NULL);
-	settings->show_weeknum		  = FALSE;
+    settings = g_malloc(sizeof(Settings));
+	settings->cal_lines             = 5;
+	settings->range_days            = 0;
+	settings->range_neg_days        = 0;
+	settings->range_arg             = FALSE;
+	settings->search_string         = NULL;
+	settings->verbose               = FALSE;
+	settings->mail                  = FALSE;
+	settings->query_date            = NULL;
+	settings->expunge               = -1;
+	settings->date_fmt              = g_strdup("%a %e %b %Y");
+	settings->week_start_monday     = FALSE;
+	settings->reverse_order         = FALSE;
+	settings->cal_on_bottom         = FALSE;
+	settings->specified_conf_file   = FALSE;
+	settings->no_columns            = FALSE;
+	settings->hide_event_type       = FALSE;
+	settings->manage_events         = FALSE;
+	settings->curses                = FALSE;
+	settings->event_color           = BLUE;
+	settings->pal_file              = NULL;
+	settings->html_out              = FALSE;
+	settings->latex_out             = FALSE;
+	settings->compact_list          = FALSE;
+	settings->term_cols             = 80;
+	settings->term_rows             = 24;
+	settings->compact_date_fmt      = g_strdup("%m/%d/%Y");
+	settings->conf_file             = g_strconcat(g_get_home_dir(), "/.pal/pal.conf", NULL);
+	settings->show_weeknum          = FALSE;
 
 	g_set_print_handler( pal_output_handler );
 	g_set_printerr_handler( pal_output_handler );
@@ -710,8 +623,7 @@ int main(gint argc, char** argv)
 #endif
 
 	/* parse all the arguments */
-	while(on_arg < argc)
-		on_arg = parse_arg(argv,on_arg,argc);
+	parse_arg(argc, argv);
 
 	g_get_charset(&charset);
 	if(settings->verbose)
@@ -721,16 +633,14 @@ int main(gint argc, char** argv)
 	ht = load_files();
 
 
-
-
 	/* adjust settings if --mail is used */
 	if(settings->mail) {
 		gchar pretty_date[128];
 		g_date_strftime(pretty_date, 128, settings->date_fmt, today);
 
-		g_print("From: \"pal\" <pal>\n");
-		g_print("Content-Type: text/plain; charset=%s\n", charset);
-		g_print("Subject: [pal] %s\n\n", pretty_date);
+		printf("From: \"pal\" <pal>\n");
+		printf("Content-Type: text/plain; charset=%s\n", charset);
+		printf("Subject: [pal] %s\n\n", pretty_date);
 
 
 		/* let the mail reader handle the line wrapping */
@@ -743,53 +653,53 @@ int main(gint argc, char** argv)
 
 	if(!settings->html_out && !settings->latex_out) {
 
-	if(!settings->cal_on_bottom) {
-		pal_output_cal(settings->cal_lines,today);
-		/* print a newline under calendar if we're printing other stuff */
-		if(settings->cal_lines > 0 && (settings->range_days>0 ||
-					   settings->range_neg_days>0 ||
-					   settings->query_date != NULL))
+		if(!settings->cal_on_bottom) {
+			pal_output_cal(settings->cal_lines,today);
+			/* print a newline under calendar if we're printing other stuff */
+			if(settings->cal_lines > 0 && (settings->range_days>0 ||
+						   settings->range_neg_days>0 ||
+						   settings->query_date != NULL))
 
-		g_print("\n");
+			g_print("\n");
 
-	}
+		}
 
-	view_details(); /* prints results of -d,-r,-s */
+		view_details(); /* prints results of -d,-r,-s */
 
-	if(settings->cal_on_bottom) {
-	/* print a new line over calendar if we've printed other stuff */
-		if(settings->cal_lines > 0 && (settings->range_days>0 ||
-					   settings->range_neg_days>0 ||
-					   settings->query_date != NULL))
-		g_print("\n");
+		if(settings->cal_on_bottom) {
+			/* print a new line over calendar if we've printed other stuff */
+			if(settings->cal_lines > 0 && (settings->range_days>0 ||
+						   settings->range_neg_days>0 ||
+						   settings->query_date != NULL))
+				g_print("\n");
 
-		pal_output_cal(settings->cal_lines,today);
-	}
+			pal_output_cal(settings->cal_lines,today);
+		}
 
 
- 	/* end if not html_out and not latex_out */
-	} else if(settings->html_out && settings->latex_out) {
-		pal_output_error("ERROR: Can't use both --html and --latex.\n");
-		return 1;
-	} else if(settings->html_out)
-		pal_html_out();
-	else if(settings->latex_out)
-		pal_latex_out();
+ 		/* end if not html_out and not latex_out */
+		} else if(settings->html_out && settings->latex_out) {
+			pal_output_error("ERROR: Can't use both --html and --latex.\n");
+			return 1;
+		} else if(settings->html_out)
+			pal_html_out();
+		else if(settings->latex_out)
+			pal_latex_out();
 
 	g_date_free(today);
 
 	pal_main_ht_free();
 
 	/* free settings */
-	g_free(settings->date_fmt);
-	g_free(settings->conf_file);
-	g_free(settings->search_string);
+	free(settings->date_fmt);
+	free(settings->conf_file);
+	free(settings->search_string);
 	if(settings->query_date != NULL)
 		g_date_free(settings->query_date);
-	g_free(settings->compact_date_fmt);
-	g_free(settings->pal_file);
+	free(settings->compact_date_fmt);
+	free(settings->pal_file);
 
-	g_free(settings);
+	free(settings);
 
 	return 0;
 }
