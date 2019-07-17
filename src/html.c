@@ -30,44 +30,44 @@
 static void pal_html_escape_print(gchar* s)
 {
     gunichar c;
-    while( (c = g_utf8_get_char(s)) != '\0')
-    {
-	if(c == '<')        /* < to &lt; */
-	    g_print("&lt;");
-	else if(c == '>')   /* > to &gt; */
-	    g_print("&gt;");
-	else if(c == '&')   /* & to *amp; */
-	    g_print("&amp;");
-	else if(c >= 32 && c < 128)  /* ASCII */
-	    g_print("%c", c);
-        else
-            g_print("&#%d;", c); /* unicode */
+    while( (c = g_utf8_get_char(s)) != '\0') {
+		if(c == '<')        /* < to &lt; */
+		    g_print("&lt;");
+		else if(c == '>')   /* > to &gt; */
+		    g_print("&gt;");
+		else if(c == '&')   /* & to *amp; */
+		    g_print("&amp;");
+		else if(c >= 32 && c < 128)  /* ASCII */
+		    g_print("%c", c);
+    	    else
+    	        g_print("&#%d;", c); /* unicode */
 
-	s = g_utf8_next_char(s);
+		s = g_utf8_next_char(s);
     }
 }
 
 
 
 /* finishes with date on the first day of the next month */
-static void pal_html_month(GDate* date, gboolean force_month_label,
-			  const GDate* today)
+static void
+pal_html_month(struct tm* date, gboolean force_month_label, const struct tm* today)
 {
-    gint orig_month = g_date_get_month(date);
+    int orig_month = date->tm_mon;
     int i;
-    gchar buf[1024] = "";
-    gchar start[64] = "<td class='pal-dayname' align='center'>";
-    gchar end[64] = "</td>";
+    char *buf;
+    char start[64] = "<td class='pal-dayname' align='center'>";
+    char end[64] = "</td>";
 
     fputs("<table class='pal-cal' cellspacing='0' cellpadding='1'>\n", stdout);
 
-    g_date_strftime(buf, 1024, "%B %Y", date);
+    //g_date_strftime(buf, 1024, "%B %Y", date);
+	buf = asctime(date);
     g_print("<tr><td class='pal-month' align='center' colspan='7'>%s</td></tr>\n", buf);
 
     fputs("<tr>\n", stdout);
 
     if(!settings->week_start_monday)
-	g_print("%s%s%s\n", start, _("Sunday"), end);
+		g_print("%s%s%s\n", start, _("Sunday"), end);
 
     g_print("%s%s%s\n", start, _("Monday"), end);
     g_print("%s%s%s\n", start, _("Tuesday"), end);
@@ -77,34 +77,27 @@ static void pal_html_month(GDate* date, gboolean force_month_label,
     g_print("%s%s%s\n", start, _("Saturday"), end);
 
     if(settings->week_start_monday)
-	g_print("%s%s%s\n", start, _("Sunday"), end);
+		g_print("%s%s%s\n", start, _("Sunday"), end);
 
     fputs("</tr>\n", stdout);
 
     /* start the month on the right weekday */
-    if(settings->week_start_monday)
-    {
-    	if(g_date_get_weekday(date) != 1)
-    	{
-	    fputs("<tr>\n", stdout);
+    if(settings->week_start_monday) {
+    	if(g_date_get_weekday(date) != 1) {
+	    	fputs("<tr>\n", stdout);
 
-	    for(i=0; i<g_date_get_weekday(date)-1; i++)
-	    {
-	    	fputs("<td class='pal-blank'>&nbsp;</td>\n", stdout);
-	    }
-	}
-    }
-    else
-    {
-	if(g_date_get_weekday(date) != 7)
-	{
-	    fputs("<tr>\n", stdout);
+	    	for(i=0; i<g_date_get_weekday(date)-1; i++) {
+	    		fputs("<td class='pal-blank'>&nbsp;</td>\n", stdout);
+	    	}
+		}
+    } else {
+		if(g_date_get_weekday(date) != 7) {
+		    fputs("<tr>\n", stdout);
 
-	    for(i=0; i<g_date_get_weekday(date); i++)
-	    {
-		fputs("<td class='pal-blank'>&nbsp;</td>\n", stdout);
-	    }
-	}
+		    for(i=0; i<g_date_get_weekday(date); i++) {
+				fputs("<td class='pal-blank'>&nbsp;</td>\n", stdout);
+		    }
+		}
     }
 
 
@@ -122,31 +115,29 @@ static void pal_html_month(GDate* date, gboolean force_month_label,
 
 	/* make today bright */
 	if(g_date_compare(date,today) == 0)
-	    g_print("<td class='pal-today' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
-	else
-	{
-	    switch(g_date_get_weekday(date))
-	    {
+	    g_print("<td class='pal-today' valign='top'><b>%02d</b><br />\n", date->tm_mday);
+	else {
+	    switch(g_date_get_weekday(date)) {
 		case 1:
-		    g_print("<td class='pal-mon' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+		    g_print("<td class='pal-mon' valign='top'><b>%02d</b><br />\n", (date)->tm_mday);
 		    break;
 		case 2:
-		    g_print("<td class='pal-tue' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+		    g_print("<td class='pal-tue' valign='top'><b>%02d</b><br />\n", date->tm_mday);
 		    break;
 		case 3:
-		    g_print("<td class='pal-wed' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+		    g_print("<td class='pal-wed' valign='top'><b>%02d</b><br />\n", date->tm_mday);
 		    break;
 		case 4:
-		    g_print("<td class='pal-thu' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+		    g_print("<td class='pal-thu' valign='top'><b>%02d</b><br />\n", date->tm_mday);
 		    break;
 		case 5:
-		    g_print("<td class='pal-fri' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+		    g_print("<td class='pal-fri' valign='top'><b>%02d</b><br />\n", date->tm_mday);
 		    break;
 		case 6:
-		    g_print("<td class='pal-sat' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+		    g_print("<td class='pal-sat' valign='top'><b>%02d</b><br />\n", date->tm_mday);
 		    break;
 		case 7:
-		    g_print("<td class='pal-sun' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+		    g_print("<td class='pal-sun' valign='top'><b>%02d</b><br />\n", date->tm_mday);
 		    break;
 		default: /* shouldn't happen */
 		    break;
@@ -214,8 +205,8 @@ static void pal_html_month(GDate* date, gboolean force_month_label,
 void pal_html_out()
 {
     gint on_month = 0;
-    GDate* today = g_date_new();
-    GDate* date = g_date_new();
+    struct tm* today = g_date_new();
+    struct tm* date = g_date_new();
 
 
     if(settings->query_date == NULL)
@@ -225,16 +216,16 @@ void pal_html_out()
     }
     else
     {
-	g_date_set_day(today, g_date_get_day(settings->query_date));
+	g_date_set_day(today, (settings->query_date)->tm_mday);
 	g_date_set_month(today, g_date_get_month(settings->query_date));
 	g_date_set_year(today, g_date_get_year(settings->query_date));
-	g_date_set_day(date, g_date_get_day(settings->query_date));
+	g_date_set_day(date, (settings->query_date)->tm_mday);
 	g_date_set_month(date, g_date_get_month(settings->query_date));
 	g_date_set_year(date, g_date_get_year(settings->query_date));
     }
 
     /* back up to the first of the month */
-    g_date_subtract_days(date, g_date_get_day(date) - 1);
+    g_date_subtract_days(date, (date)->tm_mday - 1);
 
     g_print("%s %s %s", "<!-- Generated with pal", PAL_VERSION, "-->\n");
 

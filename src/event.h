@@ -22,70 +22,70 @@
  */
 
 /* returns a list of events on the givent date */
-GList* get_events(const GDate* date);
+GList* get_events(const struct tm* date);
 /* Return just the count */
-gint pal_get_event_count( GDate *date );
+int pal_get_event_count( struct tm *date );
 
 
 PalEvent* pal_event_init(void);
 PalEvent* pal_event_copy(PalEvent* orig);
 
 void pal_event_free(PalEvent* event);
-void pal_event_fill_dates(PalEvent* pal_event, const gchar* date_string);
+void pal_event_fill_dates(PalEvent* pal_event, const char* date_string);
 
-gboolean is_valid_todo(const gchar* date_string);
-gboolean get_key_todo(const GDate* date, gchar *buffer);
-gchar *get_descr_todo(const GDate *date);
+gboolean is_valid_todo(const char* date_string);
+gboolean get_key_todo(const struct tm* date, char *buffer);
+char *get_descr_todo(const struct tm *date);
 
-gboolean is_valid_daily(const gchar* date_string);
-gboolean get_key_daily(const GDate* date, gchar *buffer);
-gchar *get_descr_daily(const GDate *date);
+gboolean is_valid_daily(const char* date_string);
+gboolean get_key_daily(const struct tm* date, char *buffer);
+char *get_descr_daily(const struct tm *date);
 
-gboolean is_valid_yyyymmdd(const gchar* date_string);
-gboolean is_valid_0000mmdd(const gchar* date_string);
+gboolean is_valid_yyyymmdd(const char* date_string);
+gboolean is_valid_0000mmdd(const char* date_string);
 
-gboolean get_key_yyyymmdd(const GDate* date, gchar *buffer);
-gchar *get_descr_yyyymmdd(const GDate* date);
+gboolean get_key_yyyymmdd(const struct tm* date, char *buffer);
+char *get_descr_yyyymmdd(const struct tm* date);
 
-gboolean is_valid_weekly(const gchar* date_string);
-gboolean get_key_weekly(const GDate* date, gchar* buffer);
-gchar *get_descr_weekly(const GDate* date);
+gboolean is_valid_weekly(const char* date_string);
+gboolean get_key_weekly(const struct tm* date, char* buffer);
+char *get_descr_weekly(const struct tm* date);
 
-gboolean is_valid_000000dd(const gchar* date_string);
-gboolean get_key_000000dd(const GDate* date, gchar* buffer);
-gchar *get_descr_000000dd(const GDate* date);
+gboolean is_valid_000000dd(const char* date_string);
+gboolean get_key_000000dd(const struct tm* date, char* buffer);
+char *get_descr_000000dd(const struct tm* date);
 
-gboolean is_valid_0000mmdd(const gchar* date_string);
-gboolean get_key_0000mmdd(const GDate* date, gchar* buffer);
-gchar *get_descr_0000mmdd(const GDate* date);
+gboolean is_valid_0000mmdd(const char* date_string);
+gboolean get_key_0000mmdd(const struct tm* date, char* buffer);
+char *get_descr_0000mmdd(const struct tm* date);
 
-gboolean is_valid_star_00nd(const gchar* date_string);
-gboolean get_key_star_00nd(const GDate* date, gchar* buffer);
-gchar *get_descr_star_00nd(const GDate* date);
-gboolean is_valid_star_mmnd(const gchar* date_string);
-gboolean get_key_star_mmnd(const GDate* date, gchar* buffer);
-gchar *get_descr_star_mmnd(const GDate* date);
-gboolean is_valid_star_00Ld(const gchar* date_string);
-gboolean get_key_star_00Ld(const GDate* date, gchar* buffer);
-gchar *get_descr_star_00Ld(const GDate* date);
-gboolean is_valid_star_mmLd(const gchar* date_string);
-gboolean get_key_star_mmLd(const GDate* date, gchar* buffer);
-gchar *get_descr_star_mmLd(const GDate* date);
-gboolean is_valid_EASTER(const gchar* date_string);
-GDate* find_easter(gint year);
-gboolean get_key_EASTER(const GDate* date, gchar *buffer);
-gchar *get_descr_EASTER(const GDate* date);
-gboolean last_weekday_of_month(const GDate* date);
-gint get_nth_day(const GDate* date);
-GList* inspect_range(GList* list, const GDate* date);
-gint pal_event_sort_fn(gconstpointer x, gconstpointer y);
+gboolean is_valid_star_00nd(const char* date_string);
+gboolean get_key_star_00nd(const struct tm* date, char* buffer);
+char *get_descr_star_00nd(const struct tm* date);
+gboolean is_valid_star_mmnd(const char* date_string);
+gboolean get_key_star_mmnd(const struct tm* date, char* buffer);
+char *get_descr_star_mmnd(const struct tm* date);
+gboolean is_valid_star_00Ld(const char* date_string);
+gboolean get_key_star_00Ld(const struct tm* date, char* buffer);
+char *get_descr_star_00Ld(const struct tm* date);
+gboolean is_valid_star_mmLd(const char* date_string);
+gboolean get_key_star_mmLd(const struct tm* date, char* buffer);
+char *get_descr_star_mmLd(const struct tm* date);
+gboolean is_valid_EASTER(const char* date_string);
+struct tm* find_easter(int year);
+gboolean get_key_EASTER(const struct tm* date, char *buffer);
+char *get_descr_EASTER(const struct tm* date);
+gboolean last_weekday_of_month(const struct tm* date);
+int get_nth_day(const struct tm* date);
+GList* inspect_range(GList* list, const struct tm* date);
+int pal_event_sort_fn(gconstpointer x, gconstpointer y);
 GList* pal_event_sort_events(GList* events);
 
-gboolean parse_event(PalEvent *event, const gchar* date_string);
-gchar* get_key(const GDate* date);
-GDate* get_date(const gchar* key);
-gchar* pal_event_date_string_to_key(const gchar* date_string);
-gchar* pal_event_escape(const PalEvent* event, const GDate* today);
+gboolean parse_event(PalEvent *event, const char* date_string);
+char* get_key(const struct tm* date);
+struct tm* get_date(const char* key);
+char* pal_event_date_string_to_key(const char* date_string);
+char* pal_event_escape(const PalEvent* event, const struct tm* today);
 
 
 #endif

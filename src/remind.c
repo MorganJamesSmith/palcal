@@ -29,7 +29,7 @@
 #include "edit.h"
 
 /* escape ' */
-static void pal_remind_escape(gchar *string, FILE* tmp_stream)
+static void pal_remind_escape(char *string, FILE* tmp_stream)
 {
     while(*string != '\0') {
 		if(*string == '$'  || *string == '`'  || *string == '"'  || *string == '\\') {
@@ -45,14 +45,14 @@ static void pal_remind_escape(gchar *string, FILE* tmp_stream)
 static void pal_remind_event(void)
 {
     PalEvent* remind_event = NULL;
-    GDate* event_date = NULL;
-    gchar* at_string;
-    gchar tmp_name[] = "/tmp/pal-XXXXXX";
+    struct tm* event_date = NULL;
+    char* at_string;
+    char tmp_name[] = "/tmp/pal-XXXXXX";
     FILE* tmp_stream;
     int return_val;
-    gchar* email_add;
-    const gchar *charset;
-    at_string = g_malloc(1024*sizeof(gchar));
+    char* email_add;
+    const char *charset;
+    at_string = g_malloc(1024*sizeof(char));
 
     pal_output_fg(BRIGHT, GREEN, "* * * ");
     pal_output_attr(BRIGHT, _("Event reminder"));
@@ -72,12 +72,12 @@ static void pal_remind_event(void)
 			 remind_event->start_time->min,
 			 g_date_get_year(event_date),
 			 g_date_get_month(event_date),
-			 g_date_get_day(event_date));
+			 (event_date)->tm_mday);
     } else {
 		snprintf(at_string, 1024, "%02d:%02d %04d-%02d-%02d", 0,0,
 			 g_date_get_year(event_date),
 			 g_date_get_month(event_date),
-			 g_date_get_day(event_date));
+			 (event_date)->tm_mday);
     }
 
 
@@ -123,7 +123,7 @@ static void pal_remind_event(void)
 
     fputs(_("Event date: "), tmp_stream);
 
-	gchar pretty_date[128];
+	char pretty_date[128];
 	g_date_strftime(pretty_date, 128, settings->date_fmt, event_date);
 	fputs(pretty_date, tmp_stream);
 

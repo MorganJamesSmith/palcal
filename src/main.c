@@ -48,156 +48,169 @@ GHashTable* ht;		/* ht holds the loaded events */
 
 /* prints the events on the dates from the starting_date to
  * starting_date+window */
-static void view_range(GDate* starting_date, gint window)
+static void
+view_range(struct tm* starting_date, int window)
 {
-	int i;
+	if(settings->reverse_order) {
+		starting_date->tm_mday += window-1;
+		mktime(starting_date);
+	}
 
-	if(settings->reverse_order)
-		g_date_add_days(starting_date,window-1);
-
-	for(i=0; i<window; i++) {
+	for(int i = 0; i < window; i++) {
 		pal_output_date(starting_date,FALSE,-1);
 
-		if(settings->reverse_order)
-			g_date_subtract_days(starting_date,1);
-		else
-			g_date_add_days(starting_date,1);
+		if(settings->reverse_order) {
+			starting_date->tm_mday -= 1;
+		} else {
+			starting_date->tm_mday += 1;
+		}
+		mktime(starting_date);
 	}
 }
 
 
 
-/* Returns a GDate object for the given key (in_string) */
+/* Returns a struct tm object for the given key (in_string) */
 /* This function only checks the one-time date events (not todo, or
  * recurring events).  It returns NULL on a failure and can optionally
  * print an error message on failure. */
-GDate* get_query_date(gchar* in_string, gboolean show_error)
+struct tm*
+get_query_date(char* in_string, gboolean show_error)
 {
-	GDate* to_show = NULL;
-	gchar* date_string = g_ascii_strdown(in_string, -1);
+	struct tm* to_show = NULL;
+	char* date_string = g_ascii_strdown(in_string, -1);
 
 	if(date_string == NULL)
 		return NULL;
 
 	g_strstrip(date_string);
 
-	to_show = g_date_new();
-	g_date_set_time_t(to_show, time(NULL));
+	time_t currenttime = time(NULL);
+	to_show = localtime(&currenttime);
 
 	/* these could be better... */
 	if(strncmp(date_string, _("tomorrow"), strlen(_("tomorrow"))) == 0) {
-		g_date_add_days(to_show, 1);
-		g_free(date_string);
+		to_show->tm_mday += 1;
+		free(date_string);
 		return to_show;
 	}
 
 	if(strncmp(date_string, _("yesterday"), strlen(_("yesterday"))) == 0) {
-		g_date_subtract_days(to_show, 1);
-		g_free(date_string);
+		to_show->tm_mday -= 1;
+		mktime(to_show);
+		free(date_string);
 		return to_show;
 	}
 
 	if(strncmp(date_string, _("today"), strlen(_("today"))) == 0) {
-		g_date_subtract_days(to_show, 0);
-		g_free(date_string);
+		free(date_string);
 		return to_show;
 	}
 
 	if(strncmp(date_string, _("mo"), strlen(_("mo"))) == 0 ||
 	   strncmp(date_string, _("next mo"), strlen(_("next mo"))) == 0) {
-		do {
-			g_date_add_days(to_show, 1);
-		} while(g_date_get_weekday(to_show) != 1);
-		g_free(date_string);
+		if(to_show->tm_wday <= 1)
+			to_show->tm_mday += 1 - to_show->tm_wday;
+		else
+			to_show->tm_mday += 7 - to_show->tm_wday;
+		mktime(to_show);
+		free(date_string);
 		return to_show;
 	}
 
 	if(strncmp(date_string, _("tu"), strlen(_("tu"))) == 0 ||
 	   strncmp(date_string, _("next tu"), strlen(_("next tu"))) == 0) {
-		do {
-			g_date_add_days(to_show, 1);
-		} while(g_date_get_weekday(to_show) != 2);
-
-		g_free(date_string);
+		if(to_show->tm_wday <= 2)
+			to_show->tm_mday += 2 - to_show->tm_wday;
+		else
+			to_show->tm_mday += 8 - to_show->tm_wday;
+		mktime(to_show);
+		free(date_string);
 		return to_show;
 	}
 
 	if(strncmp(date_string, _("we"), strlen(_("we"))) == 0 ||
 	   strncmp(date_string, _("next we"), strlen(_("next we"))) == 0) {
-		do {
-			g_date_add_days(to_show, 1);
-		} while(g_date_get_weekday(to_show) != 3);
-
-		g_free(date_string);
+		if(to_show->tm_wday <= 3)
+			to_show->tm_mday += 3 - to_show->tm_wday;
+		else
+			to_show->tm_mday += 9 - to_show->tm_wday;
+		mktime(to_show);
+		free(date_string);
 		return to_show;
 	}
 
 	if(strncmp(date_string, _("th"), strlen(_("th"))) == 0 ||
 	   strncmp(date_string, _("next th"), strlen(_("next th"))) == 0) {
-		do {
-			g_date_add_days(to_show, 1);
-		} while(g_date_get_weekday(to_show) != 4);
-
-		g_free(date_string);
+		if(to_show->tm_wday <= 4)
+			to_show->tm_mday += 4 - to_show->tm_wday;
+		else
+			to_show->tm_mday += 10 - to_show->tm_wday;
+		mktime(to_show);
+		free(date_string);
 		return to_show;
 	}
 
 	if(strncmp(date_string, _("fr"), strlen(_("fr"))) == 0 ||
 	   strncmp(date_string, _("next fr"), strlen(_("next fr"))) == 0) {
-		do {
-			g_date_add_days(to_show, 1);
-		} while(g_date_get_weekday(to_show) != 5);
-
-		g_free(date_string);
+		if(to_show->tm_wday <= 5)
+			to_show->tm_mday += 5 - to_show->tm_wday;
+		else
+			to_show->tm_mday += 11 - to_show->tm_wday;
+		mktime(to_show);
+		free(date_string);
 		return to_show;
 	}
 
 	if(strncmp(date_string, _("sa"), strlen(_("sa"))) == 0 ||
 	   strncmp(date_string, _("next sa"), strlen(_("next sa"))) == 0) {
-		do g_date_add_days(to_show, 1); while(g_date_get_weekday(to_show) != 6);
+		to_show->tm_mday += 6 - to_show->tm_wday;
+		mktime(to_show);
+		free(date_string);
 		return to_show;
 	}
 
 	if(strncmp(date_string, _("su"), strlen(_("su"))) == 0 ||
 	   strncmp(date_string, _("next su"), strlen(_("next su"))) == 0) {
-		do g_date_add_days(to_show, 1); while(g_date_get_weekday(to_show) != 7);
-		g_free(date_string);
+		to_show->tm_mday += 7 - to_show->tm_wday;
+		mktime(to_show);
+		free(date_string);
 		return to_show;
 	}
 
 	if(strncmp(date_string, _("last mo"), strlen(_("last mo"))) == 0) {
 		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 1);
-		g_free(date_string);
+		free(date_string);
 		return to_show;
 	}
 	if(strncmp(date_string, _("last tu"), strlen(_("last tu"))) == 0) {
 		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 2);
-		g_free(date_string);
+		free(date_string);
 		return to_show;
 	}
 	if(strncmp(date_string, _("last we"), strlen(_("last we"))) == 0) {
 		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 3);
-		g_free(date_string);
+		free(date_string);
 		return to_show;
 	}
 	if(strncmp(date_string, _("last th"), strlen(_("last th"))) == 0) {
 		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 4);
-		g_free(date_string);
+		free(date_string);
 		return to_show;
 	}
 	if(strncmp(date_string, _("last fr"), strlen(_("last fr"))) == 0) {
 		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 5);
-		g_free(date_string);
+		free(date_string);
 		return to_show;
 	}
 	if(strncmp(date_string, _("last sa"), strlen(_("last sa"))) == 0) {
 		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 6);
-		g_free(date_string);
+		free(date_string);
 		return to_show;
 	}
 	if(strncmp(date_string, _("last su"), strlen(_("last su"))) == 0) {
 		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 7);
-		g_free(date_string);
+		free(date_string);
 		return to_show;
 	}
 
@@ -207,15 +220,15 @@ GDate* get_query_date(gchar* in_string, gboolean show_error)
 	regcomp(&preg, _("^[0-9]+ days away$"), REG_ICASE|REG_NOSUB|REG_EXTENDED);
 
 	if(regexec(&preg, date_string, 0, NULL, 0)==0) {
-		gchar* ptr = date_string;
-		gint date_offset = 0;
+		char* ptr = date_string;
+		int date_offset = 0;
 		while(!g_ascii_isdigit(*ptr) && ptr != NULL)
 		ptr = g_utf8_find_next_char(ptr, NULL);
 
 		sscanf(ptr, "%d", &date_offset);
 
-		g_date_add_days(to_show, date_offset);
-		g_free(date_string);
+		to_show->tm_mday += date_offset;
+		free(date_string);
 		regfree(&preg);
 		return to_show;
 	}
@@ -224,15 +237,15 @@ GDate* get_query_date(gchar* in_string, gboolean show_error)
 	regcomp(&preg, _("^[0-9]+ days ago$"), REG_ICASE|REG_NOSUB|REG_EXTENDED);
 
 	if(regexec(&preg, date_string, 0, NULL, 0)==0) {
-		gchar* ptr = date_string;
-		gint date_offset = 0;
+		char* ptr = date_string;
+		int date_offset = 0;
 		while(!g_ascii_isdigit(*ptr) && ptr != NULL)
 		ptr = g_utf8_find_next_char(ptr, NULL);
 
 		sscanf(ptr, "%d", &date_offset);
 
 		g_date_subtract_days(to_show, date_offset);
-		g_free(date_string);
+		free(date_string);
 		regfree(&preg);
 		return to_show;
 	}
@@ -240,14 +253,14 @@ GDate* get_query_date(gchar* in_string, gboolean show_error)
 
 
 	if(g_ascii_isdigit(*(date_string))) { /* if it begins with a digit ... */
-		gchar* ptr = date_string;
+		char* ptr = date_string;
 
 		while(g_ascii_isdigit(*ptr))
 			ptr++;
 
 		/* ... and if the string is entirely made up of digits */
 		if(*ptr == '\0') {
-			gint query_date_int = -1;
+			int query_date_int = -1;
 
 			sscanf(date_string, "%d", &query_date_int);
 
@@ -260,40 +273,40 @@ GDate* get_query_date(gchar* in_string, gboolean show_error)
 			(*(date_string+6) == '0' && *(date_string+7) == '0'))) {
 
 				if(query_date_int < 32) {
-					if(query_date_int < g_date_get_day(to_show))
-						g_date_add_months(to_show,1);
+					if(query_date_int < to_show->tm_mday)
+						to_show->tm_mon += 1;
 
 					if(g_date_valid_dmy(query_date_int,
-							(GDateMonth) g_date_get_month(to_show),
-							(GDateYear) g_date_get_year(to_show))) {
-						g_date_set_day(to_show, query_date_int);
-						g_free(date_string);
+							(GDateMonth) to_show->tm_mon,
+							(GDateYear) to_show->tm_year)) {
+						to_show->tm_mday = query_date_int;
+						free(date_string);
 						return to_show;
 					}
 				} else if(query_date_int < 1232) {
-					gint day, month;
+					int day, month;
 
 					day = query_date_int % 100;
 					month = query_date_int / 100;
 
 					if(day > 0 && day < 32 && month > 0 && month < 13) {
-						if(month < g_date_get_month(to_show))
-							g_date_add_years(to_show,1);
-						if(day	 < g_date_get_day(to_show) && month == g_date_get_month(to_show))
-							g_date_add_years(to_show, 1);
+						if(month < to_show->tm_mon)
+							to_show->tm_year += 1;
+						if(day	 < to_show->tm_mday && month == to_show->tm_mon)
+							to_show->tm_year += 1;
 
 						if(g_date_valid_dmy((GDateDay) day,
 									(GDateMonth) month,
-									(GDateYear) g_date_get_year(to_show))) {
+									(GDateYear) to_show->tm_year)) {
 							g_date_set_dmy(to_show, (GDateDay) day,
 								   (GDateMonth) month,
-								   (GDateYear) g_date_get_year(to_show));
-							g_free(date_string);
+								   (GDateYear) to_show->tm_year);
+							free(date_string);
 							return to_show;
 						}
 					}
 				} else if(query_date_int > 10000) {
-					gint day, month, year;
+					int day, month, year;
 
 					day = query_date_int % 100;
 					month = (query_date_int % 10000 - day) / 100;
@@ -306,7 +319,7 @@ GDate* get_query_date(gchar* in_string, gboolean show_error)
 							g_date_set_dmy(to_show, (GDateDay) day,
 								   (GDateMonth) month,
 								   (GDateYear) year);
-							g_free(date_string);
+							free(date_string);
 							return to_show;
 						}
 					}
@@ -323,7 +336,7 @@ GDate* get_query_date(gchar* in_string, gboolean show_error)
 		g_date_set_parse(to_show, date_string);
 
 		if(g_date_valid(to_show)) {
-			g_free(date_string);
+			free(date_string);
 			return to_show;
 		}
 	}
@@ -339,16 +352,17 @@ GDate* get_query_date(gchar* in_string, gboolean show_error)
 		pal_output_error(  "	   %s\n", _("'last ' followed by first two letters of weekday,"));
 		pal_output_error(  "	   %s\n", _("'1 Jan 2000', 'Jan 1 2000', etc."));
 	}
-	g_date_free(to_show);
-	g_free(date_string);
+	free(to_show);
+	free(date_string);
 	return NULL;
 }
 
 
 /* determines what should be dispalyed if -r, -s, -d are used */
-static void view_details(void)
+static void
+view_details(void)
 {
-	GDate* to_show = settings->query_date;
+	struct tm* to_show = settings->query_date;
 
 
 	if(settings->search_string != NULL &&
@@ -370,31 +384,29 @@ static void view_details(void)
 		/* if -r or -s is used, show range of dates relative to -d */
 	} else if(settings->range_days	   != 0 ||
 			settings->range_neg_days != 0) {
-		GDate* starting_date = NULL;
+		struct tm* starting_date = NULL;
 
 	/* if -d isn't used, start from current date */
 	if(to_show == NULL) {
-		starting_date = g_date_new();
-		g_date_set_time_t(starting_date, time(NULL));
+		time_t currenttime = time(NULL);
+		starting_date = localtime(&currenttime);
 	} else /* otherwise, start from date specified */
-		starting_date = g_memdup(to_show, sizeof(GDate));
+		starting_date = g_memdup(to_show, sizeof(struct tm));
 
-	g_date_subtract_days(starting_date, settings->range_neg_days);
+	starting_date->tm_mday -= settings->range_neg_days;
 
 	if(settings->search_string == NULL)
 		view_range(starting_date, settings->range_neg_days + settings->range_days);
 	else
 		pal_search_view(settings->search_string, starting_date, settings->range_neg_days + settings->range_days, FALSE);
 
-	g_date_free(starting_date);
 	}
-
 }
 
 
 
 static int
-parse_arg(int argc, char** argv)
+parse_args(int argc, char** argv)
 {
 	char *token, *str, *tofree;
 	int opt;
@@ -436,8 +448,8 @@ parse_arg(int argc, char** argv)
 					pal_output_error(_("NOTE: Use quotes around the date if it has spaces.\n"));
 				break;
 			case 'e': //--version
-				g_print("pal %s\n", PAL_VERSION);
-				g_print(_("Compiled with prefix: %s\n"), PREFIX);
+				printf("pal %s\n", PAL_VERSION);
+				printf("Compiled with prefix: %s\n", PREFIX);
 				exit(0);
 				break;
 			case 'f':
@@ -462,7 +474,8 @@ parse_arg(int argc, char** argv)
 				if((token = strsep(&str, "-"))) {
 					settings->range_days = strtoull(token, NULL, 10);
 					if (str) {
-						settings->range_neg_days = strtoull(str, NULL, 10);
+						settings->range_neg_days = strtoull(token, NULL, 10);
+						settings->range_days = strtoull(str, NULL, 10);
 					}
 					free(tofree);
 				}
@@ -525,17 +538,18 @@ return 0;
 
 /* used when the pal is finished running and the hashtable entries
  * need to be properly freed */
-static void hash_table_free_item(gpointer key, gpointer value, gpointer user_data)
+static void
+hash_table_free_item(gpointer key, gpointer value, gpointer user_data)
 {
 	GList* list = (GList*) value;
 	GList* prev = list;
 
-	g_free(key);
+	free(key);
 
 	/* free the list for this hashtable key */
 	while(g_list_length(list) != 0) {
-	pal_event_free((PalEvent*) list->data);
-	list = g_list_next(list);
+		pal_event_free((PalEvent*) list->data);
+		list = g_list_next(list);
 	}
 
 	g_list_free(prev);
@@ -543,7 +557,8 @@ static void hash_table_free_item(gpointer key, gpointer value, gpointer user_dat
 
 
 /* free the hashtable */
-static void pal_main_ht_free(void)
+static void
+pal_main_ht_free(void)
 {
 	if(ht != NULL) {
 		g_hash_table_foreach(ht, (GHFunc) hash_table_free_item, NULL);
@@ -554,7 +569,8 @@ static void pal_main_ht_free(void)
 
 /* free, and reload the hashtable and settings from pal.conf and
  * calendar files */
-void pal_main_reload(void)
+void
+pal_main_reload(void)
 {
 	if(settings->verbose)
 		g_printerr("Reloading events and settings.\n");
@@ -567,11 +583,10 @@ int
 main(int argc, char** argv)
 {
 	const char *charset = NULL;
-	GDate* today = g_date_new();
+	time_t currenttime = time(NULL);
+	struct tm *today = localtime(&currenttime);
 
-	g_date_set_time_t(today, time(NULL));
-
-    settings = g_malloc(sizeof(Settings));
+    settings = malloc(sizeof(Settings));
 	settings->cal_lines             = 5;
 	settings->range_days            = 0;
 	settings->range_neg_days        = 0;
@@ -601,16 +616,16 @@ main(int argc, char** argv)
 	settings->conf_file             = g_strconcat(g_get_home_dir(), "/.pal/pal.conf", NULL);
 	settings->show_weeknum          = FALSE;
 
-	g_set_print_handler( pal_output_handler );
-	g_set_printerr_handler( pal_output_handler );
+	//g_set_print_handler( pal_output_handler );
+	//g_set_printerr_handler( pal_output_handler );
 
-	textdomain("pal");
-	bind_textdomain_codeset("pal", "utf-8");
-	if(setlocale(LC_MESSAGES, "") == NULL ||
-	   setlocale(LC_TIME, "") == NULL ||
-	   setlocale(LC_ALL, "") == NULL ||
-	   setlocale(LC_CTYPE, "") == NULL)
-		pal_output_error("WARNING: Localization failed.\n");
+	//textdomain("pal");
+	//bind_textdomain_codeset("pal", "utf-8");
+	//if(setlocale(LC_MESSAGES, "") == NULL ||
+	//   setlocale(LC_TIME, "") == NULL ||
+	//   setlocale(LC_ALL, "") == NULL ||
+	//   setlocale(LC_CTYPE, "") == NULL)
+	//	pal_output_error("WARNING: Localization failed.\n");
 
 
 #ifndef __CYGWIN__
@@ -623,11 +638,11 @@ main(int argc, char** argv)
 #endif
 
 	/* parse all the arguments */
-	parse_arg(argc, argv);
+	parse_args(argc, argv);
 
-	g_get_charset(&charset);
-	if(settings->verbose)
-		g_printerr("Character set: %s\n", charset);
+	//g_get_charset(&charset);
+	//if(settings->verbose)
+	//	g_printerr("Character set: %s\n", charset);
 
 
 	ht = load_files();
@@ -635,8 +650,7 @@ main(int argc, char** argv)
 
 	/* adjust settings if --mail is used */
 	if(settings->mail) {
-		gchar pretty_date[128];
-		g_date_strftime(pretty_date, 128, settings->date_fmt, today);
+		char *pretty_date = asctime(today);
 
 		printf("From: \"pal\" <pal>\n");
 		printf("Content-Type: text/plain; charset=%s\n", charset);
@@ -654,7 +668,7 @@ main(int argc, char** argv)
 	if(!settings->html_out && !settings->latex_out) {
 
 		if(!settings->cal_on_bottom) {
-			pal_output_cal(settings->cal_lines,today);
+			pal_output_cal(settings->cal_lines, today);
 			/* print a newline under calendar if we're printing other stuff */
 			if(settings->cal_lines > 0 && (settings->range_days>0 ||
 						   settings->range_neg_days>0 ||
@@ -686,7 +700,6 @@ main(int argc, char** argv)
 		else if(settings->latex_out)
 			pal_latex_out();
 
-	g_date_free(today);
 
 	pal_main_ht_free();
 
@@ -694,8 +707,6 @@ main(int argc, char** argv)
 	free(settings->date_fmt);
 	free(settings->conf_file);
 	free(settings->search_string);
-	if(settings->query_date != NULL)
-		g_date_free(settings->query_date);
 	free(settings->compact_date_fmt);
 	free(settings->pal_file);
 

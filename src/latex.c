@@ -61,11 +61,11 @@ static void pal_latex_escape_print(gchar* s)
 
 
 /* finishes with date on the first day in the next month */
-static void pal_latex_month(GDate* date, gboolean force_month_label)
+static void pal_latex_month(struct tm* date, gboolean force_month_label)
 {
-    gint i;
+    int i;
     gchar buf[1024];
-    gint orig_month = g_date_get_month(date);
+    int orig_month = g_date_get_month(date);
 
     g_date_strftime(buf, 1024, "%B %Y", date);
 
@@ -108,11 +108,11 @@ static void pal_latex_month(GDate* date, gboolean force_month_label)
     while(g_date_get_month(date) == orig_month)
     {
 	GList* events = get_events(date);
-	gint num_events = g_list_length(events);
-	gint num_events_printed = 0;
+	int num_events = g_list_length(events);
+	int num_events_printed = 0;
 	GList* item;
 
-	g_print("\\textbf{\\textit{\\Large %d}} {\\raggedright\n", g_date_get_day(date));
+	g_print("\\textbf{\\textit{\\Large %d}} {\\raggedright\n", (date)->tm_mday);
 
 	item = g_list_first(events);
 
@@ -181,15 +181,16 @@ static void pal_latex_month(GDate* date, gboolean force_month_label)
 
 
 
-void pal_latex_out(void)
+void
+pal_latex_out(void)
 {
-    gint on_month = 0;
-    GDate* date = g_date_new();
+    int on_month = 0;
+    struct tm* date = g_date_new();
 
     if( settings->query_date )
-	memcpy( date, settings->query_date, sizeof(GDate) );
+		memcpy( date, settings->query_date, sizeof(struct tm) );
     else
-	g_date_set_time_t(date, time(NULL));
+		g_date_set_time_t(date, time(NULL));
 
     g_print("%s%s\n", "% Generated with pal ", PAL_VERSION);
 
@@ -219,7 +220,7 @@ void pal_latex_out(void)
     g_print("%s", "\\begin{center}\n\n");
 
     /* back up to the first of the month */
-    g_date_subtract_days(date, g_date_get_day(date) - 1);
+    g_date_subtract_days(date, (date)->tm_mday - 1);
 
     for(on_month=0; on_month < settings->cal_lines; on_month++)
     {

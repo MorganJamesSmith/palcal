@@ -39,6 +39,6 @@ gboolean pal_rl_get_y_n(const char* prompt);
 
 // void pal_rl_default_text_fn(void);
 void pal_rl_completions_output(char **matches, int num_matches, int max_length );
-PalEvent* pal_rl_get_event(GDate** d, gboolean allow_global);
-void pal_rl_ncurses_hack(void);
+PalEvent* pal_rl_get_event(struct tm** d, gboolean allow_global);
+int pal_rl_ncurses_hack(void);
 #endif

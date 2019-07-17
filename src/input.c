@@ -30,57 +30,49 @@
 #include "event.h"
 #include "input.h"
 
-static gboolean pal_input_file_is_global(const gchar* filename);
+static gboolean pal_input_file_is_global(const char* filename);
 
 /* checks if events in the format yyyymmdd can be expunged */
-static gboolean should_be_expunged(const PalEvent* pal_event)
+static int should_be_expunged(const PalEvent* pal_event)
 {
-    GDate* today = NULL;
-    GDate* event_day = NULL;
+    struct tm today;
+    struct tm event_day;
 
     if(settings->expunge < 1)
 	return FALSE;
 
-    today = g_date_new();
-    event_day = get_date(pal_event->date_string);
-    g_date_set_time_t(today, time(NULL));
+    event_day = *get_date(pal_event->date_string);
+	time_t currenttime = time(NULL);
+	today = *localtime(&currenttime);
 
-    /* if not a yyyymmdd (ie, not recurring) */
-    if(event_day == NULL)
-    {
-	/* recurring event with end_date */
-	if(pal_event->end_date != NULL &&
-	   g_date_days_between(today, pal_event->end_date) <= -1*settings->expunge)
-	{
-	    g_date_free(today);
-	    return TRUE;
-	}
+	//TODO reimplement this bit
+    ///* if not a yyyymmdd (ie, not recurring) */
+    //if(event_day == NULL) {
+	///* recurring event with end_date */
+	//	if(pal_event->end_date != NULL &&
+	//		difftime(mktime(&today),mktime(pal_event->end_date))/(24*3600) <= -1*settings->expunge) {
+	//	    return 1;
+	//	}
 
-	g_date_free(today);
-	return FALSE;
-    }
+	//return 0;
+    //}
 
     /* if it is a yyyymmdd event (ie one-time event) */
-    if(g_date_days_between(today, event_day) <= -1*settings->expunge)
-    {
-	g_date_free(today);
-	g_date_free(event_day);
-	return TRUE;
+    if(difftime(mktime(&today),mktime(pal_event->end_date))/(24*3600) <= -1*settings->expunge) {
+		return 1;
     }
 
-    g_date_free(today);
-    g_date_free(event_day);
-    return FALSE;
+    return 0;
 
 }
 
 
 /* Returns the n'th time of the format h:mm or hh:mm that occurs in
  * the string s.  Returns NULL if no time exists in the string */
-static PalTime* pal_input_get_time(gchar* s, gint n)
+static PalTime* pal_input_get_time(char* s, int n)
 {
-    gchar* s_start = s;
-    gchar *h1, *h2, *m1, *m2;
+    char* s_start = s;
+    char *h1, *h2, *m1, *m2;
 
     if(n < 1 || s == NULL)
 	return NULL;
@@ -108,8 +100,8 @@ static PalTime* pal_input_get_time(gchar* s, gint n)
 	    if(g_ascii_isdigit(*h1) &&
 	       g_ascii_isdigit(*m1) && g_ascii_isdigit(*m2))
 	    {
-		gint hour = 0;
-		gint min = 0;
+		int hour = 0;
+		int min = 0;
 
 		/* use 10s digit place in hours if it is a digit */
 		if(h2 != NULL && *h2 != '\0' && g_ascii_isdigit(*h2))
@@ -148,11 +140,11 @@ static PalTime* pal_input_get_time(gchar* s, gint n)
 void pal_input_skip_comments(FILE* file, FILE* out_file)
 {
     long start_of_line;
-    gchar s[2048];
+    char s[2048];
 
     do
     {
-	gchar* orig_string = NULL;
+	char* orig_string = NULL;
 
 	start_of_line = ftell(file);
 	if(fgets(s, 2048, file) == NULL)
@@ -178,10 +170,10 @@ void pal_input_skip_comments(FILE* file, FILE* out_file)
 
 /* reads in the 'first' line of the .pal file (two marker characters
  * and calendar title) */
-PalEvent* pal_input_read_head(FILE* file, FILE* out_file, gchar* filename)
+PalEvent* pal_input_read_head(FILE* file, FILE* out_file, char* filename)
 {
-    gchar s[2048];
-    gchar c;
+    char s[2048];
+    char c;
     PalEvent* event_head = NULL;
 
     if(fgets(s, 2048, file) == NULL)
@@ -206,7 +198,7 @@ PalEvent* pal_input_read_head(FILE* file, FILE* out_file, gchar* filename)
 
     if(c != ' ' && c != '\t') /* there should be white space here */
     {
-	gchar* file = g_path_get_basename(filename);
+	char* file = g_path_get_basename(filename);
 	pal_output_error(_("ERROR: First line is improperly formatted.\n"));
 	pal_output_error(  "       %s: %s\n", _("FILE"), file);
 	g_free(file);
@@ -238,14 +230,14 @@ gboolean pal_input_eof(FILE* file)
  * filename:   Name of the file corresponding to the "file" stream
  * event_head: Default to these values for the returned PalEvent.
  * del_event:  If this event is encountered in the file, do not print it to out_file */
-PalEvent* pal_input_read_event(FILE* file, FILE* out_file, gchar* filename, PalEvent* event_head,
+PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEvent* event_head,
 			       PalEvent* del_event)
 {
-    gchar s[2048];
+    char s[2048];
 
-    gchar date_string[128];
-    gchar* text_string = NULL;
-    gchar* tmp = NULL;
+    char date_string[128];
+    char* text_string = NULL;
+    char* tmp = NULL;
     PalEvent* pal_event = NULL;
 
     if(fgets(s, 2048, file) == NULL)
@@ -271,7 +263,7 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, gchar* filename, PalE
     /* check for a valid date_string */
     if(!parse_event( pal_event, date_string ))
     {
-	gchar* file = g_path_get_basename(filename);
+	char* file = g_path_get_basename(filename);
 	pal_output_error(_("ERROR: Invalid date string.\n"));
 	pal_output_error(  "       %s: %s\n", _("FILE"), file);
 	pal_output_error(  "       %s: %s\n", _("LINE"), s);
@@ -289,7 +281,7 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, gchar* filename, PalE
     /* require a description for a event */
     if(strlen(text_string) == 0)
     {
-	gchar* file = g_path_get_basename(filename);
+	char* file = g_path_get_basename(filename);
 	pal_output_error(_("ERROR: Event description missing.\n"));
 	pal_output_error(  "       %s: %s\n", _("FILE"), file);
 	pal_output_error(  "       %s: %s\n", _("LINE"), s);
@@ -312,7 +304,7 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, gchar* filename, PalE
     /* Sanity checks */
     if( pal_event->period_count != 1 && !pal_event->start_date )
     {
-	gchar* file = g_path_get_basename(filename);
+	char* file = g_path_get_basename(filename);
         pal_event->start_date = g_date_new();
         g_date_set_time_t(pal_event->start_date, time(NULL));
         pal_event->end_date = g_date_new_dmy(1,1,3000);
@@ -368,7 +360,7 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, gchar* filename, PalE
 
 
 /* checks if file is a global */
-static gboolean pal_input_file_is_global(const gchar* filename)
+static gboolean pal_input_file_is_global(const char* filename)
 {
     if(strncmp(filename, PREFIX "/share/pal", strlen(PREFIX "/share/pal")) == 0)
 	return TRUE;
@@ -378,12 +370,12 @@ static gboolean pal_input_file_is_global(const gchar* filename)
 
 
 /* loads a pal calendar file, returns the number of events loaded into hashtable */
-static gint load_file(gchar* filename, FILE* file, gint filecount, gboolean hide, int color)
+static int load_file(char* filename, FILE* file, int filecount, gboolean hide, int color)
 {
-    gint eventcount = 0;
+    int eventcount = 0;
     PalEvent* event_head;
     FILE *out_file = NULL;
-    gchar* out_filename = NULL;
+    char* out_filename = NULL;
 
 
     g_strstrip(filename);
@@ -422,7 +414,7 @@ static gint load_file(gchar* filename, FILE* file, gint filecount, gboolean hide
 
 	    if(pal_event != NULL)
 	    {
-		gchar* key = pal_event->key;
+		char* key = pal_event->key;
 		eventcount++;
 
 		/* if no list exists for that key, make new list */
@@ -459,7 +451,7 @@ static gint load_file(gchar* filename, FILE* file, gint filecount, gboolean hide
 /* gets the pal file to load.  From "file", it looks for a pal
  * calendar file locally or globally to load and puts the path of that
  * file in pal_file.  It returns true if successful. */
-static gboolean get_file_to_load(gchar* file, gchar* pal_file, gboolean show_error)
+static gboolean get_file_to_load(char* file, char* pal_file, gboolean show_error)
 {
     if(g_path_is_absolute(file))
     {
@@ -476,7 +468,7 @@ static gboolean get_file_to_load(gchar* file, gchar* pal_file, gboolean show_err
     else
     {
 	/* if a relative path, try looking in the path found in settings->conf_file */
-	gchar* dirname = g_path_get_dirname(settings->conf_file);
+	char* dirname = g_path_get_dirname(settings->conf_file);
 	sprintf(pal_file, "%s/%s", dirname, file);
 
 	/* if that doesn't work, try looking in PREFIX/share/pal */
@@ -486,7 +478,7 @@ static gboolean get_file_to_load(gchar* file, gchar* pal_file, gboolean show_err
 	/* if that doesn't work, print message */
 	if(! g_file_test(pal_file, G_FILE_TEST_EXISTS) || g_file_test(pal_file, G_FILE_TEST_IS_DIR))
 	{
-	    gchar other_file[2048];
+	    char other_file[2048];
 	    sprintf(other_file, "%s/%s", dirname, file);
 	    if(show_error)
 	    {
@@ -511,7 +503,7 @@ static gboolean get_file_to_load(gchar* file, gchar* pal_file, gboolean show_err
  * Returns NULL if can't read, returns a FILE pointer if reading file.
  * fclose() should be called on the returned pointer when done reading
  * the file. */
-static FILE* get_file_handle(gchar* filename, gboolean show_error)
+static FILE* get_file_handle(char* filename, gboolean show_error)
 {
     FILE* file = fopen(filename, "r");
 
@@ -526,231 +518,197 @@ static FILE* get_file_handle(gchar* filename, gboolean show_error)
 
 
 /* loads calendar files and settings from a pal.conf file */
-GHashTable* load_files()
+GHashTable*
+load_files()
 {
-    gchar s[2048];
-    gchar text[2048];
+    char s[2048];
+    char text[2048];
     FILE* file = NULL;
     guint filecount=0, eventcount=0;
 
     ht = g_hash_table_new(g_str_hash,g_str_equal);
 
-    if(settings->verbose)
-    {
-	if(settings->expunge >= 0)
-	    g_printerr(_("Looking for data to expunge.\n"));
+    if(settings->verbose) {
+		if(settings->expunge >= 0)
+	    	g_printerr(_("Looking for data to expunge.\n"));
     }
 
     file = get_file_handle(settings->conf_file, FALSE);
 
-    if(file == NULL)
-    {
-	if(settings->specified_conf_file)
-	{
-	    pal_output_error(_("ERROR: Can't open file: %s\n"), settings->conf_file);
-	    return ht;
-	}
-	else /* didn't specify conf file, and couldn't find conf file: create a default one */
-	{
-	    FILE* out_file;
-	    gchar* out_dirname;
-	    gchar* out_path;
-	    gint c;
-
-	    out_dirname = g_strconcat(g_get_home_dir(), "/.pal", NULL);
-	    out_path    = g_strconcat(out_dirname, "/pal.conf", NULL);
-
-	    pal_output_error(_("NOTE: Creating %s\n"), out_path);
-	    pal_output_error(_("NOTE: Edit ~/.pal/pal.conf to change how and if certain events are displayed.\n"),
-			     out_path);
-
-	    /* create directory if it doesn't exist */
-	    if(!g_file_test(out_dirname, G_FILE_TEST_IS_DIR))
-	    {
-		if(mkdir(out_dirname, 0755) != 0)
-		{
-		    pal_output_error(_("ERROR: Can't create directory: %s\n"), out_dirname);
+    if(file == NULL) {
+		if(settings->specified_conf_file) {
+		    pal_output_error(_("ERROR: Can't open file: %s\n"), settings->conf_file);
 		    return ht;
+		} else { /* didn't specify conf file, and couldn't find conf file: create a default one */
+		    FILE* out_file;
+		    char* out_dirname;
+		    char* out_path;
+		    int c;
+
+		    out_dirname = g_strconcat(g_get_home_dir(), "/.pal", NULL);
+		    out_path    = g_strconcat(out_dirname, "/pal.conf", NULL);
+
+		    pal_output_error(_("NOTE: Creating %s\n"), out_path);
+		    pal_output_error(_("NOTE: Edit ~/.pal/pal.conf to change how and if certain events are displayed.\n"),
+				     out_path);
+
+		    /* create directory if it doesn't exist */
+		    if(!g_file_test(out_dirname, G_FILE_TEST_IS_DIR)) {
+				if(mkdir(out_dirname, 0755) != 0) {
+			    	pal_output_error(_("ERROR: Can't create directory: %s\n"), out_dirname);
+			    	return ht;
+				}
+		    }
+
+		    /* attempt to copy /etc/pal.conf to ~/.pal/pal.conf */
+		    file = fopen("/etc/pal.conf", "r");
+
+		    /* if not found, try PREFIX/share/pal/pal.conf instead */
+		    /* NOTE: This is will be removed in the future */
+		    if(file == NULL)
+				file = fopen(PREFIX "/share/pal/pal.conf", "r");
+
+
+		    if(file == NULL) {
+				pal_output_error(_("ERROR: Can't open file: /etc/pal.conf\n"));
+				pal_output_error(_("ERROR: Can't open file: " PREFIX "/share/pal/pal.conf\n"));
+				pal_output_error(_("ERROR: This indicates an improper installation.\n"));
+				return ht;
+		    }
+
+		    out_file = fopen(out_path, "w");
+		    if(out_file == NULL) {
+				pal_output_error(_("ERROR: Can't create/write file: %s\n"), out_file);
+				return ht;
+		    }
+
+		    /* do copy */
+		    c = fgetc(file);
+		    while(c != EOF) {
+				fputc(c,out_file);
+				c=fgetc(file);
+		    }
+
+		    fclose(out_file);
+		    fclose(file);
+
+		    free(out_dirname);
+		    free(out_path);
+
+		    /* open file to read it as usual */
+		    file = fopen(settings->conf_file, "r");
 		}
-	    }
-
-	    /* attempt to copy /etc/pal.conf to ~/.pal/pal.conf */
-	    file = fopen("/etc/pal.conf", "r");
-
-	    /* if not found, try PREFIX/share/pal/pal.conf instead */
-	    /* NOTE: This is will be removed in the future */
-	    if(file == NULL)
-		file = fopen(PREFIX "/share/pal/pal.conf", "r");
-
-
-	    if(file == NULL)
-	    {
-		pal_output_error(_("ERROR: Can't open file: /etc/pal.conf\n"));
-		pal_output_error(_("ERROR: Can't open file: " PREFIX "/share/pal/pal.conf\n"));
-		pal_output_error(_("ERROR: This indicates an improper installation.\n"));
-		return ht;
-	    }
-
-	    out_file = fopen(out_path, "w");
-	    if(out_file == NULL)
-	    {
-		pal_output_error(_("ERROR: Can't create/write file: %s\n"), out_file);
-		return ht;
-	    }
-
-	    /* do copy */
-	    c = fgetc(file);
-	    while(c != EOF)
-	    {
-		fputc(c,out_file);
-		c=fgetc(file);
-	    }
-
-	    fclose(out_file);
-	    fclose(file);
-
-	    g_free(out_dirname);
-	    g_free(out_path);
-
-	    /* open file to read it as usual */
-	    file = fopen(settings->conf_file, "r");
-	}
 
     } /* done opening/creating file */
 
     /* if using -p, load that .pal file now. */
-    if(settings->pal_file != NULL)
-    {
-	gchar pal_file[16384];
-	FILE* pal_file_handle = NULL;
+    if(settings->pal_file != NULL) {
+		char pal_file[16384];
+		FILE* pal_file_handle = NULL;
 
-	if(!get_file_to_load(settings->pal_file, pal_file, FALSE))
-	    sprintf(pal_file, settings->pal_file);
+		if(!get_file_to_load(settings->pal_file, pal_file, FALSE))
+		    sprintf(pal_file, settings->pal_file);
 
-	pal_file_handle = get_file_handle(pal_file, TRUE);
-	if(pal_file_handle != NULL)
-	{
-	    eventcount += load_file(pal_file, pal_file_handle, filecount, FALSE, -1);
-	    fclose(pal_file_handle);
-	    filecount++;
-	}
-    }
-
-
-    while(fgets(s, 2048, file) != NULL)
-    {
-	gchar pal_file[16384];
-	gchar color[16384];
-	gint int_color = -1;
-	gint i,j;
-	color[0] = '\0';
-	g_strstrip(s);
-
-	if(sscanf(s, "file %s (%[a-z])\n", text, color) == 2 ||
-	    sscanf(s, "file %s\n", text) == 1)
-	{
-	    FILE* pal_file_handle = NULL;
-	    gboolean hide = FALSE;
-
-	    /* skip this line if we're using -p */
-	    if(settings->pal_file != NULL)
-		continue;
-
-	    if(sscanf(s, "file_hide %s (%[a-z])\n", text, color) == 2)
-		hide = TRUE;
-	    else if(sscanf(s, "file_hide %s\n", text) == 1)
-		hide = TRUE;
-
-	    if(color[0] != '\0')
-	    {
-		if(int_color_of(color) != -1)
-		    int_color = int_color_of(color);
-
-		if(int_color == -1)
-		{
-		    pal_output_error(_("ERROR: Invalid color '%s' in file %s."),
-				     color, settings->conf_file);
-		    pal_output_error("\n       %s %s\n", _("Valid colors:"), "black, red, green, yellow, blue, magenta, cyan, white");
-		}
-	    }
-
-	    if(get_file_to_load(text, pal_file, TRUE))
-	    {
 		pal_file_handle = get_file_handle(pal_file, TRUE);
-		if(pal_file_handle != NULL)
-		{
-		    /* assign events that are the "default" color to
-		     * have a color of -1 the output code will apply
-		     * the default color to events (since we might not
-		     * have read in what the default color is yet. */
-		    eventcount += load_file(pal_file, pal_file_handle, filecount, hide, int_color);
+		if(pal_file_handle != NULL) {
+		    eventcount += load_file(pal_file, pal_file_handle, filecount, FALSE, -1);
 		    fclose(pal_file_handle);
 		    filecount++;
 		}
-	    }
-	}
+    }
 
-	else if(sscanf(s, "date_fmt %s",text) == 1)
-	{
-	    g_free(settings->date_fmt);
-	    settings->date_fmt = g_strdup(g_strstrip(&s[9]));
-	}
-	else if(strcmp(s, "week_start_monday") == 0)
-	    settings->week_start_monday = TRUE;
-	else if(strcmp(s, "show_weeknum") == 0)
-	    settings->show_weeknum = TRUE;
-	else if(strcmp(s, "reverse_order") == 0)
-	    settings->reverse_order = TRUE;
-	else if(strcmp(s, "cal_on_bottom") == 0)
-	    settings->cal_on_bottom = TRUE;
-	else if(strcmp(s, "no_columns") == 0)
-	    settings->no_columns = TRUE;
-	else if(strcmp(s, "hide_event_type") == 0)
-	    settings->hide_event_type = TRUE;
-	else if(strcmp(s, "compact_list") == 0)
-	    settings->compact_list = TRUE;
-	else if(sscanf(s, "compact_date_fmt %s",text) == 1)
-	{
-	    g_free(settings->compact_date_fmt);
-	    settings->compact_date_fmt = g_strdup(g_strstrip(&s[17]));
-	}
-	else if(sscanf(s, "event_color %s",text) == 1)
-	{
-	    int ec = int_color_of(text);
-	    if(ec == -1)
-	    {
-		    pal_output_error("%s\n", _("ERROR: Invalid color '%s' in file %s."),
-				     color, settings->conf_file);
-		    pal_output_error("       %s %s\n", _("Valid colors:"), "black, red, green, yellow, blue, magenta, cyan, white");
-	    }
-	    else
-		settings->event_color = ec;
-	}
-	else if(sscanf(s, "default_range %d-%d", &i, &j) == 2)
-	{
-	    /* check if -r was used */
-	    if(!settings->range_arg)
-	    {
-		settings->range_neg_days = i;
-		settings->range_days = j;
-	    }
-	}
-	else if(sscanf(s, "default_range %d", &i) == 1)
-	{
-	    if(!settings->range_arg)
-		settings->range_days = i;
-	}
 
-        /* ignore empty lines or comments */
-	else if(*s != '#' && *s != '\0')
-	{
-	    pal_output_error(_("ERROR: Invalid line (File: %s, Line text: %s)\n"), settings->conf_file, s);
-	}
+    while(fgets(s, 2048, file) != NULL) {
+		char pal_file[16384];
+		char color[16384];
+		int int_color = -1;
+		int i,j;
+		color[0] = '\0';
+		g_strstrip(s);
 
+		if(sscanf(s, "file %s (%[a-z])\n", text, color) == 2 ||
+		    sscanf(s, "file %s\n", text) == 1) {
+			    FILE* pal_file_handle = NULL;
+			    gboolean hide = FALSE;
+
+			    /* skip this line if we're using -p */
+			    if(settings->pal_file != NULL)
+				continue;
+
+			    if(sscanf(s, "file_hide %s (%[a-z])\n", text, color) == 2)
+				hide = TRUE;
+			    else if(sscanf(s, "file_hide %s\n", text) == 1)
+				hide = TRUE;
+
+			    if(color[0] != '\0') {
+					if(int_color_of(color) != -1)
+					    int_color = int_color_of(color);
+
+					if(int_color == -1) {
+					    pal_output_error(_("ERROR: Invalid color '%s' in file %s."),
+							     color, settings->conf_file);
+					    pal_output_error("\n       %s %s\n", _("Valid colors:"), "black, red, green, yellow, blue, magenta, cyan, white");
+					}
+			    }
+
+			    if(get_file_to_load(text, pal_file, TRUE)) {
+					pal_file_handle = get_file_handle(pal_file, TRUE);
+					if(pal_file_handle != NULL) {
+					    /* assign events that are the "default" color to
+					     * have a color of -1 the output code will apply
+					     * the default color to events (since we might not
+					     * have read in what the default color is yet. */
+					    eventcount += load_file(pal_file, pal_file_handle, filecount, hide, int_color);
+					    fclose(pal_file_handle);
+					    filecount++;
+				}
+			}
+		} else if(sscanf(s, "date_fmt %s",text) == 1) {
+		    g_free(settings->date_fmt);
+		    settings->date_fmt = g_strdup(g_strstrip(&s[9]));
+		} else if(strcmp(s, "week_start_monday") == 0)
+		    settings->week_start_monday = TRUE;
+		else if(strcmp(s, "show_weeknum") == 0)
+		    settings->show_weeknum = TRUE;
+		else if(strcmp(s, "reverse_order") == 0)
+		    settings->reverse_order = TRUE;
+		else if(strcmp(s, "cal_on_bottom") == 0)
+		    settings->cal_on_bottom = TRUE;
+		else if(strcmp(s, "no_columns") == 0)
+		    settings->no_columns = TRUE;
+		else if(strcmp(s, "hide_event_type") == 0)
+		    settings->hide_event_type = TRUE;
+		else if(strcmp(s, "compact_list") == 0)
+		    settings->compact_list = TRUE;
+		else if(sscanf(s, "compact_date_fmt %s",text) == 1) {
+		    g_free(settings->compact_date_fmt);
+		    settings->compact_date_fmt = g_strdup(g_strstrip(&s[17]));
+		} else if(sscanf(s, "event_color %s",text) == 1) {
+		    int ec = int_color_of(text);
+		    if(ec == -1) {
+			    pal_output_error("%s\n", _("ERROR: Invalid color '%s' in file %s."),
+					     color, settings->conf_file);
+			    pal_output_error("       %s %s\n", _("Valid colors:"), "black, red, green, yellow, blue, magenta, cyan, white");
+		    } else
+				settings->event_color = ec;
+		}
+		else if(sscanf(s, "default_range %d-%d", &i, &j) == 2) {
+		    /* check if -r was used */
+		    if(!settings->range_arg) {
+			settings->range_neg_days = i;
+			settings->range_days = j;
+		    }
+		} else if(sscanf(s, "default_range %d", &i) == 1) {
+		    if(!settings->range_arg)
+				settings->range_days = i;
+		} else if(*s != '#' && *s != '\0') {
+	        /* ignore empty lines or comments */
+		    pal_output_error(_("ERROR: Invalid line (File: %s, Line text: %s)\n"), settings->conf_file, s);
+		}
 
     }
     fclose(file);
     if(settings->verbose)
-	g_printerr(_("Done reading data (%d events, %d files).\n\n"), eventcount, filecount);
+		g_printerr(_("Done reading data (%d events, %d files).\n\n"), eventcount, filecount);
     return ht;
 }

@@ -25,6 +25,7 @@
 #include "main.h"
 #include "colorize.h"
 
+
 static int use_colors = -1;  /* -2 = no colors, can't turn them on later if this is set;
 			        -1 = don't know;
 			         0 = no colors;
@@ -51,6 +52,7 @@ static void color_term(void)
 	!g_ascii_strncasecmp(term, "Eterm", 5) ||
 	!g_ascii_strncasecmp(term, "dtterm", 6) || /* Solaris */
  	!g_ascii_strncasecmp(term, "rxvt", 4) || /* rxvt & aterm */
+	!g_ascii_strncasecmp(term, "st-256color", 11) ||
 	!g_ascii_strncasecmp(term, "cygwin", 6))
 	use_colors = 1;
 
@@ -65,7 +67,7 @@ static void color_term(void)
 void set_colorize(const int in)
 {
     if(use_colors != -2)
-	use_colors = in;
+		use_colors = in;
 }
 
 static int get_curses_color(const int color)
@@ -85,7 +87,7 @@ static int get_curses_color(const int color)
 }
 
 
-void colorize_xterm_title(gchar *title)
+void colorize_xterm_title(char *title)
 {
     if(use_colors == -1)
 	color_term();
@@ -180,7 +182,7 @@ static const char *string_colors[] = { "black", "red", "green",
                                        "cyan", "white" };
 
 /* free returned string when done. */
-gchar* string_color_of(const int color)
+char* string_color_of(const int color)
 {
     if(color >=0 && color < 8)
 		return g_strdup(string_colors[color]);
@@ -190,7 +192,7 @@ gchar* string_color_of(const int color)
 
 
 /* returns -1 on failure to match */
-int int_color_of(gchar* string)
+int int_color_of(char* string)
 {
     int i;
     for(i=0; i<8; i++) {
@@ -199,3 +201,4 @@ int int_color_of(gchar* string)
     }
     return -1;
 }
+

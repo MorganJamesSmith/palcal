@@ -28,12 +28,13 @@
 #include "input.h"
 #include "edit.h"
 
-void pal_del_write_file(PalEvent* dead_event)
+void
+pal_del_write_file(PalEvent* dead_event)
 {
     FILE *file = NULL;
-    gchar* filename = g_strdup(dead_event->file_name);
+    char* filename = strdup(dead_event->file_name);
     FILE *out_file = NULL;
-    gchar *out_filename = NULL;
+    char *out_filename = NULL;
     PalEvent* event_head = NULL;
 
     g_strstrip(filename);
@@ -93,13 +94,14 @@ void pal_del_write_file(PalEvent* dead_event)
 		pal_output_error(_("ERROR: Couldn't find event to be deleted in %s"), filename);
 	}
 
-    g_free(filename);
+    free(filename);
 }
 
-static void pal_del_event( GDate *date, int eventnum )
+static void
+pal_del_event( struct tm *date, int eventnum )
 {
     PalEvent* dead_event = NULL;
-    GDate* event_date = NULL;
+    struct tm* event_date = NULL;
 
     clear();
     pal_output_fg(BRIGHT, GREEN, "* * * ");
@@ -111,9 +113,9 @@ static void pal_del_event( GDate *date, int eventnum )
 
     dead_event = pal_rl_get_event(&event_date, FALSE);
 
-    g_print("\n");
+    printf("\n");
     pal_output_fg(BRIGHT, GREEN, "> ");
-    g_print(_("You have selected to delete the following event:\n"));
+    printf("You have selected to delete the following event:\n");
     pal_output_event(dead_event, event_date, -1);
 
     if(pal_rl_get_y_n(_("Are you sure you want to delete this event? [y/n]: ")))

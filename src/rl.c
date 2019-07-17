@@ -43,7 +43,7 @@ char* pal_rl_no_match()
 
 void pal_rl_default_text_fn(void)
 {
-    gchar* locale_default_text = g_locale_from_utf8(pal_rl_default_text, -1,
+    char* locale_default_text = g_locale_from_utf8(pal_rl_default_text, -1,
 						    NULL, NULL, NULL);
     if(locale_default_text == NULL)
 	rl_insert_text(pal_rl_default_text); /* this shouldn't happen */
@@ -60,7 +60,7 @@ void pal_rl_default_text_fn(void)
 
 /* prompt for required input, including blank lines */
 /* caller is responsible for freeing the prompt and the read line */
-gchar* pal_rl_get_raw_line(const char* prompt, const int row, const int col)
+char* pal_rl_get_raw_line(const char* prompt, const int row, const int col)
 {
     char *line = NULL;
     char *locale_prompt = NULL;
@@ -95,7 +95,7 @@ gchar* pal_rl_get_raw_line(const char* prompt, const int row, const int col)
     /* try to convert to utf8 if it isn't ascii or utf8 already. */
     if(!g_utf8_validate(line, -1, NULL))
     {
-	gchar* utf8_string = g_locale_to_utf8(line, -1, NULL, NULL, NULL);
+	char* utf8_string = g_locale_to_utf8(line, -1, NULL, NULL, NULL);
 	if(utf8_string == NULL)
 	{
 	    pal_output_error(_("WARNING: Failed to convert your input into UTF-8.\n"));
@@ -114,9 +114,9 @@ gchar* pal_rl_get_raw_line(const char* prompt, const int row, const int col)
 }
 
 /* Calls pal_rl_get_raw_line, but ignores empty input */
-gchar* pal_rl_get_line(const char* prompt, const int row, const int col)
+char* pal_rl_get_line(const char* prompt, const int row, const int col)
 {
-    gchar *line = NULL;
+    char *line = NULL;
     do {
         if( line )
             g_free(line);
@@ -129,9 +129,9 @@ gchar* pal_rl_get_line(const char* prompt, const int row, const int col)
 
 
 
-gchar* pal_rl_get_line_default(const char* prompt, const int row, const int col, const char* default_text)
+char* pal_rl_get_line_default(const char* prompt, const int row, const int col, const char* default_text)
 {
-    gchar* desc = NULL;
+    char* desc = NULL;
 
 	if(default_text != NULL) {
     	pal_rl_default_text = strdup(default_text);
@@ -175,7 +175,8 @@ void pal_rl_completions_output(char **matches, int num_matches, int max_length )
 }
 
 
-void pal_rl_ncurses_hack(void)
+int
+pal_rl_ncurses_hack(void)
 {
     int half = (settings->term_cols - readline_x) / 2 - 3;
     int start, end;
@@ -210,11 +211,12 @@ void pal_rl_ncurses_hack(void)
     /* Place cursor, taking into account marker */
     move(readline_y, readline_x + rl_point - start + (start > 0) );
     refresh();
+	return 0; //return success
 }
 
 gboolean pal_rl_get_y_n(const char* prompt)
 {
-    gchar *s = NULL;
+    char *s = NULL;
 
     int y, x;
     getyx( stdscr, y, x );
@@ -242,10 +244,10 @@ gboolean pal_rl_get_y_n(const char* prompt)
 
 
 
-/* d gets filled in with GDate entered by the user to find the PalEvent. */
-PalEvent* pal_rl_get_event(GDate** d, gboolean allow_global)
+/* d gets filled in with struct tm entered by the user to find the PalEvent. */
+PalEvent* pal_rl_get_event(struct tm** d, gboolean allow_global)
 {
-    gchar* s = NULL;
+    char* s = NULL;
     PalEvent* event = NULL;
     *d = NULL;
 
@@ -298,13 +300,10 @@ PalEvent* pal_rl_get_event(GDate** d, gboolean allow_global)
 		    pal_output_wrap(_("This event is in a global calendar file.  You can change this event only by editing the global calendar file manually (root access might be required)."),2,2);
 		}
 	    }
-	}
-
-	else /* d == NULL */
-	{
-	    gchar* search_string = g_strdup(s);
+	} else { /* d == NULL */
+	    char* search_string = g_strdup(s);
 	    gint event_num = -1;
-	    GDate* date = g_date_new();
+	    struct tm* date = g_date_new();
 	    g_date_set_time_t(date,  time(NULL));
 
 	    if(pal_search_view(search_string, date, 365, TRUE) == 0)
@@ -340,7 +339,7 @@ PalEvent* pal_rl_get_event(GDate** d, gboolean allow_global)
 
 
 	if(*d != NULL) g_date_free(*d);
-	if(s != NULL) g_free(s);
+		if(s != NULL) g_free(s);
 
     } /* end while(1); */
 
@@ -354,10 +353,10 @@ PalEvent* pal_rl_get_event(GDate** d, gboolean allow_global)
 #if 0
 /* Returns the hashtable key for the day that the user inputs.  The
  * user can select a TODO event by entering TODO for the date.  */
-static gchar* pal_rl_get_date(int row, int col)
+static char* pal_rl_get_date(int row, int col)
 {
-    gchar* s = NULL;
-    GDate* d = NULL;
+    char* s = NULL;
+    struct tm* d = NULL;
 
     do
     {
@@ -370,7 +369,7 @@ static gchar* pal_rl_get_date(int row, int col)
 
 	if(d != NULL)
 	{
-	    gchar buf[1024];
+	    char buf[1024];
 
 	    g_print("\n");
 

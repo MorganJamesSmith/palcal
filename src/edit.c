@@ -31,7 +31,7 @@
 
 
 typedef struct _PalViewEvent {
-    gchar *prompt;
+    char *prompt;
     gboolean editable;
     gboolean changed;
 } PalViewEvent;
@@ -41,12 +41,12 @@ PalViewEvent *fieldlist;
 
 #define NUM_FIELDS 12
 
-static gint selectedField;
-static gchar align[] ="%15s ";
+static int selectedField;
+static char align[] ="%15s ";
 
-gchar* pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
+char* pal_edit_get_field_val(int i, PalEvent *event, struct tm *d)
 {
-    gchar *buf = NULL;
+    char *buf = NULL;
 
     switch(i)
     {
@@ -55,14 +55,14 @@ gchar* pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
 	case 1:
 	    return event->eventtype->get_descr( d );
 	case 2:
-	    buf = g_malloc(sizeof(gchar)*128);
+	    buf = g_malloc(sizeof(char)*128);
 	    snprintf(buf, 128, "%d", event->period_count);
 	    return buf;
 	case 3:
 	    if(event->start_date == NULL)
 		return g_strdup(_("None"));
 
-	    buf = g_malloc(sizeof(gchar)*128);
+	    buf = g_malloc(sizeof(char)*128);
 	    g_date_strftime(buf, 128,
 			    settings->date_fmt, event->start_date);
 	    return buf;
@@ -71,7 +71,7 @@ gchar* pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
 	    if(event->end_date == NULL)
 		return g_strdup(_("None"));
 
-	    buf = g_malloc(sizeof(gchar)*128);
+	    buf = g_malloc(sizeof(char)*128);
 	    g_date_strftime(buf, 128,
 			    settings->date_fmt, event->end_date);
 	    return buf;
@@ -79,7 +79,7 @@ gchar* pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
 	    if(event->start_time == NULL)
 		return g_strdup(_("None"));
 
-	    buf = g_malloc(sizeof(gchar)*128);
+	    buf = g_malloc(sizeof(char)*128);
 	    snprintf(buf, 128, "%02d:%02d",
 		     event->start_time->hour,
 		     event->start_time->min);
@@ -88,7 +88,7 @@ gchar* pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
 	    if(event->end_time == NULL)
 		return g_strdup(_("None"));
 
-	    buf = g_malloc(sizeof(gchar)*128);
+	    buf = g_malloc(sizeof(char)*128);
 	    snprintf(buf, 128, "%02d:%02d",
 		     event->end_time->hour,
 		     event->end_time->min);
@@ -100,7 +100,7 @@ gchar* pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
 	case 9:
 	    return g_strdup(event->file_name);
 	case 10:
-	    buf = g_malloc(sizeof(gchar)*128);
+	    buf = g_malloc(sizeof(char)*128);
 	    snprintf(buf, 128, "%c%c",
 		     event->start, event->end);
 	    return buf;
@@ -138,17 +138,17 @@ void pal_edit_init(void)
 }
 
 
-void pal_edit_refresh(PalEvent* event, GDate *d)
+void pal_edit_refresh(PalEvent* event, struct tm *d)
 {
     int i;
-    gchar *fieldval = NULL;
+    char *fieldval = NULL;
 
 
     move(0,0);
 
     for(i=0; i<NUM_FIELDS; i++)
     {
-	gchar *prompt = NULL;
+	char *prompt = NULL;
 	prompt = g_strconcat(fieldlist[i].prompt, ": ", NULL);
 	if(selectedField == i)
 	    pal_output_fg(BRIGHT, GREEN, align, prompt);
@@ -165,7 +165,7 @@ void pal_edit_refresh(PalEvent* event, GDate *d)
 
 
 
-void pal_edit_event(PalEvent* event, GDate *d)
+void pal_edit_event(PalEvent* event, struct tm *d)
 {
     PalEvent *newevent = pal_event_copy(event);
 
@@ -203,9 +203,9 @@ void pal_edit_event(PalEvent* event, GDate *d)
 	    case KEY_ENTER:
 	    case '\r':
 	    {
-		gchar *fieldval = pal_edit_get_field_val(selectedField, event, d);
-		gchar *prompt = g_strconcat(fieldlist[selectedField].prompt, ": ", NULL);
-		gchar align_prompt[128];
+		char *fieldval = pal_edit_get_field_val(selectedField, event, d);
+		char *prompt = g_strconcat(fieldlist[selectedField].prompt, ": ", NULL);
+		char align_prompt[128];
 
 		snprintf(align_prompt, 128, align, prompt);
 
