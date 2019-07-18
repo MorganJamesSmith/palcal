@@ -38,7 +38,8 @@
  * The PalEvent pointers should not be freed.
 */
 
-static GList* pal_search_get_results(const char* search, const struct tm* date, const int window)
+static GList*
+pal_search_get_results(const char* search, const struct tm* date, const int window)
 {
     regex_t preg;
     int i,j;
@@ -86,32 +87,32 @@ static GList* pal_search_get_results(const char* search, const struct tm* date, 
 
 /* returns the number of events found */
 int
-pal_search_view(const char* search_string, struct tm* date, const int window, const gboolean number_events)
+pal_search_view(const char* search_string, struct tm* date, const int window, const int number_events)
 {
     GList* hit_list = pal_search_get_results(search_string, date, window);
     GList* item = NULL;
     int hit_count = g_list_length(hit_list) / 2;
     int event_count = 1;
-    char start_date[128];
-    char end_date[128];
+    char start_date;
+    char end_date;
 
-    g_date_strftime(start_date, 128, settings->date_fmt, date);
+	start_date = *asctime(date);
     date->tm_mday += window-1;
 	mktime(date);
-    g_date_strftime(end_date, 128, settings->date_fmt, date);
-    g_date_subtract_days(date, window-1);
+	end_date = *asctime(date);
+    date->tm_mday -= window-1;
 
-    pal_output_attr(BRIGHT, _("[ Begin search results: %s ]\n[ From %s to %s inclusive ]\n\n"),
+    pal_output_attr(BRIGHT, "[ Begin search results: %s ]\n[ From %s to %s inclusive ]\n\n",
 		    search_string, start_date, end_date);
 
     item = g_list_first(hit_list);
 
     while(g_list_length(item) != 0) {
 		PalEvent* event_tmp = NULL;
-		GDate* date_tmp = NULL;
-		GDate* next_date = NULL;
+		struct tm* date_tmp = NULL;
+		struct tm* next_date = NULL;
 
-		date_tmp  = (GDate*)    (item->data);
+		date_tmp  = (struct tm*)    (item->data);
 		item = g_list_next(item);
 		event_tmp = (PalEvent*) (item->data);
 		item = g_list_next(item);
@@ -125,12 +126,12 @@ pal_search_view(const char* search_string, struct tm* date, const int window, co
 		    pal_output_event(event_tmp, date_tmp, -1);
 
 		if(g_list_length(item) != 0)
-		    next_date = (GDate*) item->data;
+		    next_date = (struct tm*) item->data;
 
 		while(g_list_length(item) != 0 && g_date_compare(next_date, date_tmp) == 0) {
-		    g_date_free(date_tmp);
+		    free(date_tmp);
 
-		    date_tmp  = (GDate*)    (item->data);
+		    date_tmp  = (struct tm*)    (item->data);
 		    item = g_list_next(item);
 		    event_tmp = (PalEvent*) (item->data);
 		    item = g_list_next(item);
@@ -141,10 +142,10 @@ pal_search_view(const char* search_string, struct tm* date, const int window, co
 				pal_output_event(event_tmp, date_tmp, -1);
 
 		    if(g_list_length(item) != 0)
-				next_date = (GDate*) item->data;
+				next_date = (struct tm*) item->data;
 		}
 
-		g_date_free(date_tmp);
+		free(date_tmp);
 
 		if(!settings->compact_list)
 		    g_print("\n");
@@ -156,7 +157,7 @@ pal_search_view(const char* search_string, struct tm* date, const int window, co
     if(settings->compact_list)
 		g_print("\n");
 
-    pal_output_attr(BRIGHT, _("[ End search results: %s ]"), search_string);
+    pal_output_attr(BRIGHT, "[ End search results: %s ]", search_string);
     pal_output_attr(BRIGHT, ngettext("[ %d event found ]\n", "[ %d events found ]\n",
 				     hit_count), hit_count);
 
@@ -164,11 +165,10 @@ pal_search_view(const char* search_string, struct tm* date, const int window, co
 }
 
 
-
 /* Returns the event 'event_number' from the search.  Stores the date
  * the event occurs on in store_date */
-PalEvent* pal_search_event_num(int event_number, GDate** store_date, const char* search_string,
-			       const GDate* date, const int window)
+PalEvent*
+pal_search_event_num(int event_number, struct tm** store_date, const char* search_string, const struct tm* date, const int window)
 {
     PalEvent* ret_val = NULL;
     GList* hit_list = pal_search_get_results(search_string, date, window);
@@ -178,23 +178,21 @@ PalEvent* pal_search_event_num(int event_number, GDate** store_date, const char*
     if(hit_list == NULL || event_number < 1 || event_number > num_events)
 		return NULL;
 
-    *store_date = (GDate*) g_list_nth_data(hit_list, (event_number-1)*2);
+    *store_date = (struct tm*) g_list_nth_data(hit_list, (event_number-1)*2);
     ret_val = (PalEvent*) g_list_nth_data(hit_list, (event_number-1)*2+1);
 
     tmp = g_list_first(hit_list);
     while(tmp != NULL) {
 
-		if(*store_date != (GDate*) (tmp->data))
-		    g_date_free((GDate*) (tmp->data));
+		if(*store_date != (struct tm*) (tmp->data))
+		    free((struct tm*) (tmp->data));
 
 		tmp = g_list_next(tmp);
 		tmp = g_list_next(tmp);
     }
-
     g_list_free(hit_list);
 
     return ret_val;
-
 }
 
 
@@ -212,34 +210,33 @@ gboolean pal_search_isearch_event( struct tm **date, int *selected, char *string
     for(i=0; i<366; i++) {
 		GList* events = get_events(*date);
 
-		if(events != NULL)
-		{
+		if(events != NULL) {
 		    GList* item = g_list_first(events);
-		    for(j=0; j<g_list_length(events) && !found; j++) {
+		    for(j=0; j < g_list_length(events) && !found; j++) {
 		        char *string = g_strconcat( ((PalEvent*) (item->data))->type, ": ", ((PalEvent*) (item->data))->text, NULL );
 		        char *string2 = g_utf8_casefold(string,-1);
 
 		        if( strstr( string2, searchstring ) ) {
-    	                *selected = j;
-    	                found = TRUE;
+					*selected = j;
+    	            found = TRUE;
 				}
-
-				g_free(string);
-				g_free(string2);
+				free(string);
+				free(string2);
 				item = g_list_next(item);
 		    }
-
 		    g_list_free( events );
 		}
-
-		if( found )
+		if(found)
 		    break;
 
-		if(forward)
-		    g_date_add_days(*date, 1);
-		else
-		    g_date_subtract_days(*date, 1);
+		if(forward) {
+		    (*date)->tm_mday += 1;
+			mktime(*date);
+		} else {
+		    (*date)->tm_mday -= 1;
+			mktime(*date);
+		}
     }
-    g_free(searchstring);
+    free(searchstring);
     return found;
 }

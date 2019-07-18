@@ -47,6 +47,7 @@ static struct tm* today = NULL;
 /* Currently active window for g_print to output to */
 WINDOW *pal_curwin = NULL;
 
+void pal_manage(void);
 
 /* Redisplays the main calendar + event list screen.  This function
  * does not clear the first two lines of the screen before
@@ -138,29 +139,33 @@ static void pal_manage_refresh_at(void)
 		g_list_free(events);
 
 		wmove(pal_curwin, 0, 0);
-		pal_output_fg(BRIGHT, GREEN, _("Event Type: ") );
+		pal_output_fg(BRIGHT, GREEN, "Event Type: " );
 		ptr = curevent->eventtype->get_descr( selected_day );
 		pal_output_wrap( ptr, 12, 5 );
-		g_free(ptr);
+		free(ptr);
 
-		pal_output_fg(BRIGHT, GREEN, _("Skip count: ") );
+		pal_output_fg(BRIGHT, GREEN, "Skip count: " );
 		g_print( "%d\n", curevent->period_count );
 
-		pal_output_fg(BRIGHT, GREEN, _("Start date: ") );
-		if( curevent->start_date )
+		pal_output_fg(BRIGHT, GREEN, "Start date: " );
+		if( curevent->start_date ) {
 			date_text = asctime(curevent->start_date);
-		else
+		} else {
+			date_text = (char[5]){0};
 			sprintf( date_text, "None" );
+		}
 		g_print( "%s\n", date_text );
 
-		pal_output_fg(BRIGHT, GREEN, _("End date:	") );
-		if( curevent->end_date )
+		pal_output_fg(BRIGHT, GREEN, "End date:	" );
+		if( curevent->end_date ) {
 			date_text = asctime(curevent->end_date);
-		else
+		} else {
+			date_text = (char[5]){0};
 			sprintf( date_text, "None" );
+		}
 		g_print( "%s\n", date_text );
 
-		pal_output_fg(BRIGHT, GREEN, _("Key:		") );
+		pal_output_fg(BRIGHT, GREEN, "Key:		" );
 		g_print( "%s\n", curevent->key );
 
 		delwin( pal_curwin );
@@ -257,15 +262,15 @@ pal_manage_isearch_refresh(void)
 	char *prettydate = asctime(selected_day);
 
 	pal_output_fg(BRIGHT, GREEN,
-		  _("%s Isearch starting from %s"),
-		  isearch_direction ? _("Forward") : _("Backward"), prettydate);
+		  "%s Isearch starting from %s",
+		  isearch_direction ? "Forward" : "Backward", prettydate);
 	g_print(" ");
 
 
 	/* Only search if there is text to search for */
 	if( *rl_line_buffer && !pal_search_isearch_event( &searchdate, &searchselect,
 							  rl_line_buffer, isearch_direction ) ) {
-		pal_output_fg(BRIGHT, RED, _("No matches found!"));
+		pal_output_fg(BRIGHT, RED, "No matches found!");
 		rl_ding();
 	} else {
 		free(selected_day);
@@ -300,7 +305,7 @@ static void pal_manage_isearch(gboolean forward)
 
 	/* Temporarily set the refresh function to update while typing */
 	rl_redisplay_function = pal_manage_isearch_refresh;
-	searchstring = pal_rl_get_raw_line(_("Isearch: "), 1, 0);
+	searchstring = pal_rl_get_raw_line("Isearch: ", 1, 0);
 	rl_redisplay_function = pal_rl_ncurses_hack;
 
 	/* If the user typed something and we can find event, set selected event */
@@ -374,7 +379,7 @@ void pal_manage(void)
 	selected_day = localtime(&currenttime);
 	today = localtime(&currenttime);
 
-	colorize_xterm_title(_("pal calendar"));
+	colorize_xterm_title("pal calendar");
 
 	/* set up readline */
 	rl_initialize();	 /* Initialise readline so we can fiddle stuff */
@@ -423,7 +428,7 @@ void pal_manage(void)
 	move(0, 0);
 	pal_output_fg(BRIGHT, GREEN, "pal %s", PAL_VERSION);
 	g_print(" - ");
-	g_print(_("Press 'h' for help, 'q' to quit."));
+	g_print("Press 'h' for help, 'q' to quit.");
 
 	while(1) {
 		int c;
@@ -493,7 +498,7 @@ void pal_manage(void)
 			case 'g': /* goto date */
 			case 'G':
 				{
-				char* str = pal_rl_get_raw_line(_("Goto date: "), 0, 0);
+				char* str = pal_rl_get_raw_line("Goto date: ", 0, 0);
 
 				if(strlen(str) > 0) {
 					struct tm* new_date = get_query_date(str, FALSE);
@@ -529,16 +534,16 @@ void pal_manage(void)
 					if(e->global) {
 						move(0, 0);
 						clrtoeol();
-						pal_output_fg(BRIGHT, RED, _("Can't edit global event!"));
+						pal_output_fg(BRIGHT, RED, "Can't edit global event!");
 					} else {
 //						char* new_text = pal_edit_desc(e->text);
-						char* new_text = pal_rl_get_line_default(_("New description: "), 0, 0, e->text);
+						char* new_text = pal_rl_get_line_default("New description: ", 0, 0, e->text);
 
 						pal_del_write_file(e);
 						pal_add_write_file(e->file_name, e->date_string, new_text);
 						/* need to check for error here! */
 
-						g_free(new_text);
+						free(new_text);
 						pal_main_reload();
 
 						pal_manage_refresh();
@@ -547,7 +552,7 @@ void pal_manage(void)
 			} else {
 				move(0,0);
 				clrtoeol();
-				pal_output_fg(BRIGHT, RED, _("No event selected."));
+				pal_output_fg(BRIGHT, RED, "No event selected.");
 			}
 			break;
 
@@ -577,10 +582,10 @@ void pal_manage(void)
 				{
 				move(0, 0);
 				if(e->global)
-					pal_output_fg(BRIGHT, RED, _("Can't delete global event!"));
+					pal_output_fg(BRIGHT, RED, "Can't delete global event!");
 				else
 				{
-								if(pal_rl_get_y_n(_("Are you sure you want to delete this event? [y/n]: ")))
+								if(pal_rl_get_y_n("Are you sure you want to delete this event? [y/n]: "))
 					{
 					selected_event = -1;
 									pal_del_write_file(e);
@@ -612,54 +617,54 @@ void pal_manage(void)
 			move(0,0);
 			pal_output_fg(BRIGHT, GREEN, "pal %s\n\n", PAL_VERSION);
 
-			pal_output_fg(BRIGHT, GREEN, _("LeftArrow"));
-			g_print(" - %s\n", _("Back one day"));
+			pal_output_fg(BRIGHT, GREEN, "LeftArrow");
+			g_print(" - %s\n", "Back one day");
 
-			pal_output_fg(BRIGHT, GREEN, _("RightArrow"));
-			g_print(" - %s\n", _("Forward one day"));
+			pal_output_fg(BRIGHT, GREEN, "RightArrow");
+			g_print(" - %s\n", "Forward one day");
 
-			pal_output_fg(BRIGHT, GREEN, _("UpArrow"));
-			g_print(" - %s\n", _("Back one week or event (if in event selection mode)"));
+			pal_output_fg(BRIGHT, GREEN, "UpArrow");
+			g_print(" - %s\n", "Back one week or event (if in event selection mode)");
 
-			pal_output_fg(BRIGHT, GREEN, _("DownArrow"));
-			g_print(" - %s\n", _("Forward one week or event (if in event selection mode)"));
+			pal_output_fg(BRIGHT, GREEN, "DownArrow");
+			g_print(" - %s\n", "Forward one week or event (if in event selection mode)");
 
 			pal_output_fg(BRIGHT, GREEN, "h");
-			g_print(" - %s\n", _("This help screen."));
+			g_print(" - %s\n", "This help screen.");
 
 			pal_output_fg(BRIGHT, GREEN, "q");
-			g_print(" - %s\n", _("Quit"));
+			g_print(" - %s\n", "Quit");
 
-			pal_output_fg(BRIGHT, GREEN, _("Tab, Enter"));
-			g_print(" - %s\n", _("Toggle event selection"));
+			pal_output_fg(BRIGHT, GREEN, "Tab, Enter");
+			g_print(" - %s\n", "Toggle event selection");
 
 			pal_output_fg(BRIGHT, GREEN, "g");
-			g_print(" - %s\n", _("Jump to a specific date."));
+			g_print(" - %s\n", "Jump to a specific date.");
 
 			pal_output_fg(BRIGHT, GREEN, "t");
-			g_print(" - %s\n", _("Jump to today."));
+			g_print(" - %s\n", "Jump to today.");
 
 			pal_output_fg(BRIGHT, GREEN, "e");
-			g_print(" - %s\n", _("Edit description of the selected event."));
+			g_print(" - %s\n", "Edit description of the selected event.");
 
 			pal_output_fg(BRIGHT, GREEN, "a");
-			g_print(" - %s\n", _("Add an event to the selected date."));
+			g_print(" - %s\n", "Add an event to the selected date.");
 
 			pal_output_fg(BRIGHT, GREEN, "/, ?");
-			g_print(" - %s\n", _("Forward/reverse i-search"));
+			g_print(" - %s\n", "Forward/reverse i-search");
 
-			pal_output_fg(BRIGHT, GREEN, _("Delete"));
-			g_print(" - %s\n", _("Delete selected event."));
+			pal_output_fg(BRIGHT, GREEN, "Delete");
+			g_print(" - %s\n", "Delete selected event.");
 
 			g_print("\n");
 
 			pal_output_fg(BRIGHT, RED, "UNIMPLEMENTED:\n");
-			g_print("d - %s\n", _("Edit date for selected event."));
-			g_print("s - %s\n", _("Search for event."));
-			g_print("r - %s\n", _("Remind me about an event."));
+			g_print("d - %s\n", "Edit date for selected event.");
+			g_print("s - %s\n", "Search for event.");
+			g_print("r - %s\n", "Remind me about an event.");
 
 			g_print("\n");
-			g_print(_("Press any key to exit help."));
+			g_print("Press any key to exit help.");
 			g_print("\n");
 
 			do {

@@ -23,12 +23,7 @@
 
 #include <glib.h>
 #include <stdio.h>
-#include <stdlib.h>
 
-#include <libintl.h>
-#define _(String) gettext (String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 struct tm* get_query_date(char* date_string, gboolean show_error);
 void pal_main_reload(void);

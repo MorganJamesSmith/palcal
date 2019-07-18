@@ -22,6 +22,7 @@
 #include <time.h>
 #include <string.h>
 #include <curses.h>
+#include <assert.h>
 
 /* for vsnprintf */
 #include <stdarg.h>
@@ -47,7 +48,7 @@
 //    else
 //		fputs(outstr, stdout);
 //
-//    g_free(outstr);
+//    free(outstr);
 //}
 
 
@@ -116,11 +117,13 @@ pal_output_text_week(struct tm* date, int force_month_label, const struct tm* to
 		mktime(date); //update date object
 		date->tm_mday += (7 - date->tm_wday) % 7;
 		mktime(date); //update date object
+		assert(date->tm_wday == 0);
 	} else {
 		/* go to last day in week (sat == 6) */
 		mktime(date); //update date object
 		date->tm_mday += 6 - date->tm_wday;
 		mktime(date); //update date object
+		assert(date->tm_wday == 6);
 	}
 
 
@@ -134,6 +137,7 @@ pal_output_text_week(struct tm* date, int force_month_label, const struct tm* to
 
     date->tm_mday += 1;
 	mktime(date);
+	assert(settings->week_start_monday ? date->tm_wday == 1 : date->tm_wday == 0);
     /* date is now at beginning of week */
 
     if(force_month_label) {
@@ -241,9 +245,8 @@ pal_output_text_week(struct tm* date, int force_month_label, const struct tm* to
 		}
 
 
-		if(difftime(mktime(date),mktime(today))/3600 == 0) { /* make today bright */
+		if(difftime(mktime(date),mktime(today))/(3600*24) == 0) { /* make today bright */
 		    pal_output_attr(BRIGHT, "%02d", date->tm_mday);
-			printf("It today\n");
 		} else {
 		    printf("%02d", date->tm_mday);
 		}
@@ -271,6 +274,7 @@ pal_output_text_week(struct tm* date, int force_month_label, const struct tm* to
 		mktime(date);
 		g_list_free(events);
     }
+	assert(settings->week_start_monday ? date->tm_wday == 1 : date->tm_wday == 0);
 
 }
 
@@ -286,11 +290,11 @@ pal_output_week(struct tm* date, int force_month_label, const struct tm* today)
 		pal_output_fg(DIM,YELLOW,"%s","|");
 
     	   /* skip ahead to next column */
-		date->tm_mday -= 6 + settings->cal_lines*7;
+		date->tm_mday += settings->cal_lines*7;
 		pal_output_text_week(date, force_month_label, today);
 
 		/* skip back to where we were */
-		date->tm_mday -= settings->cal_lines*7;
+		date->tm_mday -= settings->cal_lines*7 + 7;
 
     }
 
@@ -513,7 +517,7 @@ pal_output_event(const PalEvent* event, const struct tm* date, const int selecte
 		else {
 	    	char* s = g_strconcat(event->type, ": ", event_text, NULL);
 	    	numlines += pal_output_wrap(s, indent, indent);
-	    	g_free(s);
+	    	free(s);
 		}
     }
     free(event_text);
@@ -536,15 +540,15 @@ void pal_output_date_line(const struct tm* date)
 
     diff = difftime(mktime(date),mktime(today))/(24*3600);
     if(diff == 0)
-		pal_output_fg(BRIGHT, RED, "%s", _("Today"));
+		pal_output_fg(BRIGHT, RED, "%s", "Today");
     else if(diff == 1)
-		pal_output_fg(BRIGHT, YELLOW, "%s", _("Tomorrow"));
+		pal_output_fg(BRIGHT, YELLOW, "%s", "Tomorrow");
     else if(diff == -1)
-		g_print("%s", _("Yesterday"));
+		g_print("%s", "Yesterday");
     else if(diff > 1)
-		g_print(_("%d days away"), diff);
+		g_print("%d days away", diff);
     else if(diff < -1)
-		g_print(_("%d days ago"), -1*diff);
+		g_print("%d days ago", -1*diff);
 
     g_print("\n");
 
@@ -584,11 +588,11 @@ pal_output_date(struct tm* date, int show_empty_days, int selected_event)
 		    if(settings->compact_list) {
 				char *pretty_date = asctime(date);
 				pal_output_attr(BRIGHT, "  %s ", pretty_date);
-				g_print("%s\n", _("No events."));
+				g_print("%s\n", "No events.");
 
 				numlines++;
 		    	} else {
-				g_print("%s\n", _("No events."));
+				g_print("%s\n", "No events.");
 				numlines++;
 		    }
 		}

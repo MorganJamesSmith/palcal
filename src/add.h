@@ -22,7 +22,7 @@
  */
 
 void pal_add_event(struct tm*);
-gchar* pal_add_get_date_recur(void);
+char* pal_add_get_date_recur(void);
 void pal_add_write_file(char* filename, char* key, char* desc);
 #endif
 

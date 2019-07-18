@@ -157,7 +157,7 @@ void pal_input_skip_comments(FILE* file, FILE* out_file)
 	if(out_file != NULL && (*s == '#' || *s=='\0'))
 	    fputs(orig_string, out_file);
 
-	g_free(orig_string);
+	free(orig_string);
 
     } while(*s == '#' || *s == '\0');
 
@@ -178,7 +178,7 @@ PalEvent* pal_input_read_head(FILE* file, FILE* out_file, char* filename)
 
     if(fgets(s, 2048, file) == NULL)
     {
-	pal_output_error(_("WARNING: File is missing 2 character marker and event type: %s\n"), filename);
+	pal_output_error("WARNING: File is missing 2 character marker and event type: %s\n", filename);
 	return NULL;
     }
 
@@ -199,17 +199,17 @@ PalEvent* pal_input_read_head(FILE* file, FILE* out_file, char* filename)
     if(c != ' ' && c != '\t') /* there should be white space here */
     {
 	char* file = g_path_get_basename(filename);
-	pal_output_error(_("ERROR: First line is improperly formatted.\n"));
-	pal_output_error(  "       %s: %s\n", _("FILE"), file);
-	g_free(file);
-	pal_output_error(  "       %s: %s\n", _("LINE"), s);
+	pal_output_error("ERROR: First line is improperly formatted.\n");
+	pal_output_error(  "       %s: %s\n", "FILE", file);
+	free(file);
+	pal_output_error(  "       %s: %s\n", "LINE", s);
 	pal_event_free(event_head);
 	return NULL;
     }
 
     /* check if text if UTF-8 */
     if(!g_utf8_validate(event_head->type, -1, NULL))
-	pal_output_error(_("ERROR: First line is not ASCII or UTF-8 in %s.\n"),
+	pal_output_error("ERROR: First line is not ASCII or UTF-8 in %s.\n",
 			 filename);
 
     g_strstrip(event_head->type);
@@ -255,7 +255,7 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
     g_strstrip(date_string);
     tmp = g_ascii_strup(date_string, -1);
     sscanf(tmp, "%s", date_string);
-    g_free(tmp);
+    free(tmp);
 
     g_strstrip(text_string);
 
@@ -264,16 +264,16 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
     if(!parse_event( pal_event, date_string ))
     {
 	char* file = g_path_get_basename(filename);
-	pal_output_error(_("ERROR: Invalid date string.\n"));
-	pal_output_error(  "       %s: %s\n", _("FILE"), file);
-	pal_output_error(  "       %s: %s\n", _("LINE"), s);
-	g_free(file);
+	pal_output_error("ERROR: Invalid date string.\n");
+	pal_output_error(  "       %s: %s\n", "FILE", file);
+	pal_output_error(  "       %s: %s\n", "LINE", s);
+	free(file);
 
 	/* copy bad line */
 	if(out_file != NULL)
 	    fputs(s, out_file);
 
-	g_free(text_string);
+	free(text_string);
 	pal_event_free( pal_event );
 	return NULL;
     }
@@ -282,23 +282,23 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
     if(strlen(text_string) == 0)
     {
 	char* file = g_path_get_basename(filename);
-	pal_output_error(_("ERROR: Event description missing.\n"));
-	pal_output_error(  "       %s: %s\n", _("FILE"), file);
-	pal_output_error(  "       %s: %s\n", _("LINE"), s);
-	g_free(file);
+	pal_output_error("ERROR: Event description missing.\n");
+	pal_output_error(  "       %s: %s\n", "FILE", file);
+	pal_output_error(  "       %s: %s\n", "LINE", s);
+	free(file);
 
 	/* copy bad line */
 	if(out_file != NULL)
 	    fputs(s, out_file);
 
-	g_free(text_string);
+	free(text_string);
 	pal_event_free( pal_event );
 	return NULL;
     }
 
     /* check if text if UTF-8 */
     if(!g_utf8_validate(text_string, -1, NULL))
-	pal_output_error(_("ERROR: Event text '%s' is not ASCII or UTF-8 in file %s.\n"),
+	pal_output_error("ERROR: Event text '%s' is not ASCII or UTF-8 in file %s.\n",
 			 text_string, filename);
 
     /* Sanity checks */
@@ -309,9 +309,9 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
         g_date_set_time_t(pal_event->start_date, time(NULL));
         pal_event->end_date = g_date_new_dmy(1,1,3000);
 
-        pal_output_error(_("ERROR: Event with count has no start date\n"));
-	pal_output_error(  "       %s: %s\n", _("FILE"), file);
-	pal_output_error(  "       %s: %s\n", _("LINE"), s);
+        pal_output_error("ERROR: Event with count has no start date\n");
+	pal_output_error(  "       %s: %s\n", "FILE", file);
+	pal_output_error(  "       %s: %s\n", "LINE", s);
     }
     pal_event->start_time = pal_input_get_time(text_string, 1);
     pal_event->end_time   = pal_input_get_time(text_string, 2);
@@ -332,10 +332,10 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
 	if(should_be_expunged(pal_event))
 	{
 	    if(settings->verbose)
-		g_printerr("%s: %s", _("Expunged"), s);
+		g_printerr("%s: %s", "Expunged", s);
 
 	    pal_event_free(pal_event);
-	    g_free(text_string);
+	    free(text_string);
 	    return NULL;
 	}
 
@@ -345,7 +345,7 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
 		strcmp(pal_event->text,        del_event->text)        == 0)
 	{
 	    pal_event_free(pal_event);
-	    g_free(text_string);
+	    free(text_string);
 	    return del_event;
 	}
 	else /* otherwise, print to out_file */
@@ -353,7 +353,7 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
     }
 
 
-    g_free(text_string);
+    free(text_string);
     return pal_event;
 }
 
@@ -387,8 +387,8 @@ static int load_file(char* filename, FILE* file, int filecount, gboolean hide, i
 	out_file = fopen(out_filename, "w");
 	if(out_file == NULL)
 	{
-	    pal_output_error(_("ERROR: Can't write file: %s\n"), out_filename);
-	    pal_output_error(  "       %s\n", _("File will not be expunged: %s"), filename);
+	    pal_output_error("ERROR: Can't write file: %s\n", out_filename);
+	    pal_output_error(  "       %s\n", "File will not be expunged: %s", filename);
 	}
     }
 
@@ -438,10 +438,10 @@ static int load_file(char* filename, FILE* file, int filecount, gboolean hide, i
     {
 	fclose(out_file);
 	if(rename(out_filename, filename) != 0)
-	    pal_output_error(_("ERROR: Can't rename %s to %s\n"), out_filename, filename);
+	    pal_output_error("ERROR: Can't rename %s to %s\n", out_filename, filename);
     }
 
-    g_free( out_filename );
+    free( out_filename );
     pal_event_free(event_head);
     return eventcount;
 }
@@ -458,7 +458,7 @@ static gboolean get_file_to_load(char* file, char* pal_file, gboolean show_error
 	if(! g_file_test(file, G_FILE_TEST_EXISTS) || g_file_test(file, G_FILE_TEST_IS_DIR))
 	{
 	    if(show_error)
-		pal_output_error(_("ERROR: File doesn't exist: %s\n"), file);
+		pal_output_error("ERROR: File doesn't exist: %s\n", file);
 	    return FALSE;
 	}
 	else
@@ -482,17 +482,17 @@ static gboolean get_file_to_load(char* file, char* pal_file, gboolean show_error
 	    sprintf(other_file, "%s/%s", dirname, file);
 	    if(show_error)
 	    {
-		pal_output_error(_("ERROR: Can't find file.  I tried %s and %s.\n"),
+		pal_output_error("ERROR: Can't find file.  I tried %s and %s.\n",
 				 other_file, pal_file);
 		exit(1); /* if we don't exit, this error gets buried
 			  * when -m is used. */
 	    }
 
-	    g_free(dirname);
+	    free(dirname);
 	    return FALSE;
 	}
 
-	g_free(dirname);
+	free(dirname);
     }
 
     return TRUE;
@@ -508,10 +508,10 @@ static FILE* get_file_handle(char* filename, gboolean show_error)
     FILE* file = fopen(filename, "r");
 
     if(settings->verbose)
-	g_printerr(_("Reading: %s\n"), filename);
+	g_printerr("Reading: %s\n", filename);
 
     if(file == NULL && show_error)
-	pal_output_error(_("ERROR: Can't read file: %s\n"), filename);
+	pal_output_error("ERROR: Can't read file: %s\n", filename);
 
     return file;
 }
@@ -524,20 +524,20 @@ load_files()
     char s[2048];
     char text[2048];
     FILE* file = NULL;
-    guint filecount=0, eventcount=0;
+    unsigned int filecount=0, eventcount=0;
 
     ht = g_hash_table_new(g_str_hash,g_str_equal);
 
     if(settings->verbose) {
 		if(settings->expunge >= 0)
-	    	g_printerr(_("Looking for data to expunge.\n"));
+	    	g_printerr("Looking for data to expunge.\n");
     }
 
     file = get_file_handle(settings->conf_file, FALSE);
 
     if(file == NULL) {
 		if(settings->specified_conf_file) {
-		    pal_output_error(_("ERROR: Can't open file: %s\n"), settings->conf_file);
+		    pal_output_error("ERROR: Can't open file: %s\n", settings->conf_file);
 		    return ht;
 		} else { /* didn't specify conf file, and couldn't find conf file: create a default one */
 		    FILE* out_file;
@@ -548,14 +548,14 @@ load_files()
 		    out_dirname = g_strconcat(g_get_home_dir(), "/.pal", NULL);
 		    out_path    = g_strconcat(out_dirname, "/pal.conf", NULL);
 
-		    pal_output_error(_("NOTE: Creating %s\n"), out_path);
-		    pal_output_error(_("NOTE: Edit ~/.pal/pal.conf to change how and if certain events are displayed.\n"),
+		    pal_output_error("NOTE: Creating %s\n", out_path);
+		    pal_output_error("NOTE: Edit ~/.pal/pal.conf to change how and if certain events are displayed.\n",
 				     out_path);
 
 		    /* create directory if it doesn't exist */
 		    if(!g_file_test(out_dirname, G_FILE_TEST_IS_DIR)) {
 				if(mkdir(out_dirname, 0755) != 0) {
-			    	pal_output_error(_("ERROR: Can't create directory: %s\n"), out_dirname);
+			    	pal_output_error("ERROR: Can't create directory: %s\n", out_dirname);
 			    	return ht;
 				}
 		    }
@@ -570,15 +570,15 @@ load_files()
 
 
 		    if(file == NULL) {
-				pal_output_error(_("ERROR: Can't open file: /etc/pal.conf\n"));
-				pal_output_error(_("ERROR: Can't open file: " PREFIX "/share/pal/pal.conf\n"));
-				pal_output_error(_("ERROR: This indicates an improper installation.\n"));
+				pal_output_error("ERROR: Can't open file: /etc/pal.conf\n");
+				pal_output_error("ERROR: Can't open file: " PREFIX "/share/pal/pal.conf\n");
+				pal_output_error("ERROR: This indicates an improper installation.\n");
 				return ht;
 		    }
 
 		    out_file = fopen(out_path, "w");
 		    if(out_file == NULL) {
-				pal_output_error(_("ERROR: Can't create/write file: %s\n"), out_file);
+				pal_output_error("ERROR: Can't create/write file: %s\n", out_file);
 				return ht;
 		    }
 
@@ -645,9 +645,9 @@ load_files()
 					    int_color = int_color_of(color);
 
 					if(int_color == -1) {
-					    pal_output_error(_("ERROR: Invalid color '%s' in file %s."),
+					    pal_output_error("ERROR: Invalid color '%s' in file %s.",
 							     color, settings->conf_file);
-					    pal_output_error("\n       %s %s\n", _("Valid colors:"), "black, red, green, yellow, blue, magenta, cyan, white");
+					    pal_output_error("\n       %s %s\n", "Valid colors:", "black, red, green, yellow, blue, magenta, cyan, white");
 					}
 			    }
 
@@ -664,7 +664,7 @@ load_files()
 				}
 			}
 		} else if(sscanf(s, "date_fmt %s",text) == 1) {
-		    g_free(settings->date_fmt);
+		    free(settings->date_fmt);
 		    settings->date_fmt = g_strdup(g_strstrip(&s[9]));
 		} else if(strcmp(s, "week_start_monday") == 0)
 		    settings->week_start_monday = TRUE;
@@ -681,14 +681,14 @@ load_files()
 		else if(strcmp(s, "compact_list") == 0)
 		    settings->compact_list = TRUE;
 		else if(sscanf(s, "compact_date_fmt %s",text) == 1) {
-		    g_free(settings->compact_date_fmt);
+		    free(settings->compact_date_fmt);
 		    settings->compact_date_fmt = g_strdup(g_strstrip(&s[17]));
 		} else if(sscanf(s, "event_color %s",text) == 1) {
 		    int ec = int_color_of(text);
 		    if(ec == -1) {
-			    pal_output_error("%s\n", _("ERROR: Invalid color '%s' in file %s."),
+			    pal_output_error("%s\n", "ERROR: Invalid color '%s' in file %s.",
 					     color, settings->conf_file);
-			    pal_output_error("       %s %s\n", _("Valid colors:"), "black, red, green, yellow, blue, magenta, cyan, white");
+			    pal_output_error("       %s %s\n", "Valid colors:", "black, red, green, yellow, blue, magenta, cyan, white");
 		    } else
 				settings->event_color = ec;
 		}
@@ -703,12 +703,12 @@ load_files()
 				settings->range_days = i;
 		} else if(*s != '#' && *s != '\0') {
 	        /* ignore empty lines or comments */
-		    pal_output_error(_("ERROR: Invalid line (File: %s, Line text: %s)\n"), settings->conf_file, s);
+		    pal_output_error("ERROR: Invalid line (File: %s, Line text: %s)\n", settings->conf_file, s);
 		}
 
     }
     fclose(file);
     if(settings->verbose)
-		g_printerr(_("Done reading data (%d events, %d files).\n\n"), eventcount, filecount);
+		g_printerr("Done reading data (%d events, %d files).\n\n", eventcount, filecount);
     return ht;
 }

@@ -25,16 +25,16 @@
 
 #include "colorize.h"
 
-void pal_output_handler( const gchar *instr );
+void pal_output_handler( const char *instr );
 
-void pal_output_attr(gint attr, gchar *formatString, ...);
-void pal_output_fg(gint attr, gint color, const gchar *formatString,...);
+void pal_output_attr(int attr, char *formatString, ...);
+void pal_output_fg(int attr, int color, const char *formatString,...);
 void pal_output_error(char *formatString, ... );
 
-void pal_output_cal(gint num_weeks, struct tm* today);
-int pal_output_date(struct tm* date, gboolean show_empty_days, gint select_event);
+void pal_output_cal(int num_weeks, struct tm* today);
+int pal_output_date(struct tm* date, gboolean show_empty_days, int select_event);
 void pal_output_date_line(struct tm* date);
 int pal_output_event(PalEvent* event, struct tm* date, gboolean selected);
-int pal_output_wrap(const gchar* string, gint chars_used, gint indent);
-PalEvent* pal_output_event_num(const struct tm* date, gint event_number);
+int pal_output_wrap(const char* string, int chars_used, int indent);
+PalEvent* pal_output_event_num(const struct tm* date, int event_number);
 #endif

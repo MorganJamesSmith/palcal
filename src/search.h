@@ -21,7 +21,7 @@
  *
  */
 
-PalEvent* pal_search_event_num(int event_number, GDate** store_date, const char* search_string, const GDate* date, const int window);
+PalEvent* pal_search_event_num(int event_number, struct tm** store_date, const char* search_string, const struct tm* date, const int window);
 int pal_search_view(const char* search_string, struct tm* date, const int window, const gboolean number_events);
 gboolean pal_search_isearch_event( struct tm **date, int *selected, char *string, gboolean forward);
 

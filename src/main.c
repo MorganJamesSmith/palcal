@@ -26,6 +26,7 @@
 #include <sys/types.h> /* FreeBSD, regex.h needs this */
 #include <regex.h>	   /* regular expressions */
 #include <glib.h>
+#include <assert.h>
 
 #include <ncurses.h>
 
@@ -57,7 +58,7 @@ view_range(struct tm* starting_date, int window)
 	}
 
 	for(int i = 0; i < window; i++) {
-		pal_output_date(starting_date,FALSE,-1);
+		pal_output_date(starting_date,0,-1);
 
 		if(settings->reverse_order) {
 			starting_date->tm_mday -= 1;
@@ -89,26 +90,26 @@ get_query_date(char* in_string, gboolean show_error)
 	to_show = localtime(&currenttime);
 
 	/* these could be better... */
-	if(strncmp(date_string, _("tomorrow"), strlen(_("tomorrow"))) == 0) {
+	if(strncmp(date_string, "tomorrow", strlen("tomorrow")) == 0) {
 		to_show->tm_mday += 1;
 		free(date_string);
 		return to_show;
 	}
 
-	if(strncmp(date_string, _("yesterday"), strlen(_("yesterday"))) == 0) {
+	if(strncmp(date_string, "yesterday", strlen("yesterday")) == 0) {
 		to_show->tm_mday -= 1;
 		mktime(to_show);
 		free(date_string);
 		return to_show;
 	}
 
-	if(strncmp(date_string, _("today"), strlen(_("today"))) == 0) {
+	if(strncmp(date_string, "today", strlen("today")) == 0) {
 		free(date_string);
 		return to_show;
 	}
 
-	if(strncmp(date_string, _("mo"), strlen(_("mo"))) == 0 ||
-	   strncmp(date_string, _("next mo"), strlen(_("next mo"))) == 0) {
+	if(strncmp(date_string, "mo", strlen("mo")) == 0 ||
+	   strncmp(date_string, "next mo", strlen("next mo")) == 0) {
 		if(to_show->tm_wday <= 1)
 			to_show->tm_mday += 1 - to_show->tm_wday;
 		else
@@ -118,8 +119,8 @@ get_query_date(char* in_string, gboolean show_error)
 		return to_show;
 	}
 
-	if(strncmp(date_string, _("tu"), strlen(_("tu"))) == 0 ||
-	   strncmp(date_string, _("next tu"), strlen(_("next tu"))) == 0) {
+	if(strncmp(date_string, "tu", strlen("tu")) == 0 ||
+	   strncmp(date_string, "next tu", strlen("next tu")) == 0) {
 		if(to_show->tm_wday <= 2)
 			to_show->tm_mday += 2 - to_show->tm_wday;
 		else
@@ -129,8 +130,8 @@ get_query_date(char* in_string, gboolean show_error)
 		return to_show;
 	}
 
-	if(strncmp(date_string, _("we"), strlen(_("we"))) == 0 ||
-	   strncmp(date_string, _("next we"), strlen(_("next we"))) == 0) {
+	if(strncmp(date_string, "we", strlen("we")) == 0 ||
+	   strncmp(date_string, "next we", strlen("next we")) == 0) {
 		if(to_show->tm_wday <= 3)
 			to_show->tm_mday += 3 - to_show->tm_wday;
 		else
@@ -140,8 +141,8 @@ get_query_date(char* in_string, gboolean show_error)
 		return to_show;
 	}
 
-	if(strncmp(date_string, _("th"), strlen(_("th"))) == 0 ||
-	   strncmp(date_string, _("next th"), strlen(_("next th"))) == 0) {
+	if(strncmp(date_string, "th", strlen("th")) == 0 ||
+	   strncmp(date_string, "next th", strlen("next th")) == 0) {
 		if(to_show->tm_wday <= 4)
 			to_show->tm_mday += 4 - to_show->tm_wday;
 		else
@@ -151,8 +152,8 @@ get_query_date(char* in_string, gboolean show_error)
 		return to_show;
 	}
 
-	if(strncmp(date_string, _("fr"), strlen(_("fr"))) == 0 ||
-	   strncmp(date_string, _("next fr"), strlen(_("next fr"))) == 0) {
+	if(strncmp(date_string, "fr", strlen("fr")) == 0 ||
+	   strncmp(date_string, "next fr", strlen("next fr")) == 0) {
 		if(to_show->tm_wday <= 5)
 			to_show->tm_mday += 5 - to_show->tm_wday;
 		else
@@ -162,54 +163,54 @@ get_query_date(char* in_string, gboolean show_error)
 		return to_show;
 	}
 
-	if(strncmp(date_string, _("sa"), strlen(_("sa"))) == 0 ||
-	   strncmp(date_string, _("next sa"), strlen(_("next sa"))) == 0) {
+	if(strncmp(date_string, "sa", strlen("sa")) == 0 ||
+	   strncmp(date_string, "next sa", strlen("next sa")) == 0) {
 		to_show->tm_mday += 6 - to_show->tm_wday;
 		mktime(to_show);
 		free(date_string);
 		return to_show;
 	}
 
-	if(strncmp(date_string, _("su"), strlen(_("su"))) == 0 ||
-	   strncmp(date_string, _("next su"), strlen(_("next su"))) == 0) {
+	if(strncmp(date_string, "su", strlen("su")) == 0 ||
+	   strncmp(date_string, "next su", strlen("next su")) == 0) {
 		to_show->tm_mday += 7 - to_show->tm_wday;
 		mktime(to_show);
 		free(date_string);
 		return to_show;
 	}
 
-	if(strncmp(date_string, _("last mo"), strlen(_("last mo"))) == 0) {
-		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 1);
+	if(strncmp(date_string, "last mo", strlen("last mo")) == 0) {
+		do to_show->tm_mday -= 1; while(to_show->tm_wday != 1);
 		free(date_string);
 		return to_show;
 	}
-	if(strncmp(date_string, _("last tu"), strlen(_("last tu"))) == 0) {
-		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 2);
+	if(strncmp(date_string, "last tu", strlen("last tu")) == 0) {
+		do to_show->tm_mday -= 1; while(to_show->tm_wday != 2);
 		free(date_string);
 		return to_show;
 	}
-	if(strncmp(date_string, _("last we"), strlen(_("last we"))) == 0) {
-		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 3);
+	if(strncmp(date_string, "last we", strlen("last we")) == 0) {
+		do to_show->tm_mday -= 1; while(to_show->tm_wday != 3);
 		free(date_string);
 		return to_show;
 	}
-	if(strncmp(date_string, _("last th"), strlen(_("last th"))) == 0) {
-		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 4);
+	if(strncmp(date_string, "last th", strlen("last th")) == 0) {
+		do to_show->tm_mday -= 1; while(to_show->tm_wday != 4);
 		free(date_string);
 		return to_show;
 	}
-	if(strncmp(date_string, _("last fr"), strlen(_("last fr"))) == 0) {
-		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 5);
+	if(strncmp(date_string, "last fr", strlen("last fr")) == 0) {
+		do to_show->tm_mday -= 1; while(to_show->tm_wday != 5);
 		free(date_string);
 		return to_show;
 	}
-	if(strncmp(date_string, _("last sa"), strlen(_("last sa"))) == 0) {
-		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 6);
+	if(strncmp(date_string, "last sa", strlen("last sa")) == 0) {
+		do to_show->tm_mday -= 1; while(to_show->tm_wday != 6);
 		free(date_string);
 		return to_show;
 	}
-	if(strncmp(date_string, _("last su"), strlen(_("last su"))) == 0) {
-		do g_date_subtract_days(to_show, 1); while(g_date_get_weekday(to_show) != 7);
+	if(strncmp(date_string, "last su", strlen("last su")) == 0) {
+		do to_show->tm_mday -= 1; while(to_show->tm_wday != 7);
 		free(date_string);
 		return to_show;
 	}
@@ -217,7 +218,7 @@ get_query_date(char* in_string, gboolean show_error)
 	/* use regexs here for easier localization */
 	regex_t preg;
 
-	regcomp(&preg, _("^[0-9]+ days away$"), REG_ICASE|REG_NOSUB|REG_EXTENDED);
+	regcomp(&preg, "^[0-9]+ days away$", REG_ICASE|REG_NOSUB|REG_EXTENDED);
 
 	if(regexec(&preg, date_string, 0, NULL, 0)==0) {
 		char* ptr = date_string;
@@ -234,7 +235,7 @@ get_query_date(char* in_string, gboolean show_error)
 	}
 
 	regfree(&preg);
-	regcomp(&preg, _("^[0-9]+ days ago$"), REG_ICASE|REG_NOSUB|REG_EXTENDED);
+	regcomp(&preg, "^[0-9]+ days ago$", REG_ICASE|REG_NOSUB|REG_EXTENDED);
 
 	if(regexec(&preg, date_string, 0, NULL, 0)==0) {
 		char* ptr = date_string;
@@ -244,7 +245,7 @@ get_query_date(char* in_string, gboolean show_error)
 
 		sscanf(ptr, "%d", &date_offset);
 
-		g_date_subtract_days(to_show, date_offset);
+		to_show->tm_mday -= date_offset;
 		free(date_string);
 		regfree(&preg);
 		return to_show;
@@ -343,14 +344,14 @@ get_query_date(char* in_string, gboolean show_error)
 
 	if(show_error) {
 		/* if we got here, there was an error */
-		pal_output_error(_("ERROR: The following date is not valid: %s\n"), date_string);
-		pal_output_error(  "	   %s\n", _("Valid date formats include:"));
-		pal_output_error(  "	   %s '%s', '%s', '%s',\n", _("dd, mmdd, yyyymmdd,"), _("yesterday"), _("today"), _("tomorrow"));
-		pal_output_error(  "	   %s\n", _("'n days away', 'n days ago',"));
-		pal_output_error(  "	   %s\n", _("first two letters of weekday,"));
-		pal_output_error(  "	   %s\n", _("'next ' followed by first two letters of weekday,"));
-		pal_output_error(  "	   %s\n", _("'last ' followed by first two letters of weekday,"));
-		pal_output_error(  "	   %s\n", _("'1 Jan 2000', 'Jan 1 2000', etc."));
+		pal_output_error("ERROR: The following date is not valid: %s\n", date_string);
+		pal_output_error(  "	   %s\n", "Valid date formats include:");
+		pal_output_error(  "	   %s '%s', '%s', '%s',\n", "dd, mmdd, yyyymmdd,", "yesterday", "today", "tomorrow");
+		pal_output_error(  "	   %s\n", "'n days away', 'n days ago',");
+		pal_output_error(  "	   %s\n", "first two letters of weekday,");
+		pal_output_error(  "	   %s\n", "'next ' followed by first two letters of weekday,");
+		pal_output_error(  "	   %s\n", "'last ' followed by first two letters of weekday,");
+		pal_output_error(  "	   %s\n", "'1 Jan 2000', 'Jan 1 2000', etc.");
 	}
 	free(to_show);
 	free(date_string);
@@ -370,7 +371,7 @@ view_details(void)
 	   settings->range_neg_days == 0) {
 		g_print("\n");
 		pal_output_fg(BRIGHT, RED, "> ");
-		pal_output_wrap(_("NOTE: You can use -r to specify the range of days to search.  By default, pal searches days within one year of today."),2,2);
+		pal_output_wrap("NOTE: You can use -r to specify the range of days to search.  By default, pal searches days within one year of today.",2,2);
 		settings->range_days = 365;
 	}
 
@@ -390,8 +391,9 @@ view_details(void)
 	if(to_show == NULL) {
 		time_t currenttime = time(NULL);
 		starting_date = localtime(&currenttime);
-	} else /* otherwise, start from date specified */
-		starting_date = g_memdup(to_show, sizeof(struct tm));
+	} else { /* otherwise, start from date specified */
+		starting_date = to_show;
+	}
 
 	starting_date->tm_mday -= settings->range_neg_days;
 
@@ -445,7 +447,7 @@ parse_args(int argc, char** argv)
 			case 'd':
 				settings->query_date = get_query_date(optarg, TRUE);
 				if(settings->query_date == NULL)
-					pal_output_error(_("NOTE: Use quotes around the date if it has spaces.\n"));
+					pal_output_error("NOTE: Use quotes around the date if it has spaces.\n");
 				break;
 			case 'e': //--version
 				printf("pal %s\n", PAL_VERSION);
@@ -500,34 +502,34 @@ parse_args(int argc, char** argv)
 				break;
 			case 'h': //fallthrough
 			default:
-				g_print("%s %s - %s\n", "pal", PAL_VERSION, _("Copyright (C) 2006, Scott Kuhl"));
+				g_print("%s %s - %s\n", "pal", PAL_VERSION, "Copyright (C) 2006, Scott Kuhl");
 
 				g_print("  ");
-				pal_output_wrap(_("pal is licensed under the GNU General Public License and has NO WARRANTY."), 2, 2);
+				pal_output_wrap("pal is licensed under the GNU General Public License and has NO WARRANTY.", 2, 2);
 				g_print("\n");
 
-				pal_output_wrap(_(" -d date		 Show events on the given date.  Valid formats for date include: dd, mmdd, yyyymmdd, 'Jan 1 2000'.	Run 'man pal' for a list of all valid formats."), 0, 16);
-				pal_output_wrap(_(" -r n		 Display events within n days after today or a date used with -d. (default: n=0, show nothing)"), 0, 16);
-				pal_output_wrap(_(" -r p-n		 Display events within p days before and n days after today or a date used with -d."), 0, 16);
-				pal_output_wrap(_(" -s regex	 Search for events matching the regular expression. Use -r to select range of days to search."), 0, 16);
-				pal_output_wrap(_(" -x n		 Expunge events that are n or more days old."), 0, 16);
+				pal_output_wrap(" -d date		 Show events on the given date.  Valid formats for date include: dd, mmdd, yyyymmdd, 'Jan 1 2000'.	Run 'man pal' for a list of all valid formats.", 0, 16);
+				pal_output_wrap(" -r n		 Display events within n days after today or a date used with -d. (default: n=0, show nothing)", 0, 16);
+				pal_output_wrap(" -r p-n		 Display events within p days before and n days after today or a date used with -d.", 0, 16);
+				pal_output_wrap(" -s regex	 Search for events matching the regular expression. Use -r to select range of days to search.", 0, 16);
+				pal_output_wrap(" -x n		 Expunge events that are n or more days old.", 0, 16);
 
-				pal_output_wrap(_(" -c n		 Display calendar with n lines. (default: 5)"), 0, 16);
-				pal_output_wrap(_(" -f file		 Load 'file' instead of ~/.pal/pal.conf"), 0, 16);
-				pal_output_wrap(_(" -u username  Load /home/username/.pal/pal.conf"), 0, 16);
-				pal_output_wrap(_(" -p palfile	 Load *.pal file only (overrides files loaded from pal.conf)"), 0, 16);
-				pal_output_wrap(_(" -m			 Add/Modify/Delete events interactively."), 0, 16);
-				pal_output_wrap(_(" --color		 Force colors, regardless of terminal type."), 0, 16);
-				pal_output_wrap(_(" --nocolor	 Force no colors, regardless of terminal type."), 0, 16);
-				pal_output_wrap(_(" --mail		 Generate output readable by sendmail."), 0, 16);
-				pal_output_wrap(_(" --html		 Generate HTML calendar.  Set size of calendar with -c."), 0, 16);
-				pal_output_wrap(_(" --latex		 Generate LaTeX calendar.  Set size of calendar with -c."), 0, 16);
-				pal_output_wrap(_(" -v			 Verbose output."), 0, 16);
-				pal_output_wrap(_(" --version	 Display version information."), 0, 16);
-				pal_output_wrap(_(" -h, --help	 Display this help message."), 0, 16);
+				pal_output_wrap(" -c n		 Display calendar with n lines. (default: 5)", 0, 16);
+				pal_output_wrap(" -f file		 Load 'file' instead of ~/.pal/pal.conf", 0, 16);
+				pal_output_wrap(" -u username  Load /home/username/.pal/pal.conf", 0, 16);
+				pal_output_wrap(" -p palfile	 Load *.pal file only (overrides files loaded from pal.conf)", 0, 16);
+				pal_output_wrap(" -m			 Add/Modify/Delete events interactively.", 0, 16);
+				pal_output_wrap(" --color		 Force colors, regardless of terminal type.", 0, 16);
+				pal_output_wrap(" --nocolor	 Force no colors, regardless of terminal type.", 0, 16);
+				pal_output_wrap(" --mail		 Generate output readable by sendmail.", 0, 16);
+				pal_output_wrap(" --html		 Generate HTML calendar.  Set size of calendar with -c.", 0, 16);
+				pal_output_wrap(" --latex		 Generate LaTeX calendar.  Set size of calendar with -c.", 0, 16);
+				pal_output_wrap(" -v			 Verbose output.", 0, 16);
+				pal_output_wrap(" --version	 Display version information.", 0, 16);
+				pal_output_wrap(" -h, --help	 Display this help message.", 0, 16);
 
 				g_print("\n");
-				pal_output_wrap(_("Type \"man pal\" for more information."), 0, 16);
+				pal_output_wrap("Type \"man pal\" for more information.", 0, 16);
 				exit(0);
 		}
 	}
@@ -590,31 +592,31 @@ main(int argc, char** argv)
 	settings->cal_lines             = 5;
 	settings->range_days            = 0;
 	settings->range_neg_days        = 0;
-	settings->range_arg             = FALSE;
+	settings->range_arg             = 0;
 	settings->search_string         = NULL;
-	settings->verbose               = FALSE;
-	settings->mail                  = FALSE;
+	settings->verbose               = 0;
+	settings->mail                  = 0;
 	settings->query_date            = NULL;
 	settings->expunge               = -1;
 	settings->date_fmt              = g_strdup("%a %e %b %Y");
-	settings->week_start_monday     = FALSE;
-	settings->reverse_order         = FALSE;
-	settings->cal_on_bottom         = FALSE;
-	settings->specified_conf_file   = FALSE;
-	settings->no_columns            = FALSE;
-	settings->hide_event_type       = FALSE;
-	settings->manage_events         = FALSE;
-	settings->curses                = FALSE;
+	settings->week_start_monday     = 0;
+	settings->reverse_order         = 0;
+	settings->cal_on_bottom         = 0;
+	settings->specified_conf_file   = 0;
+	settings->no_columns            = 0;
+	settings->hide_event_type       = 0;
+	settings->manage_events         = 0;
+	settings->curses                = 0;
 	settings->event_color           = BLUE;
 	settings->pal_file              = NULL;
-	settings->html_out              = FALSE;
-	settings->latex_out             = FALSE;
-	settings->compact_list          = FALSE;
+	settings->html_out              = 0;
+	settings->latex_out             = 0;
+	settings->compact_list          = 0;
 	settings->term_cols             = 80;
 	settings->term_rows             = 24;
 	settings->compact_date_fmt      = g_strdup("%m/%d/%Y");
 	settings->conf_file             = g_strconcat(g_get_home_dir(), "/.pal/pal.conf", NULL);
-	settings->show_weeknum          = FALSE;
+	settings->show_weeknum          = 0;
 
 	//g_set_print_handler( pal_output_handler );
 	//g_set_printerr_handler( pal_output_handler );
@@ -674,7 +676,7 @@ main(int argc, char** argv)
 						   settings->range_neg_days>0 ||
 						   settings->query_date != NULL))
 
-			g_print("\n");
+				g_print("\n");
 
 		}
 
