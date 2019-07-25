@@ -36,26 +36,26 @@ static gboolean pal_input_file_is_global(const char* filename);
 static int should_be_expunged(const PalEvent* pal_event)
 {
     struct tm today;
-    struct tm event_day;
+    struct tm *event_day;
 
     if(settings->expunge < 1)
 	return FALSE;
 
-    event_day = *get_date(pal_event->date_string);
+    event_day = get_date(pal_event->date_string);
 	time_t currenttime = time(NULL);
 	today = *localtime(&currenttime);
 
 	//TODO reimplement this bit
-    ///* if not a yyyymmdd (ie, not recurring) */
-    //if(event_day == NULL) {
-	///* recurring event with end_date */
-	//	if(pal_event->end_date != NULL &&
-	//		difftime(mktime(&today),mktime(pal_event->end_date))/(24*3600) <= -1*settings->expunge) {
-	//	    return 1;
-	//	}
+    /* if not a yyyymmdd (ie, not recurring) */
+    if(!event_day) {
+	/* recurring event with end_date */
+		if(pal_event->end_date != NULL &&
+			difftime(mktime(&today),mktime(pal_event->end_date))/(24*3600) <= -1*settings->expunge) {
+		    return 1;
+		}
 
-	//return 0;
-    //}
+	return 0;
+    }
 
     /* if it is a yyyymmdd event (ie one-time event) */
     if(difftime(mktime(&today),mktime(pal_event->end_date))/(24*3600) <= -1*settings->expunge) {
@@ -75,62 +75,58 @@ static PalTime* pal_input_get_time(char* s, int n)
     char *h1, *h2, *m1, *m2;
 
     if(n < 1 || s == NULL)
-	return NULL;
+		return NULL;
 
-    while(1)
-    {
-	s = g_utf8_find_next_char(s, NULL);
+    while(1) {
+		s = g_utf8_find_next_char(s, NULL);
 
-	if(*s == '\0')
-	    return NULL;
+		if(*s == '\0')
+		    return NULL;
 
-	if(*s == ':')
-	{
-            /* get the digits in the hour */
-	    h1 = g_utf8_find_prev_char(s_start, s);
-	    h2 = g_utf8_find_prev_char(s_start, h1);
+		if(*s == ':') {
+    	        /* get the digits in the hour */
+		    h1 = g_utf8_find_prev_char(s_start, s);
+		    h2 = g_utf8_find_prev_char(s_start, h1);
 
-	    /* get the minutes digits */
-	    m2 = g_utf8_find_next_char(s, NULL);
-	    if(*m2 == '\0')
-		return NULL;  /* hit end of line, done */
-	    m1 = g_utf8_find_next_char(m2, NULL);
+		    /* get the minutes digits */
+		    m2 = g_utf8_find_next_char(s, NULL);
+		    if(*m2 == '\0')
+				return NULL;  /* hit end of line, done */
+		    m1 = g_utf8_find_next_char(m2, NULL);
 
-	    /* check for digits surrounding the : */
-	    if(g_ascii_isdigit(*h1) &&
-	       g_ascii_isdigit(*m1) && g_ascii_isdigit(*m2))
-	    {
-		int hour = 0;
-		int min = 0;
-
-		/* use 10s digit place in hours if it is a digit */
-		if(h2 != NULL && *h2 != '\0' && g_ascii_isdigit(*h2))
-		    hour = 10*g_ascii_digit_value(*h2);
-
-		hour += g_ascii_digit_value(*h1);
-
-		min = 10*g_ascii_digit_value(*m2);
-		min += g_ascii_digit_value(*m1);
-
-		if(min >= 0 && min < 60 &&
-		   hour >= 0 && hour < 24)
-		{
-		    /* we just found a VALID date, if it is the nth
-		     * one, return it */
-		    if(n == 1)
+		    /* check for digits surrounding the : */
+		    if(g_ascii_isdigit(*h1) &&
+		       g_ascii_isdigit(*m1) && g_ascii_isdigit(*m2))
 		    {
-			PalTime* time = g_malloc(sizeof(PalTime));
-			time->hour = hour;
-			time->min = min;
-			return time;
-		    }
-		    else
-			n--;
-		}
-	    }
-	}
-    }
+				int hour = 0;
+				int min = 0;
 
+				/* use 10s digit place in hours if it is a digit */
+				if(h2 != NULL && *h2 != '\0' && g_ascii_isdigit(*h2))
+				    hour = 10*g_ascii_digit_value(*h2);
+
+				hour += g_ascii_digit_value(*h1);
+
+				min = 10*g_ascii_digit_value(*m2);
+				min += g_ascii_digit_value(*m1);
+
+				if(min >= 0 && min < 60 &&
+				   hour >= 0 && hour < 24)
+				{
+				    /* we just found a VALID date, if it is the nth
+				     * one, return it */
+				    if(n == 1) {
+						PalTime* time = g_malloc(sizeof(PalTime));
+						time->hour = hour;
+						time->min = min;
+						return time;
+				    }
+				    else
+					n--;
+				}
+		    }
+		}
+    }
 }
 
 
@@ -142,22 +138,21 @@ void pal_input_skip_comments(FILE* file, FILE* out_file)
     long start_of_line;
     char s[2048];
 
-    do
-    {
-	char* orig_string = NULL;
+    do {
+		char* orig_string = NULL;
 
-	start_of_line = ftell(file);
-	if(fgets(s, 2048, file) == NULL)
-	    return;
+		start_of_line = ftell(file);
+		if(fgets(s, 2048, file) == NULL)
+		    return;
 
-	orig_string = g_strdup(s);
-	g_strstrip(s);
+		orig_string = g_strdup(s);
+		g_strstrip(s);
 
-	/* write the line out only if we aren't going to seek back later */
-	if(out_file != NULL && (*s == '#' || *s=='\0'))
-	    fputs(orig_string, out_file);
+		/* write the line out only if we aren't going to seek back later */
+		if(out_file != NULL && (*s == '#' || *s=='\0'))
+		    fputs(orig_string, out_file);
 
-	free(orig_string);
+		free(orig_string);
 
     } while(*s == '#' || *s == '\0');
 
@@ -176,15 +171,14 @@ PalEvent* pal_input_read_head(FILE* file, FILE* out_file, char* filename)
     char c;
     PalEvent* event_head = NULL;
 
-    if(fgets(s, 2048, file) == NULL)
-    {
-	pal_output_error("WARNING: File is missing 2 character marker and event type: %s\n", filename);
-	return NULL;
+    if(fgets(s, 2048, file) == NULL) {
+		pal_output_error("WARNING: File is missing 2 character marker and event type: %s\n", filename);
+		return NULL;
     }
 
 
     if(out_file != NULL)
-	fputs(s, out_file);
+		fputs(s, out_file);
 
     event_head = pal_event_init();
 
@@ -196,15 +190,14 @@ PalEvent* pal_input_read_head(FILE* file, FILE* out_file, char* filename)
     event_head->file_name = g_strdup(filename);
     event_head->global = pal_input_file_is_global(filename);
 
-    if(c != ' ' && c != '\t') /* there should be white space here */
-    {
-	char* file = g_path_get_basename(filename);
-	pal_output_error("ERROR: First line is improperly formatted.\n");
-	pal_output_error(  "       %s: %s\n", "FILE", file);
-	free(file);
-	pal_output_error(  "       %s: %s\n", "LINE", s);
-	pal_event_free(event_head);
-	return NULL;
+    if(c != ' ' && c != '\t') { /* there should be white space here */
+		char* file = g_path_get_basename(filename);
+		pal_output_error("ERROR: First line is improperly formatted.\n");
+		pal_output_error(  "       %s: %s\n", "FILE", file);
+		free(file);
+		pal_output_error(  "       %s: %s\n", "LINE", s);
+		pal_event_free(event_head);
+		return NULL;
     }
 
     /* check if text if UTF-8 */
@@ -220,7 +213,7 @@ PalEvent* pal_input_read_head(FILE* file, FILE* out_file, char* filename)
 gboolean pal_input_eof(FILE* file)
 {
     if(feof(file) != 0)
-	return TRUE;
+		return TRUE;
     return FALSE;
 }
 
@@ -241,7 +234,7 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
     PalEvent* pal_event = NULL;
 
     if(fgets(s, 2048, file) == NULL)
-	return NULL;
+		return NULL;
 
     /* first word is the date string */
     sscanf(s, "%s", date_string);
@@ -261,39 +254,37 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
 
     pal_event = pal_event_copy(event_head);
     /* check for a valid date_string */
-    if(!parse_event( pal_event, date_string ))
-    {
-	char* file = g_path_get_basename(filename);
-	pal_output_error("ERROR: Invalid date string.\n");
-	pal_output_error(  "       %s: %s\n", "FILE", file);
-	pal_output_error(  "       %s: %s\n", "LINE", s);
-	free(file);
+    if(!parse_event( pal_event, date_string )) {
+		char* file = g_path_get_basename(filename);
+		pal_output_error("ERROR: Invalid date string.\n");
+		pal_output_error(  "       %s: %s\n", "FILE", file);
+		pal_output_error(  "       %s: %s\n", "LINE", s);
+		free(file);
 
-	/* copy bad line */
-	if(out_file != NULL)
-	    fputs(s, out_file);
+		/* copy bad line */
+		if(out_file != NULL)
+		    fputs(s, out_file);
 
-	free(text_string);
-	pal_event_free( pal_event );
-	return NULL;
+		free(text_string);
+		pal_event_free( pal_event );
+		return NULL;
     }
 
     /* require a description for a event */
-    if(strlen(text_string) == 0)
-    {
-	char* file = g_path_get_basename(filename);
-	pal_output_error("ERROR: Event description missing.\n");
-	pal_output_error(  "       %s: %s\n", "FILE", file);
-	pal_output_error(  "       %s: %s\n", "LINE", s);
-	free(file);
+    if(strlen(text_string) == 0) {
+		char* file = g_path_get_basename(filename);
+		pal_output_error("ERROR: Event description missing.\n");
+		pal_output_error(  "       %s: %s\n", "FILE", file);
+		pal_output_error(  "       %s: %s\n", "LINE", s);
+		free(file);
 
-	/* copy bad line */
-	if(out_file != NULL)
-	    fputs(s, out_file);
+		/* copy bad line */
+		if(out_file != NULL)
+		    fputs(s, out_file);
 
-	free(text_string);
-	pal_event_free( pal_event );
-	return NULL;
+		free(text_string);
+		pal_event_free( pal_event );
+		return NULL;
     }
 
     /* check if text if UTF-8 */
@@ -302,37 +293,37 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
 			 text_string, filename);
 
     /* Sanity checks */
-    if( pal_event->period_count != 1 && !pal_event->start_date )
-    {
-	char* file = g_path_get_basename(filename);
-        pal_event->start_date = g_date_new();
-        g_date_set_time_t(pal_event->start_date, time(NULL));
+    if( pal_event->period_count != 1 && !pal_event->start_date ) {
+		char* file = g_path_get_basename(filename);
+		time_t currenttime = time(NULL);
+        pal_event->start_date = localtime(&currenttime);
         pal_event->end_date = g_date_new_dmy(1,1,3000);
 
         pal_output_error("ERROR: Event with count has no start date\n");
-	pal_output_error(  "       %s: %s\n", "FILE", file);
-	pal_output_error(  "       %s: %s\n", "LINE", s);
+		pal_output_error(  "       %s: %s\n", "FILE", file);
+		pal_output_error(  "       %s: %s\n", "LINE", s);
     }
     pal_event->start_time = pal_input_get_time(text_string, 1);
     pal_event->end_time   = pal_input_get_time(text_string, 2);
     tmp = g_strstr_len(text_string, -1, " %%");
+
     if (tmp == NULL) {
-	tmp = g_strstr_len(text_string, -1, "%%");
+		tmp = g_strstr_len(text_string, -1, "%%");
     }
+
     if (tmp != NULL) {
-	*tmp = '\0';
+		*tmp = '\0';
     }
+
     pal_event->text = g_strdup(text_string);
     pal_event->date_string = g_strdup(date_string);
 
 
-    if(out_file != NULL)
-    {
+    if(out_file != NULL) {
 	/* don't print to out_file if event should be expunged */
-	if(should_be_expunged(pal_event))
-	{
+	if(should_be_expunged(pal_event)) {
 	    if(settings->verbose)
-		g_printerr("%s: %s", "Expunged", s);
+			g_printerr("%s: %s", "Expunged", s);
 
 	    pal_event_free(pal_event);
 	    free(text_string);

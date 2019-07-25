@@ -551,8 +551,6 @@ void pal_output_date_line(const struct tm* date)
 		g_print("%d days ago", -1*diff);
 
     g_print("\n");
-
-    free(today);
 }
 
 
@@ -586,14 +584,13 @@ pal_output_date(struct tm* date, int show_empty_days, int selected_event)
 
 		if(num_events == 0) {
 		    if(settings->compact_list) {
-				char *pretty_date = asctime(date);
-				pal_output_attr(BRIGHT, "  %s ", pretty_date);
-				g_print("%s\n", "No events.");
-
-				numlines++;
+					char *pretty_date = asctime(date);
+					pal_output_attr(BRIGHT, "  %s ", pretty_date);
+					g_print("%s\n", "No events.");
+					numlines++;
 		    	} else {
-				g_print("%s\n", "No events.");
-				numlines++;
+					g_print("%s\n", "No events.");
+					numlines++;
 		    }
 		}
 
@@ -602,10 +599,8 @@ pal_output_date(struct tm* date, int show_empty_days, int selected_event)
 		    numlines++;
 		}
     }
-
     return numlines;
 }
-
 
 
 /* returns the PalEvent for the given event_number */
@@ -619,5 +614,4 @@ PalEvent* pal_output_event_num(const struct tm* date, int event_number)
 
     return (PalEvent*) g_list_nth_data(events, event_number-1);
 }
-
 

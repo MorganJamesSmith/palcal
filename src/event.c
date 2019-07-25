@@ -195,10 +195,8 @@ get_key_todo(const struct tm* date, char *buffer)
 	time_t currenttime = time(NULL);
 	struct tm *today = localtime(&currenttime); //TODO would break if today changed since last today creation
     if(difftime(mktime(date),mktime(today))/(24*3600) != 0) {
-		free(today);
         return 0;
     }
-    free(today);
     strcpy( buffer, "TODO" );
     return 1;
 }
@@ -315,7 +313,7 @@ char*
 get_descr_weekly(const struct tm* date)
 {
     char buf[128];
-    g_date_strftime(buf, 128, "Weekly: Every %A", date);
+    strftime(buf, 128, "Weekly: Every %A", date);
     return g_strdup(buf);
 }
 
@@ -400,7 +398,7 @@ get_descr_0000mmdd(const struct tm* date)
 {
     char buf1[128];
     char buf2[128];
-    g_date_strftime(buf1, 128, "%B", date);
+    strftime(buf1, 128, "%B", date);
     snprintf( buf2, 128, "Annually: %d %s", date->tm_mday, buf1 );
     return g_strdup(buf2);
 }
@@ -446,7 +444,7 @@ get_descr_star_00nd(const struct tm* date)
     char buf1[128];
     char buf2[128];
     pal_add_suffix(get_nth_day(date), suffix, 16);
-    g_date_strftime(buf1, 128, "%A", date);
+    strftime(buf1, 128, "%A", date);
     snprintf(buf2, 128, "Monthly: The %s %s of every month",
                         suffix, buf1);
     return g_strdup(buf2);
@@ -497,8 +495,8 @@ get_descr_star_mmnd(const struct tm* date)
     char buf2[128];
     char buf3[128];
     pal_add_suffix(get_nth_day(date), suffix, 16);
-    g_date_strftime(buf1, 128, "%A", date);
-    g_date_strftime(buf2, 128, "%B", date);
+    strftime(buf1, 128, "%A", date);
+    strftime(buf2, 128, "%B", date);
     snprintf(buf3, 128, "Annually: The %s %s of every %s",
                         suffix, buf1, buf2);
     return g_strdup(buf3);
@@ -549,7 +547,7 @@ get_descr_star_00Ld(const struct tm* date)
     if( !last_weekday_of_month(date) )
         return NULL;
 
-    g_date_strftime(buf1, 128, "%A", date);
+    strftime(buf1, 128, "%A", date);
     snprintf(buf2, 128, "Monthly: The last %s of every month", buf1);
     return g_strdup(buf2);
 }
@@ -598,8 +596,8 @@ get_descr_star_mmLd(const struct tm* date)
     if( !last_weekday_of_month(date) )
         return NULL;
 
-    g_date_strftime(buf1, 128, "%A", date);
-    g_date_strftime(buf2, 128, "%B", date);
+    strftime(buf1, 128, "%A", date);
+    strftime(buf2, 128, "%B", date);
     snprintf(buf3, 128, "Annually: The last %s of every %s",
                         buf1, buf2);
     return g_strdup(buf3);

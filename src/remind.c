@@ -124,7 +124,7 @@ static void pal_remind_event(void)
     fputs("Event date: ", tmp_stream);
 
 	char pretty_date[128];
-	g_date_strftime(pretty_date, 128, settings->date_fmt, event_date);
+	strftime(pretty_date, 128, settings->date_fmt, event_date);
 	fputs(pretty_date, tmp_stream);
 
     fputs("\n", tmp_stream);

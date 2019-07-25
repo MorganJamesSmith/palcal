@@ -67,7 +67,7 @@ static void pal_latex_month(struct tm* date, gboolean force_month_label)
     char buf[1024];
     int orig_month = date->tm_mon;
 
-    g_date_strftime(buf, 1024, "%B %Y", date);
+    strftime(buf, 1024, "%B %Y", date);
 
     g_print("%s%s%s", "\\textbf{\\Large ", buf, "}\n");
     g_print("%s", "\\smallskip\n");
@@ -178,12 +178,14 @@ void
 pal_latex_out(void)
 {
     int on_month = 0;
-    struct tm* date = g_date_new();
+    struct tm* date;
 
-    if( settings->query_date )
+    if( settings->query_date ) {
 		memcpy( date, settings->query_date, sizeof(struct tm) );
-    else
-		g_date_set_time_t(date, time(NULL));
+	} else {
+		time_t currenttime = time(NULL);
+		date = localtime(&currenttime);
+	}
 
     g_print("%s%s\n", "% Generated with pal ", PAL_VERSION);
 

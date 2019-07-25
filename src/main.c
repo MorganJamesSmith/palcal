@@ -47,6 +47,28 @@
 Settings* settings;
 GHashTable* ht;		/* ht holds the loaded events */
 
+/* Returns 1 is the date is valid, 0 otherwise
+*/
+static int
+valid_date(int day, int month, int year)
+{
+	if(day < 1 || day > 31 || month < 1 || month > 12 || year < 1)
+	    return 0;
+
+	/* FIXME: Don't allow one-time events on leap day in years
+	 * that leap day doesn't exist */
+	if(month == 2 && day > 29)
+	    return 0;
+
+	/* 30 days in april, june, sept, nov */
+	if((month == 4 || month == 6 || month == 9 || month == 11) &&
+	   day > 30)
+	    return 0;
+
+    return 1;
+}
+
+
 /* prints the events on the dates from the starting_date to
  * starting_date+window */
 static void
@@ -277,10 +299,9 @@ get_query_date(char* in_string, gboolean show_error)
 					if(query_date_int < to_show->tm_mday)
 						to_show->tm_mon += 1;
 
-					if(g_date_valid_dmy(query_date_int,
-							(GDateMonth) to_show->tm_mon,
-							(GDateYear) to_show->tm_year)) {
+					if(valid_date(query_date_int, to_show->tm_mon, to_show->tm_year)) {
 						to_show->tm_mday = query_date_int;
+						mktime(to_show);
 						free(date_string);
 						return to_show;
 					}
@@ -296,12 +317,12 @@ get_query_date(char* in_string, gboolean show_error)
 						if(day	 < to_show->tm_mday && month == to_show->tm_mon)
 							to_show->tm_year += 1;
 
-						if(g_date_valid_dmy((GDateDay) day,
-									(GDateMonth) month,
-									(GDateYear) to_show->tm_year)) {
-							g_date_set_dmy(to_show, (GDateDay) day,
-								   (GDateMonth) month,
-								   (GDateYear) to_show->tm_year);
+						if(valid_date(day, month, to_show->tm_year)) {
+							to_show->tm_mday =  day;
+							to_show->tm_mon =  month;
+							to_show->tm_year =  month;
+							mktime(to_show);
+
 							free(date_string);
 							return to_show;
 						}
@@ -314,12 +335,10 @@ get_query_date(char* in_string, gboolean show_error)
 					year = query_date_int / 10000;
 
 					if(day > 0 && day < 32 && month > 0 && month < 13 && year > 0) {
-						if(g_date_valid_dmy((GDateDay) day,
-									(GDateMonth) month,
-									(GDateYear) year)) {
-							g_date_set_dmy(to_show, (GDateDay) day,
-								   (GDateMonth) month,
-								   (GDateYear) year);
+						if(valid_date( day, month, year)) {
+							to_show->tm_mday = day;
+							to_show->tm_mon = month;
+							to_show->tm_year = year;
 							free(date_string);
 							return to_show;
 						}
@@ -336,7 +355,7 @@ get_query_date(char* in_string, gboolean show_error)
 	 (*(date_string+6) == '0' && *(date_string+7) == '0'))) {
 		g_date_set_parse(to_show, date_string);
 
-		if(g_date_valid(to_show)) {
+		if(valid_date(to_show->tm_mday,to_show->tm_mon,to_show->tm_year)) {
 			free(date_string);
 			return to_show;
 		}

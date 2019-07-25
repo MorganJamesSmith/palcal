@@ -287,10 +287,10 @@ PalEvent* pal_rl_get_event(struct tm** d, gboolean allow_global)
 				}
 		    }
 		} else { /* d == NULL */
-		    char* search_string = g_strdup(s);
-		    int event_num = -1;
-		    struct tm* date = g_date_new();
-		    g_date_set_time_t(date,  time(NULL));
+			char* search_string = g_strdup(s);
+			int event_num = -1;
+			time_t currenttime = time(NULL);
+			struct tm *date = localtime(&currenttime);
 
 		    if(pal_search_view(search_string, date, 365, TRUE) == 0)
 			continue;
@@ -364,7 +364,7 @@ static char* pal_rl_get_date(int row, int col)
 	    g_print("Is this the correct date?");
 	    g_print("\n");
 
-	    g_date_strftime(buf, 1024, "%a %e %b %Y - Accept? [y/n]: ", d);
+	    strftime(buf, 1024, "%a %e %b %Y - Accept? [y/n]: ", d);
 
 	    if(pal_rl_get_y_n(buf))
 	    {

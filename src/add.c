@@ -114,11 +114,11 @@ pal_add_get_range(struct tm *date)
 			move(y,0);
 			clrtobot();
 
-			g_date_strftime(buf, 1024, "%a %e %b %Y", d1);
+			strftime(buf, 1024, "%a %e %b %Y", d1);
 			pal_output_fg(BRIGHT, GREEN, "Start date: ");
 			g_print("%s\n", buf);
 
-			g_date_strftime(buf, 1024, "%a %e %b %Y", d2);
+			strftime(buf, 1024, "%a %e %b %Y", d2);
 			pal_output_fg(BRIGHT, GREEN, "End date: ");
 			g_print("%s\n", buf);
 
@@ -413,7 +413,7 @@ pal_add_event( struct tm *selected_date )
 	pal_output_fg(BRIGHT, GREEN, " * * *\n");
 
 	pal_output_fg(BRIGHT, GREEN, "Selected date: ");
-	g_date_strftime( buf, 128, settings->date_fmt, selected_date );
+	strftime( buf, 128, settings->date_fmt, selected_date );
 	pal_output_attr(BRIGHT, buf);
 	pal_output_fg(BRIGHT, GREEN, "\n");
 

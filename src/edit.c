@@ -60,7 +60,7 @@ char* pal_edit_get_field_val(int i, PalEvent *event, struct tm *d)
 				return g_strdup("None");
 
 		    buf = g_malloc(sizeof(char)*128);
-		    g_date_strftime(buf, 128, settings->date_fmt, event->start_date);
+		    strftime(buf, 128, settings->date_fmt, event->start_date);
 		    return buf;
 
 		case 4:
@@ -68,7 +68,7 @@ char* pal_edit_get_field_val(int i, PalEvent *event, struct tm *d)
 				return g_strdup("None");
 
 		    buf = g_malloc(sizeof(char)*128);
-		    g_date_strftime(buf, 128, settings->date_fmt, event->end_date);
+		    strftime(buf, 128, settings->date_fmt, event->end_date);
 		    return buf;
 		case 5:
 		    if(event->start_time == NULL)

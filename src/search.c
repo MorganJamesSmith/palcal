@@ -21,6 +21,7 @@
 #include <string.h>
 #include <sys/types.h> /* FreeBSD, regex.h needs this */
 #include <regex.h>     /* regular expressions */
+#include <libintl.h>
 
 #include "main.h"
 #include "output.h"
@@ -128,7 +129,7 @@ pal_search_view(const char* search_string, struct tm* date, const int window, co
 		if(g_list_length(item) != 0)
 		    next_date = (struct tm*) item->data;
 
-		while(g_list_length(item) != 0 && g_date_compare(next_date, date_tmp) == 0) {
+		while(g_list_length(item) != 0 && difftime(mktime(next_date),mktime(date_tmp))/(24*3600) == 0) {
 		    free(date_tmp);
 
 		    date_tmp  = (struct tm*)    (item->data);
