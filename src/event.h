@@ -85,7 +85,7 @@ gboolean parse_event(PalEvent *event, const char* date_string);
 char* get_key(const struct tm* date);
 struct tm* get_date(const char* key);
 char* pal_event_date_string_to_key(const char* date_string);
-char* pal_event_escape(const PalEvent* event, const struct tm* today);
+char* pal_event_escape(const PalEvent* event, const struct tm* date);
 
 
 #endif

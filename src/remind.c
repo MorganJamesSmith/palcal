@@ -27,6 +27,7 @@
 #include "rl.h"
 #include "input.h"
 #include "edit.h"
+#include "remind.h"
 
 /* escape ' */
 static void pal_remind_escape(char *string, FILE* tmp_stream)
@@ -42,7 +43,7 @@ static void pal_remind_escape(char *string, FILE* tmp_stream)
     }
 }
 
-static void pal_remind_event(void)
+void pal_remind_event(void)
 {
     PalEvent* remind_event = NULL;
     struct tm* event_date = NULL;

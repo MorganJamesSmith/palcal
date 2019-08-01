@@ -51,7 +51,7 @@ pal_html_escape_print(char* s)
 
 /* finishes with date on the first day of the next month */
 static void
-pal_html_month(struct tm* date, gboolean force_month_label, const struct tm* today)
+pal_html_month(struct tm* date, gboolean force_month_label)
 {
 	int orig_month = date->tm_mon;
 	int i;
@@ -113,7 +113,7 @@ pal_html_month(struct tm* date, gboolean force_month_label, const struct tm* tod
 			fputs("<tr>\n", stdout);
 
 		/* make today bright */
-		if(difftime(mktime(date),mktime(today))/(24*3600) == 0)
+		if(difftime(mktime(date),currenttime)/(24*3600) == 0)
 			g_print("<td class='pal-today' valign='top'><b>%02d</b><br />\n", date->tm_mday);
 		else {
 			switch(date->tm_wday) {
@@ -199,14 +199,13 @@ void
 pal_html_out()
 {
 	int on_month = 0;
-	struct tm* today;
 	struct tm* date;
 
 	if(settings->query_date == NULL) {
 		time_t currenttime = time(NULL);
-		today = date = localtime(&currenttime);
+		*date = today;
 	} else {
-		today = date = settings->query_date;
+		date = settings->query_date;
 	}
 
 	/* back up to the first of the month */
@@ -215,7 +214,7 @@ pal_html_out()
 	g_print("%s %s %s", "<!-- Generated with pal", PAL_VERSION, "-->\n");
 
 	for(on_month=0; on_month < settings->cal_lines; on_month++)
-		pal_html_month(date, TRUE, today);
+		pal_html_month(date, TRUE);
 
 	g_print("<div class='pal-tagline'><p><i>%s</i></p></div>\n",
 		"Calendar created with <a href='http://palcal.sourceforge.net/'>pal</a>.");

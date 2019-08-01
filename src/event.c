@@ -192,9 +192,7 @@ is_valid_todo(const char* date_string)
 int
 get_key_todo(const struct tm* date, char *buffer)
 {
-	time_t currenttime = time(NULL);
-	struct tm *today = localtime(&currenttime); //TODO would break if today changed since last today creation
-    if(difftime(mktime(date),mktime(today))/(24*3600) != 0) {
+    if(difftime(mktime(date),currenttime)/(24*3600) != 0) {
         return 0;
     }
     strcpy( buffer, "TODO" );
@@ -672,8 +670,10 @@ parse_event( PalEvent *event, const char* date_string)
 
             if( s[2] )
                 event->end_date = get_date(s[2]);
-            else
-                event->end_date = g_date_new_dmy(1,1,3000);
+            else {
+                event->end_date->tm_year = 3000;
+				mktime(event->end_date);
+			}
         }
         event->period_count = count;
         event->eventtype = &PalEventTypes[i];
@@ -971,7 +971,7 @@ pal_get_event_count( struct tm *date )
 
 /* the returned string should be freed */
 char*
-pal_event_escape(const PalEvent* event, const struct tm* today) {
+pal_event_escape(const PalEvent* event, const struct tm* date) {
     char* in = event->text;
     char* out_string = malloc(sizeof(char)*strlen(event->text)*2);
     char* out = out_string;
@@ -985,7 +985,7 @@ pal_event_escape(const PalEvent* event, const struct tm* today) {
 		    *(in+5) == '!')
 		{
 		    int diff;
-		    int now = today->tm_year;
+		    int now = date->tm_year;
 		    int event = g_ascii_digit_value(*(in+1));
 		    event *= 10;
 		    event += g_ascii_digit_value(*(in+2));

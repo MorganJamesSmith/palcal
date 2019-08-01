@@ -81,7 +81,7 @@ pal_add_get_range(struct tm *date)
 				s = pal_rl_get_line_default("Start date: ", y, 0, buf);
 				g_print("\n");
 
-				d1 = get_query_date(s, TRUE);
+				get_query_date(d1, s, TRUE);
 				if( !d1 )
 					rl_ding();
 				free(s);
@@ -97,7 +97,7 @@ pal_add_get_range(struct tm *date)
 				}
 
 				g_print("\n");
-				d2 = get_query_date(s, TRUE);
+				get_query_date(d2, s, TRUE);
 				if( !d2 ) {
 					rl_ding();
 				} else {

@@ -25,7 +25,7 @@
 #include <stdio.h>
 
 
-struct tm* get_query_date(char* date_string, gboolean show_error);
+void get_query_date(struct tm* to_show, char* in_string, gboolean show_error);
 void pal_main_reload(void);
 
 /* a structure that contains all of the runtime settings */
@@ -111,6 +111,8 @@ typedef struct _PalEvent {
 } PalEvent;
 
 extern Settings* settings;
+extern struct tm today;
+extern time_t currenttime;
 extern GHashTable* ht;     /* ht holds the loaded events */
 
 #endif

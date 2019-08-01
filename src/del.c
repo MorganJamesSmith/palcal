@@ -23,6 +23,7 @@
 #include "output.h"
 #include "rl.h"
 #include "input.h"
+#include "del.h"
 
 
 void
@@ -93,8 +94,8 @@ pal_del_write_file(PalEvent* dead_event)
 }
 
 
-static void
-pal_del_event( struct tm *date, int eventnum )
+void
+pal_del_event(struct tm *date, int eventnum)
 {
     PalEvent* dead_event = NULL;
     struct tm* event_date = NULL;

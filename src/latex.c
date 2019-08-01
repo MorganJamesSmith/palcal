@@ -24,6 +24,7 @@
 
 #include "main.h"
 #include "event.h"
+#include "latex.h"
 
 /* prints out the string but properly escapes things for LaTeX */
 static void pal_latex_escape_print(char* s)

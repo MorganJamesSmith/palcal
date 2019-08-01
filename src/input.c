@@ -35,7 +35,6 @@ static gboolean pal_input_file_is_global(const char* filename);
 /* checks if events in the format yyyymmdd can be expunged */
 static int should_be_expunged(const PalEvent* pal_event)
 {
-    struct tm today;
     struct tm *event_day;
 
     if(settings->expunge < 1)
@@ -43,14 +42,13 @@ static int should_be_expunged(const PalEvent* pal_event)
 
     event_day = get_date(pal_event->date_string);
 	time_t currenttime = time(NULL);
-	today = *localtime(&currenttime);
 
 	//TODO reimplement this bit
     /* if not a yyyymmdd (ie, not recurring) */
     if(!event_day) {
 	/* recurring event with end_date */
 		if(pal_event->end_date != NULL &&
-			difftime(mktime(&today),mktime(pal_event->end_date))/(24*3600) <= -1*settings->expunge) {
+			difftime(currenttime,mktime(pal_event->end_date))/(24*3600) <= -1*settings->expunge) {
 		    return 1;
 		}
 
@@ -58,7 +56,7 @@ static int should_be_expunged(const PalEvent* pal_event)
     }
 
     /* if it is a yyyymmdd event (ie one-time event) */
-    if(difftime(mktime(&today),mktime(pal_event->end_date))/(24*3600) <= -1*settings->expunge) {
+    if(difftime(currenttime,mktime(pal_event->end_date))/(24*3600) <= -1*settings->expunge) {
 		return 1;
     }
 

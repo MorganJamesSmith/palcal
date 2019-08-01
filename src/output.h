@@ -31,10 +31,10 @@ void pal_output_attr(int attr, char *formatString, ...);
 void pal_output_fg(int attr, int color, const char *formatString,...);
 void pal_output_error(char *formatString, ... );
 
-void pal_output_cal(int num_weeks, struct tm* today);
+void pal_output_cal(int num_weeks, struct tm date);
 int pal_output_date(struct tm* date, gboolean show_empty_days, int select_event);
-void pal_output_date_line(struct tm* date);
-int pal_output_event(PalEvent* event, struct tm* date, gboolean selected);
-int pal_output_wrap(const char* string, int chars_used, int indent);
+void pal_output_date_line(const struct tm* date);
+int pal_output_event(const PalEvent* event, struct tm *date, const int selected);
+int pal_output_wrap(char* string, int chars_used, int indent);
 PalEvent* pal_output_event_num(const struct tm* date, int event_number);
 #endif

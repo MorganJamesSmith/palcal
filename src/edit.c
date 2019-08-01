@@ -27,6 +27,7 @@
 #include "add.h"
 #include "del.h"
 #include "input.h"
+#include "edit.h"
 
 
 #define NUM_FIELDS 12

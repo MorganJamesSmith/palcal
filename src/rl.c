@@ -250,7 +250,7 @@ PalEvent* pal_rl_get_event(struct tm** d, gboolean allow_global)
 		pal_output_wrap("Valid date formats include: yyyymmdd, Jan 1 2000, 1 Jan 2000, 4 days away",2,2);
 
 		s = pal_rl_get_line("Date for event or search string: ", settings->term_rows-2, 0);
-		*d = get_query_date(s, FALSE);
+		get_query_date(*d, s, FALSE);
 
 		if(*d != NULL) {
 		    int event_num = -1;

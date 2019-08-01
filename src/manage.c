@@ -37,12 +37,12 @@
 #include "del.h"
 #include "rl.h"
 #include "search.h"
+#include "manage.h"
 
 static int selected_event = -1;
 static int events_on_day = 0;
 
 static struct tm* selected_day = NULL;
-static struct tm* today = NULL;
 
 /* Currently active window for g_print to output to */
 WINDOW *pal_curwin = NULL;
@@ -69,7 +69,7 @@ static void pal_manage_refresh_at(void)
 	 * prompts! */
 	move(2,0);
 
-	pal_output_cal(settings->cal_lines, selected_day);
+	pal_output_cal(settings->cal_lines, *selected_day);
 	g_print("\n");
 
 	date = selected_day;
@@ -376,8 +376,7 @@ pal_manage_scan_for_event( struct tm **date, int *eventnum, int dir )
 void pal_manage(void)
 {
 	time_t currenttime = time(NULL);
-	selected_day = localtime(&currenttime);
-	today = localtime(&currenttime);
+	memcpy(selected_day, &today, sizeof(struct tm));
 
 	colorize_xterm_title("pal calendar");
 
@@ -501,7 +500,8 @@ void pal_manage(void)
 				char* str = pal_rl_get_raw_line("Goto date: ", 0, 0);
 
 				if(strlen(str) > 0) {
-					struct tm* new_date = get_query_date(str, FALSE);
+					struct tm* new_date;
+					get_query_date(new_date, str, FALSE);
 
 					if(new_date == NULL) {
 						move(0, 0);

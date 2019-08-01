@@ -30,6 +30,7 @@
 #include "main.h"
 #include "colorize.h"
 #include "event.h"
+#include "output.h"
 
 
 /* Interface between g_print and ncurses.  This is also the print
@@ -73,7 +74,7 @@ pal_output_attr(int attr, char *formatString, ...)
 
 /* set foreground color and attribute */
 void
-pal_output_fg( int attr, int color, char *formatString, ...)
+pal_output_fg( int attr, int color, const char *formatString, ...)
 {
     char buf[2048] = "";
     va_list argptr;
@@ -109,7 +110,7 @@ void pal_output_error(char *formatString, ... )
 
 /* finishes with date on the sunday of the next week */
 static void
-pal_output_text_week(struct tm* date, int force_month_label, const struct tm* today)
+pal_output_text_week(struct tm* date, int force_month_label)
 {
 
     if(settings->week_start_monday) {
@@ -178,7 +179,7 @@ pal_output_text_week(struct tm* date, int force_month_label, const struct tm* to
 		int color = settings->event_color;
 		events = get_events(date);
 
-		if(difftime(mktime(date),mktime(today))/(24*3600) == 0) {
+		if(difftime(mktime(date),currenttime)/(24*3600) == 0) {
 		    start = end = '@';
 		} else if(events != NULL) {
 		    GList* item  = g_list_first(events);
@@ -245,7 +246,7 @@ pal_output_text_week(struct tm* date, int force_month_label, const struct tm* to
 		}
 
 
-		if(difftime(mktime(date),mktime(today))/(3600*24) == 0) { /* make today bright */
+		if(difftime(mktime(date),currenttime)/(3600*24) == 0) { /* make today bright */
 		    pal_output_attr(BRIGHT, "%02d", date->tm_mday);
 		} else {
 		    printf("%02d", date->tm_mday);
@@ -281,17 +282,17 @@ pal_output_text_week(struct tm* date, int force_month_label, const struct tm* to
 
 
 static void
-pal_output_week(struct tm* date, int force_month_label, const struct tm* today)
+pal_output_week(struct tm* date, int force_month_label)
 {
 
-    pal_output_text_week(date, force_month_label, today);
+    pal_output_text_week(date, force_month_label);
 
     if(!settings->no_columns && settings->term_cols >= 77) {
 		pal_output_fg(DIM,YELLOW,"%s","|");
 
     	   /* skip ahead to next column */
 		date->tm_mday += settings->cal_lines*7;
-		pal_output_text_week(date, force_month_label, today);
+		pal_output_text_week(date, force_month_label);
 
 		/* skip back to where we were */
 		date->tm_mday -= settings->cal_lines*7 + 7;
@@ -306,11 +307,10 @@ pal_output_week(struct tm* date, int force_month_label, const struct tm* today)
 
 
 void
-pal_output_cal(int num_lines, const struct tm* today)
+pal_output_cal(int num_lines, struct tm date)
 {
     int on_week = 0;
     char* week_hdr;
-    struct tm date = *today;
 
     if(num_lines <= 0)
 		return;
@@ -338,10 +338,11 @@ pal_output_cal(int num_lines, const struct tm* today)
     free(week_hdr);
 
     while(on_week < num_lines) {
-		if(on_week == 0)
-	    	pal_output_week(&date, 1, today);
-		else
-	    	pal_output_week(&date, 0, today);
+		if(on_week == 0) {
+	    	pal_output_week(&date, 1);
+		} else {
+	    	pal_output_week(&date, 0);
+		}
 		on_week++;
     }
 }
@@ -481,7 +482,7 @@ int pal_output_wrap(char* string, int chars_used, int indent)
    Returns the number of lines printed.
 */
 int
-pal_output_event(const PalEvent* event, const struct tm* date, const int selected)
+pal_output_event(const PalEvent* event, struct tm *date, const int selected)
 {
     int numlines = 0;
     const int indent = 2;
@@ -497,7 +498,7 @@ pal_output_event(const PalEvent* event, const struct tm* date, const int selecte
     pal_output_strip_tabs(event->text);
     pal_output_strip_tabs(event->type);
 
-    event_text = pal_event_escape(event, date);
+    event_text = pal_event_escape(event,date);
 
     if(settings->compact_list) {
 		char* s = NULL;
@@ -530,15 +531,12 @@ void pal_output_date_line(const struct tm* date)
 {
     int diff = 0;
 
-	time_t currenttime = time(NULL); //TODO breaks if day changes from last time we got today
-	struct tm *today = localtime(&currenttime);
-
 	char *pretty_date = asctime(date);
 
     pal_output_attr(BRIGHT, "%s", pretty_date);
     g_print(" - ");
 
-    diff = difftime(mktime(date),mktime(today))/(24*3600);
+    diff = difftime(mktime(date),currenttime)/(24*3600);
     if(diff == 0)
 		pal_output_fg(BRIGHT, RED, "%s", "Today");
     else if(diff == 1)

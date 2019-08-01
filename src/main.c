@@ -45,6 +45,8 @@
 #include "manage.h"
 
 Settings* settings;
+struct tm today;
+time_t currenttime;
 GHashTable* ht;		/* ht holds the loaded events */
 
 /* Returns 1 is the date is valid, 0 otherwise
@@ -97,37 +99,35 @@ view_range(struct tm* starting_date, int window)
 /* This function only checks the one-time date events (not todo, or
  * recurring events).  It returns NULL on a failure and can optionally
  * print an error message on failure. */
-struct tm*
-get_query_date(char* in_string, gboolean show_error)
+void
+get_query_date(struct tm* to_show, char* in_string, gboolean show_error)
 {
-	struct tm* to_show = NULL;
 	char* date_string = g_ascii_strdown(in_string, -1);
 
 	if(date_string == NULL)
-		return NULL;
+		return;
 
 	g_strstrip(date_string);
 
-	time_t currenttime = time(NULL);
-	to_show = localtime(&currenttime);
+	memcpy(to_show,&today,sizeof(struct tm));
 
 	/* these could be better... */
 	if(strncmp(date_string, "tomorrow", strlen("tomorrow")) == 0) {
 		to_show->tm_mday += 1;
 		free(date_string);
-		return to_show;
+		return;
 	}
 
 	if(strncmp(date_string, "yesterday", strlen("yesterday")) == 0) {
 		to_show->tm_mday -= 1;
 		mktime(to_show);
 		free(date_string);
-		return to_show;
+		return;
 	}
 
 	if(strncmp(date_string, "today", strlen("today")) == 0) {
 		free(date_string);
-		return to_show;
+		return;
 	}
 
 	if(strncmp(date_string, "mo", strlen("mo")) == 0 ||
@@ -138,7 +138,7 @@ get_query_date(char* in_string, gboolean show_error)
 			to_show->tm_mday += 7 - to_show->tm_wday;
 		mktime(to_show);
 		free(date_string);
-		return to_show;
+		return;
 	}
 
 	if(strncmp(date_string, "tu", strlen("tu")) == 0 ||
@@ -149,7 +149,7 @@ get_query_date(char* in_string, gboolean show_error)
 			to_show->tm_mday += 8 - to_show->tm_wday;
 		mktime(to_show);
 		free(date_string);
-		return to_show;
+		return;
 	}
 
 	if(strncmp(date_string, "we", strlen("we")) == 0 ||
@@ -160,7 +160,7 @@ get_query_date(char* in_string, gboolean show_error)
 			to_show->tm_mday += 9 - to_show->tm_wday;
 		mktime(to_show);
 		free(date_string);
-		return to_show;
+		return;
 	}
 
 	if(strncmp(date_string, "th", strlen("th")) == 0 ||
@@ -171,7 +171,7 @@ get_query_date(char* in_string, gboolean show_error)
 			to_show->tm_mday += 10 - to_show->tm_wday;
 		mktime(to_show);
 		free(date_string);
-		return to_show;
+		return;
 	}
 
 	if(strncmp(date_string, "fr", strlen("fr")) == 0 ||
@@ -182,7 +182,7 @@ get_query_date(char* in_string, gboolean show_error)
 			to_show->tm_mday += 11 - to_show->tm_wday;
 		mktime(to_show);
 		free(date_string);
-		return to_show;
+		return;
 	}
 
 	if(strncmp(date_string, "sa", strlen("sa")) == 0 ||
@@ -190,7 +190,7 @@ get_query_date(char* in_string, gboolean show_error)
 		to_show->tm_mday += 6 - to_show->tm_wday;
 		mktime(to_show);
 		free(date_string);
-		return to_show;
+		return;
 	}
 
 	if(strncmp(date_string, "su", strlen("su")) == 0 ||
@@ -198,43 +198,43 @@ get_query_date(char* in_string, gboolean show_error)
 		to_show->tm_mday += 7 - to_show->tm_wday;
 		mktime(to_show);
 		free(date_string);
-		return to_show;
+		return;
 	}
 
 	if(strncmp(date_string, "last mo", strlen("last mo")) == 0) {
 		do to_show->tm_mday -= 1; while(to_show->tm_wday != 1);
 		free(date_string);
-		return to_show;
+		return;
 	}
 	if(strncmp(date_string, "last tu", strlen("last tu")) == 0) {
 		do to_show->tm_mday -= 1; while(to_show->tm_wday != 2);
 		free(date_string);
-		return to_show;
+		return;
 	}
 	if(strncmp(date_string, "last we", strlen("last we")) == 0) {
 		do to_show->tm_mday -= 1; while(to_show->tm_wday != 3);
 		free(date_string);
-		return to_show;
+		return;
 	}
 	if(strncmp(date_string, "last th", strlen("last th")) == 0) {
 		do to_show->tm_mday -= 1; while(to_show->tm_wday != 4);
 		free(date_string);
-		return to_show;
+		return;
 	}
 	if(strncmp(date_string, "last fr", strlen("last fr")) == 0) {
 		do to_show->tm_mday -= 1; while(to_show->tm_wday != 5);
 		free(date_string);
-		return to_show;
+		return;
 	}
 	if(strncmp(date_string, "last sa", strlen("last sa")) == 0) {
 		do to_show->tm_mday -= 1; while(to_show->tm_wday != 6);
 		free(date_string);
-		return to_show;
+		return;
 	}
 	if(strncmp(date_string, "last su", strlen("last su")) == 0) {
 		do to_show->tm_mday -= 1; while(to_show->tm_wday != 7);
 		free(date_string);
-		return to_show;
+		return;
 	}
 
 	/* use regexs here for easier localization */
@@ -253,7 +253,7 @@ get_query_date(char* in_string, gboolean show_error)
 		to_show->tm_mday += date_offset;
 		free(date_string);
 		regfree(&preg);
-		return to_show;
+		return;
 	}
 
 	regfree(&preg);
@@ -270,7 +270,7 @@ get_query_date(char* in_string, gboolean show_error)
 		to_show->tm_mday -= date_offset;
 		free(date_string);
 		regfree(&preg);
-		return to_show;
+		return;
 	}
 	regfree(&preg);
 
@@ -303,7 +303,7 @@ get_query_date(char* in_string, gboolean show_error)
 						to_show->tm_mday = query_date_int;
 						mktime(to_show);
 						free(date_string);
-						return to_show;
+						return;
 					}
 				} else if(query_date_int < 1232) {
 					int day, month;
@@ -324,7 +324,7 @@ get_query_date(char* in_string, gboolean show_error)
 							mktime(to_show);
 
 							free(date_string);
-							return to_show;
+							return;
 						}
 					}
 				} else if(query_date_int > 10000) {
@@ -340,7 +340,7 @@ get_query_date(char* in_string, gboolean show_error)
 							to_show->tm_mon = month;
 							to_show->tm_year = year;
 							free(date_string);
-							return to_show;
+							return;
 						}
 					}
 				}
@@ -348,18 +348,6 @@ get_query_date(char* in_string, gboolean show_error)
 		}
 	}
 
-	/* glib is last resort, but don't let a few things get to it... */
-	if(!((*date_string == '0' && *(date_string+1) == '0' &&
-	  *(date_string+2) == '0' && *(date_string+3) == '0') ||
-	 (*(date_string+4) == '0' && *(date_string+5) == '0') ||
-	 (*(date_string+6) == '0' && *(date_string+7) == '0'))) {
-		g_date_set_parse(to_show, date_string);
-
-		if(valid_date(to_show->tm_mday,to_show->tm_mon,to_show->tm_year)) {
-			free(date_string);
-			return to_show;
-		}
-	}
 
 	if(show_error) {
 		/* if we got here, there was an error */
@@ -374,7 +362,7 @@ get_query_date(char* in_string, gboolean show_error)
 	}
 	free(to_show);
 	free(date_string);
-	return NULL;
+	return;
 }
 
 
@@ -383,11 +371,12 @@ static void
 view_details(void)
 {
 	struct tm* to_show = settings->query_date;
+	struct tm starting_date;
 
 
 	if(settings->search_string != NULL &&
-	   settings->range_days == 0 &&
-	   settings->range_neg_days == 0) {
+	   settings->range_days &&
+	   settings->range_neg_days ) {
 		g_print("\n");
 		pal_output_fg(BRIGHT, RED, "> ");
 		pal_output_wrap("NOTE: You can use -r to specify the range of days to search.  By default, pal searches days within one year of today.",2,2);
@@ -395,31 +384,29 @@ view_details(void)
 	}
 
 	/* if -r and -s isn't used */
-	if(settings->range_days == 0 &&
-	   settings->range_neg_days == 0 &&
+	if(settings->range_days &&
+	   settings->range_neg_days &&
 	   settings->search_string == NULL) {
 		/* if -d is used, show that day.  Otherwise, show nothing */
 		if(to_show != NULL)
 			pal_output_date(to_show, TRUE, -1);
 		/* if -r or -s is used, show range of dates relative to -d */
-	} else if(settings->range_days	   != 0 ||
-			settings->range_neg_days != 0) {
-		struct tm* starting_date = NULL;
+	} else if(!settings->range_days	||
+			!settings->range_neg_days ) {
 
 	/* if -d isn't used, start from current date */
 	if(to_show == NULL) {
-		time_t currenttime = time(NULL);
-		starting_date = localtime(&currenttime);
+		starting_date = today;
 	} else { /* otherwise, start from date specified */
-		starting_date = to_show;
+		starting_date = *to_show;
 	}
 
-	starting_date->tm_mday -= settings->range_neg_days;
+	starting_date.tm_mday -= settings->range_neg_days;
 
 	if(settings->search_string == NULL)
-		view_range(starting_date, settings->range_neg_days + settings->range_days);
+		view_range(&starting_date, settings->range_neg_days + settings->range_days);
 	else
-		pal_search_view(settings->search_string, starting_date, settings->range_neg_days + settings->range_days, FALSE);
+		pal_search_view(settings->search_string, &starting_date, settings->range_neg_days + settings->range_days, FALSE);
 
 	}
 }
@@ -464,7 +451,9 @@ parse_args(int argc, char** argv)
 				settings->cal_lines = strtoull(optarg, NULL, 10);
 				break;
 			case 'd':
-				settings->query_date = get_query_date(optarg, TRUE);
+				settings->query_date = malloc(sizeof(struct tm));
+				get_query_date(settings->query_date, optarg, TRUE);
+				mktime(settings->query_date);
 				if(settings->query_date == NULL)
 					pal_output_error("NOTE: Use quotes around the date if it has spaces.\n");
 				break;
@@ -604,8 +593,8 @@ int
 main(int argc, char** argv)
 {
 	const char *charset = NULL;
-	time_t currenttime = time(NULL);
-	struct tm *today = localtime(&currenttime);
+	currenttime = time(NULL);
+	today = *localtime(&currenttime);
 
     settings = malloc(sizeof(Settings));
 	settings->cal_lines             = 5;
@@ -671,7 +660,7 @@ main(int argc, char** argv)
 
 	/* adjust settings if --mail is used */
 	if(settings->mail) {
-		char *pretty_date = asctime(today);
+		char *pretty_date = asctime(&today);
 
 		printf("From: \"pal\" <pal>\n");
 		printf("Content-Type: text/plain; charset=%s\n", charset);
@@ -708,7 +697,7 @@ main(int argc, char** argv)
 						   settings->query_date != NULL))
 				g_print("\n");
 
-			pal_output_cal(settings->cal_lines,today);
+			pal_output_cal(settings->cal_lines, today);
 		}
 
 
