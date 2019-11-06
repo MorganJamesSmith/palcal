@@ -21,7 +21,9 @@
  *
  */
 
+#include <glib.h>
+
 void pal_add_event(GDate *);
-gchar* pal_add_get_date_recur(void);
-void pal_add_write_file(gchar* filename, gchar* key, gchar* desc);
+char* pal_add_get_date_recur(void);
+void pal_add_write_file(char* filename, char* key, char* desc);
 #endif

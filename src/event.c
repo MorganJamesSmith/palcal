@@ -26,14 +26,16 @@
 #include "event.h"
 
 
-static gint get_nth_day(const GDate* date);
+static int get_nth_day(const GDate* date);
 static gboolean last_weekday_of_month(const GDate* date);
 
 
 /* Currently in add.c, should be moved at some stage */
-void pal_add_suffix(gint number, gchar* suffix, gint buf_size);
+void pal_add_suffix(int number, char* suffix, int buf_size);
 
-PalEvent* pal_event_init()
+
+PalEvent*
+pal_event_init()
 {
     PalEvent* event = g_malloc(sizeof(PalEvent));
     event->text = NULL;
@@ -50,7 +52,9 @@ PalEvent* pal_event_init()
     return event;
 }
 
-PalEvent* pal_event_copy(PalEvent* orig)
+
+PalEvent*
+pal_event_copy(PalEvent* orig)
 {
     PalEvent* new = g_malloc(sizeof(PalEvent));
     new->text = g_strdup(orig->text);
@@ -62,36 +66,32 @@ PalEvent* pal_event_copy(PalEvent* orig)
     new->file_name = g_strdup(orig->file_name);
     new->color = orig->color;
 
-    if(orig->start_date == NULL)
-	new->start_date = NULL;
-    else
-    {
-	new->start_date = g_malloc(sizeof(GDate));
-	memcpy(new->start_date, orig->start_date, sizeof(GDate));
+    if(orig->start_date == NULL) {
+	    new->start_date = NULL;
+    } else {
+	    new->start_date = g_malloc(sizeof(GDate));
+	    memcpy(new->start_date, orig->start_date, sizeof(GDate));
     }
 
-    if(orig->end_date == NULL)
-	new->end_date = NULL;
-    else
-    {
-	new->end_date = g_malloc(sizeof(GDate));
-	memcpy(new->end_date, orig->end_date, sizeof(GDate));
+    if(orig->end_date == NULL) {
+	    new->end_date = NULL;
+    } else {
+	    new->end_date = g_malloc(sizeof(GDate));
+	    memcpy(new->end_date, orig->end_date, sizeof(GDate));
     }
 
-    if(orig->start_time == NULL)
-	new->start_time = NULL;
-    else
-    {
-	new->start_time = g_malloc(sizeof(PalTime));
-	memcpy(new->start_time, orig->start_time, sizeof(PalTime));
+    if(orig->start_time == NULL) {
+	    new->start_time = NULL;
+    } else {
+	    new->start_time = g_malloc(sizeof(PalTime));
+	    memcpy(new->start_time, orig->start_time, sizeof(PalTime));
     }
 
-    if(orig->end_time == NULL)
-	new->end_time = NULL;
-    else
-    {
-	new->end_time = g_malloc(sizeof(PalTime));
-	memcpy(new->end_time, orig->end_time, sizeof(PalTime));
+    if(orig->end_time == NULL) {
+	    new->end_time = NULL;
+    } else {
+	    new->end_time = g_malloc(sizeof(PalTime));
+	    memcpy(new->end_time, orig->end_time, sizeof(PalTime));
     }
 
 
@@ -103,37 +103,38 @@ PalEvent* pal_event_copy(PalEvent* orig)
     return new;
 }
 
-void pal_event_free(PalEvent* event)
+void
+pal_event_free(PalEvent* event)
 {
     if(event == NULL)
-	return;
+        return;
 
     if(event->text != NULL)
-	g_free(event->text);
+        g_free(event->text);
 
     if(event->type != NULL)
-	g_free(event->type);
+        g_free(event->type);
 
     if(event->start_date != NULL)
-	g_date_free(event->start_date);
+        g_date_free(event->start_date);
 
     if(event->end_date != NULL)
-	g_date_free(event->end_date);
+        g_date_free(event->end_date);
 
     if(event->date_string != NULL)
-	g_free(event->date_string);
+        g_free(event->date_string);
 
     if(event->start_time != NULL)
-	g_free(event->start_time);
+        g_free(event->start_time);
 
     if(event->end_time != NULL)
-	g_free(event->end_time);
+        g_free(event->end_time);
 
     if(event->file_name != NULL)
-	g_free(event->file_name);
+	    g_free(event->file_name);
 
     if(event->key != NULL)
-	g_free(event->key);
+	    g_free(event->key);
 
     g_free(event);
 
@@ -142,20 +143,24 @@ void pal_event_free(PalEvent* event)
 }
 
 
-static gboolean is_valid_todo(const gchar* date_string)
+static gboolean
+is_valid_todo(const char* date_string)
 {
-    if( strcmp(date_string, "TODO") == 0 )
+    if( strcmp(date_string, "TODO") == 0 ) {
         return TRUE;
-    return FALSE;
+    } else {
+        return FALSE;
+    }
 }
 
-static gboolean get_key_todo(const GDate* date, gchar *buffer)
+
+static gboolean
+get_key_todo(const GDate* date, char *buffer)
 {
     GDate* today = g_date_new();
     g_date_set_time_t(today, time(NULL));
-    if(g_date_days_between(today, date) != 0)
-    {
-	g_date_free(today);
+    if(g_date_days_between(today, date) != 0) {
+	    g_date_free(today);
         return FALSE;
     }
 
@@ -164,42 +169,52 @@ static gboolean get_key_todo(const GDate* date, gchar *buffer)
     return TRUE;
 }
 
-static gchar *get_descr_todo(const GDate *date)
+
+static char*
+get_descr_todo(const GDate *date)
 {
     (void)date;	/* Avoid unused warning */
     return g_strdup("TODO event");
 }
 
-static gboolean is_valid_daily(const gchar* date_string)
+
+static gboolean
+is_valid_daily(const char* date_string)
 {
     if( strcmp(date_string, "DAILY") == 0 )
         return TRUE;
     return FALSE;
 }
 
-static gboolean get_key_daily(const GDate* date, gchar *buffer)
+
+static gboolean
+get_key_daily(const GDate* date, char *buffer)
 {
     (void)date;	/* Avoid unused warning */
     strcpy( buffer, "DAILY" );
     return TRUE;
 }
 
-static gchar *get_descr_daily(const GDate *date)
+
+static char*
+get_descr_daily(const GDate *date)
 {
     (void)date;	/* Avoid unused warning */
     return g_strdup("Daily");
 }
 
-gboolean is_valid_yyyymmdd(const gchar* date_string)
+
+gboolean
+is_valid_yyyymmdd(const char* date_string)
 {
-    gint d[8];
+    int d[8];
 
     /* if key is regular event in the form:
        single day, monthly, yearly, yearly/monthly */
     if(sscanf(date_string, "%1d%1d%1d%1d%1d%1d%1d%1d",
 	      &d[0],&d[1],&d[2],&d[3],&d[4],&d[5],&d[6],&d[7]) == 8)
     {
-	gint year, month, day;
+	int year, month, day;
 
 	year  = d[0] * 1000 + d[1] * 100 + d[2] * 10 + d[3];
 	month = d[4] * 10 + d[5];
@@ -226,14 +241,18 @@ gboolean is_valid_yyyymmdd(const gchar* date_string)
     return FALSE;
 }
 
-static gboolean get_key_yyyymmdd(const GDate* date, gchar *buffer)
+
+static gboolean
+get_key_yyyymmdd(const GDate* date, char *buffer)
 {
     snprintf(buffer, 9, "%04d%02d%02d", g_date_get_year(date),
 	    g_date_get_month(date), g_date_get_day(date));
     return TRUE;
 }
 
-static gchar *get_descr_yyyymmdd(const GDate* date)
+
+static char*
+get_descr_yyyymmdd(const GDate* date)
 {
     char buf[128];
     char *ptr;
@@ -242,7 +261,8 @@ static gchar *get_descr_yyyymmdd(const GDate* date)
     return g_strdup(buf);
 }
 
-static const gchar *day_names[8] = {
+
+static const char *day_names[8] = {
   /*[0] =*/ "",
   /*[1] =*/ "MON",
   /*[2] =*/ "TUE",
@@ -253,97 +273,111 @@ static const gchar *day_names[8] = {
   /*[7] =*/ "SUN"
 };
 
-static gboolean is_valid_weekly(const gchar* date_string)
+
+static gboolean
+is_valid_weekly(const char* date_string)
 {
-    int i;
-    for( i=1; i<=7; i++ )
-        if( strcmp( date_string, day_names[i] ) == 0 )
+    for(int i = 1; i<=7; i++ ) {
+        if( strcmp( date_string, day_names[i] ) == 0 ) {
             return TRUE;
+		}
+	}
     return FALSE;
 }
 
-static gboolean get_key_weekly(const GDate* date, gchar* buffer)
+
+static gboolean
+get_key_weekly(const GDate* date, char* buffer)
 {
     strcpy( buffer, day_names[ g_date_get_weekday(date) ] );
     return TRUE;
 }
 
-static gchar *get_descr_weekly(const GDate* date)
+
+static char*
+get_descr_weekly(const GDate* date)
 {
     char buf[128];
     g_date_strftime(buf, 128, "Weekly: Every %A", date);
     return g_strdup(buf);
 }
 
-static gboolean is_valid_000000dd(const gchar* date_string)
+
+static gboolean
+is_valid_000000dd(const char* date_string)
 {
-    gint d[8];
+    int d[8];
 
-    if(sscanf(date_string, "000000%1d%1d", &d[6],&d[7]) == 2)
-    {
-	int day   = d[6] * 10 + d[7];
+    if(sscanf(date_string, "000000%1d%1d", &d[6],&d[7]) == 2) {
+		int day   = d[6] * 10 + d[7];
 
-	if(day < 1 || day > 31)
-	    return FALSE;
+		if(day < 1 || day > 31)
+			return FALSE;
 
-	if(strlen(date_string) == 8)
-	    return TRUE;
+		if(strlen(date_string) == 8)
+			return TRUE;
     }
     return FALSE;
 }
 
-static gboolean get_key_000000dd(const GDate* date, gchar* buffer)
+
+static gboolean
+get_key_000000dd(const GDate* date, char* buffer)
 {
     snprintf( buffer, MAX_KEYLEN, "000000%02d",  g_date_get_day(date) );
     return TRUE;
 }
 
-static gchar *get_descr_000000dd(const GDate* date)
+
+static char*
+get_descr_000000dd(const GDate* date)
 {
     char buf[128];
     snprintf( buf, 128, "Monthly: Day %d of every month", g_date_get_day(date) );
     return g_strdup(buf);
 }
 
-gboolean is_valid_0000mmdd(const gchar* date_string)
+
+gboolean
+is_valid_0000mmdd(const char* date_string)
 {
-    gint d[8];
+    int d[8];
 
-    if(sscanf(date_string, "0000%1d%1d%1d%1d", &d[4],&d[5],&d[6],&d[7]) == 4)
-    {
-	gint month, day;
+    if(sscanf(date_string, "0000%1d%1d%1d%1d", &d[4],&d[5],&d[6],&d[7]) == 4) {
 
-	day   = d[6] * 10 + d[7];
-	month = d[4] * 10 + d[5];
+		int day   = d[6] * 10 + d[7];
+		int month = d[4] * 10 + d[5];
 
-	if(day < 1 || day > 31 || month < 1 || month > 12)
-	    return FALSE;
+		if(day < 1 || day > 31 || month < 1 || month > 12)
+		    return FALSE;
 
-	/* FIXME: Don't allow one-time events on leap day in years
-	 * that leap day doesn't exist */
-	if(month == 2 && day > 29)
-	    return FALSE;
+		/* FIXME: Don't allow one-time events on leap day in years
+		 * that leap day doesn't exist */
+		if(month == 2 && day > 29)
+		    return FALSE;
 
-	/* 30 days in april, june, sept, nov */
-	if((month == 4 || month == 6 || month == 9 || month == 11) &&
-	   day > 30)
-	    return FALSE;
+		/* 30 days in april, june, sept, nov */
+		if((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)
+		    return FALSE;
 
-	if(strlen(date_string) == 8)
-	    return TRUE;
-
+		if(strlen(date_string) == 8) {
+		    return TRUE;
+		}
     }
     return FALSE;
 }
 
 
-static gboolean get_key_0000mmdd(const GDate* date, gchar* buffer)
+static gboolean
+get_key_0000mmdd(const GDate* date, char* buffer)
 {
     snprintf( buffer, MAX_KEYLEN, "0000%02d%02d",  g_date_get_month(date), g_date_get_day(date) );
     return TRUE;
 }
 
-static gchar *get_descr_0000mmdd(const GDate* date)
+
+static char*
+get_descr_0000mmdd(const GDate* date)
 {
     char buf1[128];
     char buf2[128];
@@ -353,29 +387,29 @@ static gchar *get_descr_0000mmdd(const GDate* date)
 }
 
 
-
-static gboolean is_valid_star_00nd(const gchar* date_string)
+static gboolean
+is_valid_star_00nd(const char* date_string)
 {
-    gint d[2];
-    if(sscanf(date_string, "*00%1d%1d", &d[0],&d[1]) == 2) /* nth weekday of month  */
-    {
-	gint n, weekday;
+    int d[2];
 
-	n = d[0];
-	weekday = d[1];
+	/* nth weekday of month  */
+    if(sscanf(date_string, "*00%1d%1d", &d[0],&d[1]) == 2) {
+		int n = d[0];
+		int weekday = d[1];
 
-	if(weekday >  0 && weekday < 8  &&
-	         n >  0 &&       n < 6)	   /* no more than 5 weeks in a month */
-	{
-	    if(strlen(date_string) == 5)
-		return TRUE;
-	}
+		if(weekday >  0 && weekday < 8  &&
+		         n >  0 &&       n < 6)	   /* no more than 5 weeks in a month */
+		{
+		    if(strlen(date_string) == 5)
+				return TRUE;
+		}
     }
-
     return FALSE;
 }
 
-static gboolean get_key_star_00nd(const GDate* date, gchar* buffer)
+
+static gboolean
+get_key_star_00nd(const GDate* date, char* buffer)
 {
     /* convert weekday to friendly weekday
        from: 1(mon) -> 7(sun)
@@ -385,7 +419,9 @@ static gboolean get_key_star_00nd(const GDate* date, gchar* buffer)
     return TRUE;
 }
 
-static gchar *get_descr_star_00nd(const GDate* date)
+
+static char*
+get_descr_star_00nd(const GDate* date)
 {
     char suffix[16];
     char buf1[128];
@@ -397,30 +433,32 @@ static gchar *get_descr_star_00nd(const GDate* date)
     return g_strdup(buf2);
 }
 
-static gboolean is_valid_star_mmnd(const gchar* date_string)
+
+static gboolean
+is_valid_star_mmnd(const char* date_string)
 {
-    gint d[8];
-    if(sscanf(date_string, "*%1d%1d%1d%1d", &d[0],&d[1],&d[2],&d[3]) == 4) /* nth weekday of month  */
-    {
-	gint month, n, weekday;
+    int d[8];
 
-	month = d[0] * 10 + d[1];
-	n = d[2];
-	weekday = d[3];
+	/* nth weekday of month  */
+    if(sscanf(date_string, "*%1d%1d%1d%1d", &d[0],&d[1],&d[2],&d[3]) == 4) {
+		int month = d[0] * 10 + d[1];
+		int n = d[2];
+		int weekday = d[3];
 
-	if(weekday >  0 && weekday < 8  &&
-	     month >  0 &&   month < 13 &&
-	         n >  0 &&       n < 6)	   /* no more than 5 weeks in a month */
-	{
-	    if(strlen(date_string) == 5)
-		return TRUE;
-	}
+		if(weekday >  0 && weekday < 8  &&
+		     month >  0 &&   month < 13 &&
+		         n >  0 &&       n < 6)	   /* no more than 5 weeks in a month */
+		{
+		    if(strlen(date_string) == 5)
+				return TRUE;
+		}
     }
-
     return FALSE;
 }
 
-static gboolean get_key_star_mmnd(const GDate* date, gchar* buffer)
+
+static gboolean
+get_key_star_mmnd(const GDate* date, char* buffer)
 {
     /* convert weekday to friendly weekday
        from: 1(mon) -> 7(sun)
@@ -430,7 +468,9 @@ static gboolean get_key_star_mmnd(const GDate* date, gchar* buffer)
     return TRUE;
 }
 
-static gchar *get_descr_star_mmnd(const GDate* date)
+
+static char*
+get_descr_star_mmnd(const GDate* date)
 {
     char suffix[16];
     char buf1[128];
@@ -444,26 +484,26 @@ static gchar *get_descr_star_mmnd(const GDate* date)
     return g_strdup(buf3);
 }
 
-static gboolean is_valid_star_00Ld(const gchar* date_string)
+static gboolean
+is_valid_star_00Ld(const char* date_string)
 {
-    gint d[2];
-    if(sscanf(date_string, "*00L%1d", &d[0]) == 1) /* last weekday of month */
-    {
-	gint weekday;
+    int d[2];
 
-	weekday = d[0];
-	if(weekday >  0 && weekday < 8)
-	{
-	    if(strlen(date_string) == 5)
-		return TRUE;
-	}
+	/* last weekday of month */
+    if(sscanf(date_string, "*00L%1d", &d[0]) == 1) {
 
+		int weekday = d[0];
+		if(weekday >  0 && weekday < 8) {
+		    if(strlen(date_string) == 5)
+				return TRUE;
+		}
     }
-
     return FALSE;
 }
 
-static gboolean get_key_star_00Ld(const GDate* date, gchar* buffer)
+
+static gboolean
+get_key_star_00Ld(const GDate* date, char* buffer)
 {
     int weekday;
 
@@ -479,7 +519,9 @@ static gboolean get_key_star_00Ld(const GDate* date, gchar* buffer)
     return TRUE;
 }
 
-static gchar *get_descr_star_00Ld(const GDate* date)
+
+static char*
+get_descr_star_00Ld(const GDate* date)
 {
     char buf1[128];
     char buf2[128];
@@ -493,29 +535,28 @@ static gchar *get_descr_star_00Ld(const GDate* date)
 }
 
 
-static gboolean is_valid_star_mmLd(const gchar* date_string)
+static gboolean
+is_valid_star_mmLd(const char* date_string)
 {
-    gint d[8];
-    if(sscanf(date_string, "*%1d%1dL%1d", &d[0],&d[1],&d[2]) == 3) /* last weekday of month */
-    {
-	gint month, weekday;
+    int d[8];
 
-	month = d[0] * 10 + d[1];
-	weekday = d[2];
+	/* last weekday of month */
+    if(sscanf(date_string, "*%1d%1dL%1d", &d[0],&d[1],&d[2]) == 3) {
 
-	if(weekday >  0 && weekday < 8 &&
-	   month   >  0 &&   month < 13 )
-	{
-	    if(strlen(date_string) == 5)
-		return TRUE;
-	}
+		int month = d[0] * 10 + d[1];
+		int weekday = d[2];
 
+		if(weekday >  0 && weekday < 8 && month   >  0 &&   month < 13 ) {
+		    if(strlen(date_string) == 5)
+				return TRUE;
+		}
     }
-
     return FALSE;
 }
 
-static gboolean get_key_star_mmLd(const GDate* date, gchar* buffer)
+
+static gboolean
+get_key_star_mmLd(const GDate* date, char* buffer)
 {
     int weekday;
 
@@ -530,7 +571,9 @@ static gboolean get_key_star_mmLd(const GDate* date, gchar* buffer)
     return TRUE;
 }
 
-static gchar *get_descr_star_mmLd(const GDate* date)
+
+static char*
+get_descr_star_mmLd(const GDate* date)
 {
     char buf1[128];
     char buf2[128];
@@ -546,41 +589,38 @@ static gchar *get_descr_star_mmLd(const GDate* date)
 }
 
 
-static gboolean is_valid_EASTER(const gchar* date_string)
+static gboolean
+is_valid_EASTER(const char* date_string)
 {
 
-    if(strncmp(date_string, "EASTER", 6) == 0)
-    {
+    if(strncmp(date_string, "EASTER", 6) == 0) {
 
-	if(strlen(date_string) == 6)
-	    return TRUE;
-
-	if(date_string[6] == '-' || date_string[6] == '+')
-	{
-	    if(g_ascii_isdigit(date_string[7]) &&
-	       g_ascii_isdigit(date_string[8]) &&
-	       g_ascii_isdigit(date_string[9]))
-	    {
-		if(date_string[10] == '\0')
+		if(strlen(date_string) == 6) {
 		    return TRUE;
-	    }
-	}
+		}
 
+		if(date_string[6] == '-' || date_string[6] == '+') {
+		    if(g_ascii_isdigit(date_string[7]) &&
+		       g_ascii_isdigit(date_string[8]) &&
+		       g_ascii_isdigit(date_string[9]))
+		    {
+				if(date_string[10] == '\0')
+					return TRUE;
+		    }
+		}
     }
-
     return FALSE;
 }
-
-
 
 
 /* checks if date_string is a valid date string.  Before calling this
  * function, g_strstrip needs to be called on date_string!  g_ascii_strup
  * should also be called on the date_string. */
-gboolean parse_event( PalEvent *event, const gchar* date_string)
+gboolean
+parse_event( PalEvent *event, const char* date_string)
 {
-    gchar** s;
-    gchar* ptr;
+    char** s;
+    char* ptr;
 
     int count = 1;
     int i;
@@ -588,62 +628,59 @@ gboolean parse_event( PalEvent *event, const gchar* date_string)
 
     s = g_strsplit(date_string, ":", 3);
 
-    do {    /* Loop to break out of for failure so we can clean up */
-        if( s[1] && !is_valid_yyyymmdd(s[1]) )  /* start date */
-            break;
+	if( s[1] && !is_valid_yyyymmdd(s[1]) )  /* start date */
+		goto FAILURE;
 
-        /* Need to check both, if s[1] is NULL, s[2] isn't valid */
-        if( s[1] && s[2] && !is_valid_yyyymmdd(s[2]) )  /* end date */
-            break;
+	/* Need to check both, if s[1] is NULL, s[2] isn't valid */
+	if( s[1] && s[2] && !is_valid_yyyymmdd(s[2]) )  /* end date */
+		goto FAILURE;
 
-        if( (ptr = strrchr( s[0], '/' )) != NULL )  /* Repeat counter */
-        {
-            if( sscanf( ptr+1, "%d%*s", &count ) != 1 || count < 1 )  /* Invalid count */
-                break;
+	/* Repeat counter */
+	if( (ptr = strrchr( s[0], '/' )) != NULL ) {
+		if( sscanf( ptr+1, "%d%*s", &count ) != 1 || count < 1 )  /* Invalid count */
+			goto FAILURE;
 
-            *ptr = '\0';
-        }
+		*ptr = '\0';
+	}
 
-        for( i=0; i < PAL_NUM_EVENTTYPES; i++ )
-        {
-            if( PalEventTypes[i].valid_string( s[0] ) )
-            {
-                period = PalEventTypes[i].period;
-                break;
-            }
-        }
+	for( i=0; i < PAL_NUM_EVENTTYPES; i++ ) {
+		if( PalEventTypes[i].valid_string( s[0] ) ) {
+			period = PalEventTypes[i].period;
+			break;
+		}
+	}
 
-        if( i == PAL_NUM_EVENTTYPES )
-            break;  /* Fail */
+	if( i == PAL_NUM_EVENTTYPES )
+		goto FAILURE;
 
-        /* We now know the string is valid */
+	/* We now know the string is valid */
 
-        if(s[1])
-        {
-            event->start_date = get_date(s[1]);
+	if(s[1]) {
+		event->start_date = get_date(s[1]);
 
-            if( s[2] )
-                event->end_date = get_date(s[2]);
-            else
-                event->end_date = g_date_new_dmy(1,1,3000);
-        }
-        event->period_count = count;
-        event->eventtype = &PalEventTypes[i];
-        event->key = g_strdup( s[0] );
-        g_strfreev(s);
-        return TRUE;
-    } while(0);
+		if( s[2] ) {
+			event->end_date = get_date(s[2]);
+		} else {
+			event->end_date = g_date_new_dmy(1,1,3000);
+		}
+	}
+	event->period_count = count;
+	event->eventtype = &PalEventTypes[i];
+	event->key = g_strdup( s[0] );
+	g_strfreev(s);
+	return TRUE;
+
+FAILURE:
 
     g_strfreev(s);
     return FALSE;
-
 }
 
 
-
-static GDate* find_easter(gint year)
+static GDate*
+find_easter(int year)
 {
-    gint a,b,c,d,e,f,g,h,i,k,l,m,p,month,day;
+    int a,b,c,d,e,f,g,h,i,k,l,m,p,month,day;
 
     a = year%19;
     b = year/100;
@@ -665,10 +702,12 @@ static GDate* find_easter(gint year)
 			  (GDateYear) year);
 }
 
-static gboolean get_key_EASTER(const GDate* date, gchar *buffer)
+
+static gboolean
+get_key_EASTER(const GDate* date, char *buffer)
 {
     GDate* easter = find_easter(g_date_get_year(date));
-    gint diff = g_date_days_between(date,easter);
+    int diff = g_date_days_between(date,easter);
     g_date_free(easter);
 
     if(diff != 0)
@@ -679,11 +718,13 @@ static gboolean get_key_EASTER(const GDate* date, gchar *buffer)
     return TRUE;
 }
 
-static gchar *get_descr_EASTER(const GDate* date)
+
+static char*
+get_descr_EASTER(const GDate* date)
 {
     char buf[128];
     GDate* easter = find_easter(g_date_get_year(date));
-    gint diff = g_date_days_between(date,easter);
+    int diff = g_date_days_between(date,easter);
     g_date_free(easter);
 
     if(diff != 0)
@@ -697,9 +738,10 @@ static gchar *get_descr_EASTER(const GDate* date)
 
 /* gets the yyyymmdd key for the given date.  The returned string
  * should be freed. */
-gchar* get_key(const GDate* date)
+char*
+get_key(const GDate* date)
 {
-    gchar* key = g_malloc(sizeof(gchar)*9);
+    char* key = g_malloc(sizeof(char)*9);
 
     snprintf(key, 9, "%04d%02d%02d", g_date_get_year(date),
 	    g_date_get_month(date), g_date_get_day(date));
@@ -710,10 +752,11 @@ gchar* get_key(const GDate* date)
 /* this only works on dates in yyyymmdd format.  It ignores everything
  * after the 8th character.  The returned GDate object should be
  * freed.  Returns NULL on failure*/
-GDate* get_date(const gchar* key)
+GDate*
+get_date(const char* key)
 {
     GDate* date = NULL;
-    gint year, month, day;
+    int year, month, day;
 
     sscanf(key, "%04d%02d%02d", &year, &month, &day);
 
@@ -727,15 +770,15 @@ GDate* get_date(const gchar* key)
 }
 
 
-static gboolean last_weekday_of_month(const GDate* date)
+static gboolean
+last_weekday_of_month(const GDate* date)
 {
     GDate* local = g_memdup(date,sizeof(GDate));
 
     g_date_add_days(local,7);
-    if(g_date_get_month(local) != g_date_get_month(date))
-    {
-	g_date_free(local);
-	return TRUE;
+    if(g_date_get_month(local) != g_date_get_month(date)) {
+		g_date_free(local);
+		return TRUE;
     }
     g_date_free(local);
 
@@ -745,11 +788,13 @@ static gboolean last_weekday_of_month(const GDate* date)
 
 /* Returns n from date --- as in: "date" is the "n"th
  * sunday/monday/... of the month */
-static gint get_nth_day(const GDate* date)
+static int
+get_nth_day(const GDate* date)
 {
     int i = (g_date_get_day(date) / 7) + 1;
-    if(g_date_get_day(date) % 7 == 0)
-	i--;
+    if(g_date_get_day(date) % 7 == 0) {
+		i--;
+	}
     return i;
 }
 
@@ -759,127 +804,124 @@ static gint get_nth_day(const GDate* date)
  * the given date.
  *
  * Returns the beginning of the new list (it might have changed) */
-static GList* inspect_range(GList* list, const GDate* date)
+static GList*
+inspect_range(GList* list, const GDate* date)
 {
+    if(list == NULL)
+		return list;
+
     GList* item = list;
 
-    if(list == NULL)
-	return list;
 
-    while(g_list_length(item) > 0)
-    {
-	gboolean remove = FALSE;
-	PalEvent *event = (PalEvent*) item->data;
-	if(event->start_date != NULL && event->end_date != NULL)
-	{
+    while(g_list_length(item) > 0) {
+		gboolean remove = FALSE;
+		PalEvent *event = (PalEvent*) item->data;
+		if(event->start_date != NULL && event->end_date != NULL) {
 
-	    if(g_date_days_between(date, event->start_date) > 0 ||
-	       g_date_days_between(date, event->end_date) < 0)
-		remove = TRUE;
-	    else if( event->period_count != 1 )
-	    {
-                int event_count = 0; /* Number of times event has happened since start */
+		    if(g_date_days_between(date, event->start_date) > 0 ||
+		       g_date_days_between(date, event->end_date) < 0)
+			remove = TRUE;
+		    else if( event->period_count != 1 ) {
+	                int event_count = 0; /* Number of times event has happened since start */
 
-                switch( event->eventtype->period )
-                {
-                  case PAL_ONCEONLY:
-                      event_count = 1;
-                      break;
-                  case PAL_DAILY:
-                      event_count = g_date_days_between(event->start_date, date);
-                      break;
-                  case PAL_WEEKLY:
-                      event_count = g_date_days_between(event->start_date, date) / 7;
-                      break;
-                  case PAL_MONTHLY:
-                  {
-                      int month_start = g_date_get_month(event->start_date) + 12*g_date_get_year(event->start_date);
-                      int month_cur   = g_date_get_month(date)              + 12*g_date_get_year(date);
-                      event_count     = month_cur - month_start;
-                      break;
-                  }
-                  case PAL_YEARLY:
-                  {
-                      event_count     = g_date_get_year(date) - g_date_get_year(event->start_date);
-                      break;
-                  }
-               }
-               if( (event_count % event->period_count) != 0 )
-                   remove = TRUE;
-	    }
+	                switch( event->eventtype->period )
+	                {
+	                  case PAL_ONCEONLY:
+	                      event_count = 1;
+	                      break;
+	                  case PAL_DAILY:
+	                      event_count = g_date_days_between(event->start_date, date);
+	                      break;
+	                  case PAL_WEEKLY:
+	                      event_count = g_date_days_between(event->start_date, date) / 7;
+	                      break;
+	                  case PAL_MONTHLY:
+	                  {
+	                      int month_start = g_date_get_month(event->start_date) + 12*g_date_get_year(event->start_date);
+	                      int month_cur   = g_date_get_month(date)              + 12*g_date_get_year(date);
+	                      event_count     = month_cur - month_start;
+	                      break;
+	                  }
+	                  case PAL_YEARLY:
+	                  {
+	                      event_count     = g_date_get_year(date) - g_date_get_year(event->start_date);
+	                      break;
+	                  }
+	               }
+	               if( (event_count % event->period_count) != 0 )
+	                   remove = TRUE;
+		    }
 
-	    if( remove )
-	    {
-		/* if not on last item */
-		if(g_list_length(item) > 1)
-		{
-		    /* save reference to next data item */
-		    gpointer n = g_list_next(item)->data;
+		    if( remove ) {
+				/* if not on last item */
+				if(g_list_length(item) > 1) {
+				    /* save reference to next data item */
+				    gpointer n = g_list_next(item)->data;
 
-		    /* remove this list element */
-		    list = g_list_remove(list, item->data);
+				    /* remove this list element */
+				    list = g_list_remove(list, item->data);
 
-		    /* find what we need to look at next */
-		    item = g_list_find(list, n);
+				    /* find what we need to look at next */
+				    item = g_list_find(list, n);
+				} else {
+					/* we're on last item */
+				    list = g_list_remove(list, item->data);
+				    item = g_list_last(list);
+				}
+		    } else {
+				item = g_list_next(item);
+			}
+		} else {
+		    item = g_list_next(item);
 		}
-		else /* we're on last item */
-		{
-		    list = g_list_remove(list, item->data);
-		    item = g_list_last(list);
-		}
-	    }
-	    else
-		item = g_list_next(item);
-	}
-	else
-	    item = g_list_next(item);
-
     }
-
     return list;
 }
 
 
-static gint pal_event_sort_fn(gconstpointer x, gconstpointer y)
+static int
+pal_event_sort_fn(gconstpointer x, gconstpointer y)
 {
     PalEvent* a = (PalEvent*) x;
     PalEvent* b = (PalEvent*) y;
 
     /* Put events with start times before events without start times */
     if(a->start_time != NULL && b->start_time == NULL)
-	return 1;
+		return 1;
     if(a->start_time == NULL && b->start_time != NULL)
-	return -1;
+		return -1;
 
     /* if both events have start times, sort by start time */
-    if(a->start_time != NULL && b->start_time != NULL)
-    {
-	if(a->start_time->hour < b->start_time->hour)
-	    return -1;
-	if(a->start_time->hour > b->start_time->hour)
-	    return 1;
+    if(a->start_time != NULL && b->start_time != NULL) {
+		if(a->start_time->hour < b->start_time->hour)
+		    return -1;
+		if(a->start_time->hour > b->start_time->hour)
+		    return 1;
 
-	/* if we get here, the hours are the same */
-	if(a->start_time->min < b->start_time->min)
-	    return -1;
-	if(a->start_time->min > b->start_time->min)
-	    return 1;
-	return 0;
+		/* if we get here, the hours are the same */
+		if(a->start_time->min < b->start_time->min)
+		    return -1;
+		if(a->start_time->min > b->start_time->min)
+		    return 1;
+		return 0;
     }
 
     /* if neither event has start times, sort by order in pal.conf */
     if(a->file_num == b->file_num)
-	return 0;
-    if(a->file_num <  b->file_num)
-	return -1;
-    else
-	return 1;
+		return 0;
+    if(a->file_num <  b->file_num) {
+		return -1;
+	} else {
+		return 1;
+	}
 }
 
-static GList* pal_event_sort_events(GList* events)
+
+static GList*
+pal_event_sort_events(GList* events)
 {
     if(events == NULL)
-	return NULL;
+		return NULL;
 
     return g_list_sort(events, pal_event_sort_fn);
 
@@ -888,20 +930,18 @@ static GList* pal_event_sort_events(GList* events)
 
 /* Returns a list of events on the given date.
    The returned list is sorted. */
-GList* get_events(const GDate* date)
+GList*
+get_events(const GDate* date)
 {
     GList* list = NULL;
     GList* days_events = NULL;
-    gchar eventkey[MAX_KEYLEN];
-    int i;
-
-    for( i=0; i < PAL_NUM_EVENTTYPES; i++ )
-    {
+    char eventkey[MAX_KEYLEN];
+    for(int i = 0; i < PAL_NUM_EVENTTYPES; i++ ) {
         if( PalEventTypes[i].get_key( date, eventkey ) == FALSE )
             continue;
 
         days_events = g_hash_table_lookup(ht,eventkey);
-	
+
         if(days_events != NULL)
             list = g_list_concat(list, g_list_copy(days_events));
     }
@@ -914,57 +954,53 @@ GList* get_events(const GDate* date)
 
 /* Some places only need to know the number of events on a day. They should
  * use this instead to avoid leaking memory when doing g_list_length(get_events) */
-gint pal_get_event_count( GDate *date )
+int
+pal_get_event_count( GDate *date )
 {
     GList *events = get_events( date );
-    gint count = g_list_length(events);
+    int count = g_list_length(events);
     g_list_free(events);
     return count;
 }
 
 /* the returned string should be freed */
-gchar* pal_event_escape(const PalEvent* event, const GDate* today)
+char*
+pal_event_escape(const PalEvent* event, const GDate* today)
 {
-    gchar* in = event->text;
-    gchar* out_string = g_malloc(sizeof(gchar)*strlen(event->text)*2);
-    gchar* out = out_string;
+    char* in = event->text;
+    char* out_string = g_malloc(sizeof(char)*strlen(event->text)*2);
+    char* out = out_string;
 
-    while(*in != '\0')
-    {
-	if( *in == '!' && strlen(in) > 5 &&
-	    g_ascii_isdigit(*(in+1)) &&
-	    g_ascii_isdigit(*(in+2)) &&
-	    g_ascii_isdigit(*(in+3)) &&
-	    g_ascii_isdigit(*(in+4)) &&
-	    *(in+5) == '!')
-	{
-	    int diff;
-	    int now = g_date_get_year(today);
-	    int event = g_ascii_digit_value(*(in+1));
-	    event *= 10;
-	    event += g_ascii_digit_value(*(in+2));
-	    event *= 10;
-	    event += g_ascii_digit_value(*(in+3));
-	    event *= 10;
-	    event += g_ascii_digit_value(*(in+4));
-	    diff = now-event;
-	    out += sprintf(out, "%i", diff);
-	    in += 6;
-	}
-	else
-	{
-	    *out = *in;
-	    out++;
-	    in++;
-	}
+    while(*in != '\0') {
+		if( *in == '!' && strlen(in) > 5 &&
+		    g_ascii_isdigit(*(in+1)) &&
+		    g_ascii_isdigit(*(in+2)) &&
+		    g_ascii_isdigit(*(in+3)) &&
+		    g_ascii_isdigit(*(in+4)) &&
+		    *(in+5) == '!')
+		{
+		    int diff;
+		    int now = g_date_get_year(today);
+		    int event = g_ascii_digit_value(*(in+1));
+		    event *= 10;
+		    event += g_ascii_digit_value(*(in+2));
+		    event *= 10;
+		    event += g_ascii_digit_value(*(in+3));
+		    event *= 10;
+		    event += g_ascii_digit_value(*(in+4));
+		    diff = now-event;
+		    out += sprintf(out, "%i", diff);
+		    in += 6;
+		} else {
+		    *out = *in;
+		    out++;
+		    in++;
+		}
     }
 
     *out = '\0';
     return out_string;
 }
-
-
-
 
 PalEventType PalEventTypes[] = {
     /* todo */
@@ -991,6 +1027,5 @@ PalEventType PalEventTypes[] = {
     { PAL_YEARLY,    is_valid_EASTER,     get_key_EASTER,     get_descr_EASTER    }
 };
 
-const gint PAL_NUM_EVENTTYPES = sizeof(PalEventTypes) / sizeof(PalEventTypes[0]);
-
+const int PAL_NUM_EVENTTYPES = sizeof(PalEventTypes) / sizeof(PalEventTypes[0]);
 

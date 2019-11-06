@@ -21,6 +21,6 @@
  *
  */
 
-void pal_del_event(void);
+void pal_del_event( GDate *date, int eventnum );
 void pal_del_write_file(PalEvent* dead_event);
 #endif

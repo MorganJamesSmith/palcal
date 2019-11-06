@@ -27,13 +27,16 @@
 #include "rl.h"
 #include "input.h"
 #include "edit.h"
+#include "del.h"
 
-void pal_del_write_file(PalEvent* dead_event)
+
+void
+pal_del_write_file(PalEvent* dead_event)
 {
     FILE *file = NULL;
-    gchar* filename = g_strdup(dead_event->file_name);
+    char* filename = g_strdup(dead_event->file_name);
     FILE *out_file = NULL;
-    gchar *out_filename = NULL;
+    char *out_filename = NULL;
     PalEvent* event_head = NULL;
 
     g_strstrip(filename);
@@ -41,21 +44,20 @@ void pal_del_write_file(PalEvent* dead_event)
 
 
     file = fopen(filename, "r");
-    if(file == NULL)
-    {
-	pal_output_error(_("ERROR: Can't read file: %s\n"), filename);
-	pal_output_error(_("       The event was NOT deleted."));
-	return;
+    if(file == NULL) {
+        pal_output_error(_("ERROR: Can't read file: %s\n"), filename);
+        pal_output_error(_("       The event was NOT deleted."));
+        return;
     }
 
     out_file = fopen(out_filename, "w");
-    if(out_file == NULL)
-    {
-	pal_output_error(_("ERROR: Can't write file: %s\n"), out_filename);
-	pal_output_error(_("       The event was NOT deleted."));
-	if(file != NULL)
-	    fclose(file);
-	return;
+    if(out_file == NULL) {
+        pal_output_error(_("ERROR: Can't write file: %s\n"), out_filename);
+        pal_output_error(_("       The event was NOT deleted."));
+        if(file != NULL) {
+            fclose(file);
+        }
+        return;
     }
 
 
@@ -63,45 +65,44 @@ void pal_del_write_file(PalEvent* dead_event)
     pal_input_skip_comments(file, out_file);
     event_head = pal_input_read_head(file, out_file, filename);
 
-    while(1)
-    {
-	PalEvent* pal_event = NULL;
+    while(1) {
+        PalEvent* pal_event = NULL;
 
-	pal_input_skip_comments(file, out_file);
+        pal_input_skip_comments(file, out_file);
 
-	pal_event = pal_input_read_event(file, out_file, filename, event_head, dead_event);
+        pal_event = pal_input_read_event(file, out_file, filename, event_head, dead_event);
 
-	/* stop trying to delete dead_event if we just deleted it */
-	if(dead_event != NULL && pal_event == dead_event)
-	    dead_event = NULL;
-	else if(pal_event == NULL && pal_input_eof(file))
-	    break;
+        /* stop trying to delete dead_event if we just deleted it */
+        if(dead_event != NULL && pal_event == dead_event) {
+            dead_event = NULL;
+        } else if(pal_event == NULL && pal_input_eof(file)) {
+            break;
+        }
     }
-
 
     fclose(file);
     fclose(out_file);
 
-    if(rename(out_filename, filename) != 0)
-    {
-	pal_output_error(_("ERROR: Can't rename %s to %s\n"), out_filename, filename);
-	pal_output_error(_("       The event was NOT deleted."));
-	return;
+    if(rename(out_filename, filename) != 0) {
+        pal_output_error(_("ERROR: Can't rename %s to %s\n"), out_filename, filename);
+        pal_output_error(_("       The event was NOT deleted."));
+        return;
     }
 
 
-    if(dead_event == NULL)
-    {
-	pal_output_fg(BRIGHT, GREEN, ">>> ");
-	g_print(_("Event removed from %s.\n"), filename);
+    if(dead_event == NULL) {
+        pal_output_fg(BRIGHT, GREEN, ">>> ");
+        g_print(_("Event removed from %s.\n"), filename);
+    } else {
+        pal_output_error(_("ERROR: Couldn't find event to be deleted in %s"), filename);
     }
-    else
-	pal_output_error(_("ERROR: Couldn't find event to be deleted in %s"), filename);
 
     g_free(filename);
 }
 
-static void pal_del_event( GDate *date, int eventnum )
+
+void
+pal_del_event( GDate *date, int eventnum )
 {
     PalEvent* dead_event = NULL;
     GDate* event_date = NULL;
@@ -122,8 +123,9 @@ static void pal_del_event( GDate *date, int eventnum )
     pal_output_event(dead_event, event_date, -1);
 
     if(pal_rl_get_y_n(_("Are you sure you want to delete this event? [y/n]: ")))
-       pal_del_write_file(dead_event);
+        pal_del_write_file(dead_event);
 
     pal_main_reload();
 
 }
+

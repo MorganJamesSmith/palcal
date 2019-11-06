@@ -28,11 +28,11 @@
 char* pal_rl_no_match(void);
 
 /* can't return blank line */
-gchar* pal_rl_get_line(const char* prompt, const int row, const int col); 
-gchar* pal_rl_get_line_default(const char* prompt, const int row, const int col, const char* default_text);
+char* pal_rl_get_line(const char* prompt, const int row, const int col);
+char* pal_rl_get_line_default(const char* prompt, const int row, const int col, const char* default_text);
 
 /* can return blank line */
-gchar* pal_rl_get_raw_line(const char* prompt, const int row, const int col); 
+char* pal_rl_get_raw_line(const char* prompt, const int row, const int col);
 
 gboolean pal_rl_get_y_n(const char* prompt);
 

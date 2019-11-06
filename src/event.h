@@ -24,20 +24,20 @@
 /* returns a list of events on the givent date */
 GList* get_events(const GDate* date);
 /* Return just the count */
-gint pal_get_event_count( GDate *date );
+int pal_get_event_count( GDate *date );
 
 
 PalEvent* pal_event_init(void);
 void pal_event_free(PalEvent* event);
-void pal_event_fill_dates(PalEvent* pal_event, const gchar* date_string);
-gboolean parse_event(PalEvent *event, const gchar* date_string);
-gchar* get_key(const GDate* date);
-GDate* get_date(const gchar* key);
-gchar* pal_event_date_string_to_key(const gchar* date_string);
+void pal_event_fill_dates(PalEvent* pal_event, const char* date_string);
+gboolean parse_event(PalEvent *event, const char* date_string);
+char* get_key(const GDate* date);
+GDate* get_date(const char* key);
+char* pal_event_date_string_to_key(const char* date_string);
 PalEvent* pal_event_copy(PalEvent* orig);
-gchar* pal_event_escape(const PalEvent* event, const GDate* today);
+char* pal_event_escape(const PalEvent* event, const GDate* today);
 
-gboolean is_valid_yyyymmdd(const gchar* date_string);
-gboolean is_valid_0000mmdd(const gchar* date_string);
+gboolean is_valid_yyyymmdd(const char* date_string);
+gboolean is_valid_0000mmdd(const char* date_string);
 
 #endif

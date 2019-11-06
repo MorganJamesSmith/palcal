@@ -23,6 +23,6 @@
 
 #include "main.h"
 
-gchar* pal_edit_desc(gchar* text);
+char* pal_edit_desc(char* text);
 void pal_edit_event(PalEvent* event, GDate *d);
 #endif

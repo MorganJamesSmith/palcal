@@ -24,9 +24,9 @@
 #include <glib.h>
 
 /* attributes */
-#define RESET	   0
-#define BRIGHT 	   1
-#define DIM	   2
+#define RESET      0
+#define BRIGHT     1
+#define DIM        2
 #define UNDERLINE  3
 #define BLINK      4
 #define REVERSE    7
@@ -40,17 +40,17 @@
 #define BLUE       4
 #define MAGENTA    5
 #define CYAN       6
-#define	WHITE      7
+#define WHITE      7
 
 
-void colorize_xterm_title(gchar *title);
+void colorize_xterm_title(char *title);
 void set_colorize(const int in);
 void colorize_fg(const int attribute, const int foreground);
 void colorize_reset(void);
 void colorize_bright(void);
 void colorize_error(void);
-gchar* string_color_of(const int color);
-int int_color_of(gchar* string);
+char* string_color_of(const int color);
+int int_color_of(char* string);
 
 #ifdef CURSES
 extern WINDOW *pal_curwin;

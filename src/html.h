@@ -22,7 +22,6 @@
  */
 
 
-
 void pal_html_out(void);
 
 #endif
