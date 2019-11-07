@@ -32,7 +32,7 @@ void
 pal_add_suffix(int number, char* suffix, int buf_size)
 {
     number = number % 10;
-    switch(number)
+    switch (number)
     {
         case 1:  snprintf(suffix, buf_size, "%s", gettext("1st")); return;
         case 2:  snprintf(suffix, buf_size, "%s", gettext("2nd")); return;
@@ -56,7 +56,7 @@ to:   1(sun) -> 7(sat) */
 static inline int
 pal_add_weekday_convert(int weekday)
 {
-    if(weekday == 7) {
+    if (weekday == 7) {
         return 1;
     } else {
         return weekday+1;
@@ -65,12 +65,12 @@ pal_add_weekday_convert(int weekday)
 
 
 static char*
-pal_add_get_range( GDate *date )
+pal_add_get_range(GDate *date)
 {
     pal_output_fg(BRIGHT, GREEN, "> ");
-    g_print( gettext("Does the event have start and end dates? "));
+    g_print(gettext("Does the event have start and end dates? "));
 
-    if(pal_rl_get_y_n(_("[y/n]: "))) {
+    if (pal_rl_get_y_n(_("[y/n]: "))) {
         GDate* d1 = NULL;
         GDate* d2 = NULL;
         char buf[1024] = "";
@@ -79,7 +79,7 @@ pal_add_get_range( GDate *date )
         g_print("\n");
 
         int x,y;
-        getyx( stdscr, y, x );
+        getyx(stdscr, y, x);
 
         do {
             /* set back to null for loop to work properly */
@@ -90,9 +90,9 @@ pal_add_get_range( GDate *date )
             clrtobot();
             refresh();
 
-            while(d1 == NULL) {
+            while (d1 == NULL) {
                 s = get_key(date);
-                strcpy( buf, s );
+                strcpy(buf, s);
                 g_free(s);
 
 
@@ -111,26 +111,26 @@ pal_add_get_range( GDate *date )
                 g_print("\n");
 
                 d1 = get_query_date(s, true);
-                if( !d1 )
+                if (!d1)
                     rl_ding();
                 g_free(s);
             }
 
             clrtobot();
-            while(d2 == NULL) {
+            while (d2 == NULL) {
                 s = pal_rl_get_raw_line(_("End date (blank is none): "), y+1, 0);
 
-                if( *s == 0 ) {
+                if (*s == 0) {
                     g_free(s);
-                    s = g_strdup( "30000101" );
+                    s = g_strdup("30000101");
                 }
 
                 g_print("\n");
                 d2 = get_query_date(s, true);
-                if( !d2 ) {
+                if (!d2) {
                     rl_ding();
                 } else {
-                    if(g_date_days_between(d1,d2) < 1) {
+                    if (g_date_days_between(d1,d2) < 1) {
                         pal_output_error(_("ERROR: End date must be after start date.\n"));
                         clrtobot();
                         g_date_free(d2);
@@ -155,7 +155,7 @@ pal_add_get_range( GDate *date )
             snprintf(buf, 1024, "%s ", _("Accept? [y/n]:"));
 
 
-        } while(!pal_rl_get_y_n(buf));
+        } while (!pal_rl_get_y_n(buf));
 
         s = g_strconcat(":", get_key(d1), ":", get_key(d2), NULL);
         g_date_free(d1);
@@ -175,20 +175,20 @@ pal_add_get_recur(GDate* date)
     char* selection = NULL;
 
     int x,y;
-    getyx( stdscr, y, x );
+    getyx(stdscr, y, x);
 
     pal_output_fg(BRIGHT, GREEN, "> ");
     g_print(_("Select how often this event occurs\n"));
 
-    for(int i = 0; i < PAL_NUM_EVENTTYPES; i++) {
+    for (int i = 0; i < PAL_NUM_EVENTTYPES; i++) {
         char buffer[16] = "";
         char *descr = NULL;
 
         descr = PalEventTypes[i].get_descr(date);
-        if( !descr )   /* Not applicable */
+        if (!descr)   /* Not applicable */
             continue;
 
-        sprintf( buffer, " %2d ", i );
+        sprintf(buffer, " %2d ", i);
         pal_output_attr(BRIGHT, buffer);
         g_print("- %s\n", descr);
 
@@ -201,37 +201,37 @@ pal_add_get_recur(GDate* date)
         char *descr = NULL;
 
         int promptx,prompty;
-        getyx( stdscr, prompty, promptx );
+        getyx(stdscr, prompty, promptx);
 
         selection = pal_rl_get_line(_("Select type: "), prompty, 0);
 
-        if( sscanf( selection, "%d%*s", &sel ) != 1 ) {
+        if (sscanf(selection, "%d%*s", &sel) != 1) {
             rl_ding();
             continue;
         }
 
-        if( sel < 0 || sel >= PAL_NUM_EVENTTYPES ) {
+        if (sel < 0 || sel >= PAL_NUM_EVENTTYPES) {
             rl_ding();
             continue;
         }
 
-        if( PalEventTypes[sel].get_key( date, selkey ) != true ) {
+        if (PalEventTypes[sel].get_key(date, selkey) != true) {
             rl_ding();
             continue;
         }
 
         descr = PalEventTypes[sel].get_descr(date);
-        move( y, 0 );
+        move(y, 0);
         pal_output_fg(BRIGHT, GREEN, _("Event type: "));
         g_print("%s\n", descr);
         clrtobot();
         g_free(descr);
 
-        if( PalEventTypes[sel].period == PAL_ONCEONLY )
+        if (PalEventTypes[sel].period == PAL_ONCEONLY)
             return g_strdup(selkey);
 
         return g_strconcat(selkey, pal_add_get_range(date), NULL);
-    }while(1);
+    } while (1);
 }
 
 
@@ -244,7 +244,7 @@ pal_add_get_desc(void)
     pal_output_fg(BRIGHT, GREEN, "> ");
     g_print(_("What is the description of the event?\n"));
 
-    getyx( stdscr, y, x );
+    getyx(stdscr, y, x);
 
     do{
         move(y,x);
@@ -253,7 +253,7 @@ pal_add_get_desc(void)
         olddesc = desc;
 
 #if 0
-        if(desc != NULL)
+        if (desc != NULL)
         {
             pal_rl_default_text = desc;
             rl_pre_input_hook = (rl_hook_func_t*) pal_rl_default_text_fn;
@@ -267,7 +267,7 @@ pal_add_get_desc(void)
 
         g_print("\n");
     }
-    while(!pal_rl_get_y_n(_("Is this description correct? [y/n]: ")));
+    while (!pal_rl_get_y_n(_("Is this description correct? [y/n]: ")));
 
     return desc;
 }
@@ -284,7 +284,7 @@ pal_add_get_file(void)
     g_print(_("Calendar file (usually ending with \".pal\") to add event to:\n"));
 
     int y,x;
-    getyx( stdscr, y, x );
+    getyx(stdscr, y, x);
 
     /* get the filename */
     do {
@@ -299,7 +299,7 @@ pal_add_get_file(void)
         clrtobot();
 
         /* if first character is ~, replace it with the home directory */
-        if(*filename == '~')
+        if (*filename == '~')
         {
             char* orig_filename = filename;
             filename = g_strconcat(g_get_home_dir(), filename+1, NULL);
@@ -307,10 +307,10 @@ pal_add_get_file(void)
         }
 
         /* check if file exists */
-        if(g_file_test(filename, G_FILE_TEST_EXISTS))
+        if (g_file_test(filename, G_FILE_TEST_EXISTS))
         {
             /* make sure it aint a directory */
-            if(g_file_test(filename, G_FILE_TEST_IS_DIR))
+            if (g_file_test(filename, G_FILE_TEST_IS_DIR))
             {
                 g_print("\n");
                 pal_output_error(_("ERROR: %s is a directory.\n"), filename);
@@ -326,14 +326,14 @@ pal_add_get_file(void)
             g_print("\n");
             pal_output_error(_("WARNING: %s does not exist.\n"), filename);
 
-            if(!pal_rl_get_y_n(_("Create? [y/n]: "))) {
+            if (!pal_rl_get_y_n(_("Create? [y/n]: "))) {
                 move(y,x);
                 clrtobot();
                 prompt_again = true;
             } else {
                 /* create the file */
                 FILE*  file = fopen(filename, "w");
-                if(file == NULL) {
+                if (file == NULL) {
                     move(y+1,0);
                     pal_output_error(_("ERROR: Can't create %s.\n"), filename);
                     clrtobot();
@@ -347,14 +347,14 @@ pal_add_get_file(void)
                     g_print("\n");
                     pal_output_fg(BRIGHT, GREEN, "> ");
                     g_print(_("Information for %s:\n"), filename);
-                    getyx( stdscr, y, x );
+                    getyx(stdscr, y, x);
 
                     do {
                         markers = pal_rl_get_line(_("2 character marker for calendar: "), y, 0);
-                    } while(g_utf8_strlen(markers, -1) != 2 || markers[0] == '#');
+                    } while (g_utf8_strlen(markers, -1) != 2 || markers[0] == '#');
 
                     g_print("\n");
-                    getyx( stdscr, y, x);
+                    getyx(stdscr, y, x);
                     event_type = pal_rl_get_line(_("Calendar title: "), y, 0);
 
                     top_line = g_strconcat(markers, " ", event_type, "\n", NULL);
@@ -376,10 +376,10 @@ pal_add_get_file(void)
             }
         }
 
-        if(prompt_again)
+        if (prompt_again)
             g_free(filename);
 
-    }while (prompt_again);
+    } while (prompt_again);
 
     /* no more completion necessary */
     rl_completion_entry_function = (rl_compentry_func_t*) pal_rl_no_match;
@@ -398,32 +398,32 @@ pal_add_write_file(char* filename, gchar* key, gchar* desc)
     /* check for newline at end of file */
     do {
         file = fopen(filename, "r");
-        if(file == NULL) {
+        if (file == NULL) {
             pal_output_error(_("ERROR: Can't read from file %s.\n"), filename);
-            if(!pal_rl_get_y_n(_("Try again? [y/n]: "))) {
+            if (!pal_rl_get_y_n(_("Try again? [y/n]: "))) {
                 return;
             }
         }
-    } while(file == NULL);
+    } while (file == NULL);
 
     fseek(file, -1, SEEK_END);
-    if(fgetc(file)!= '\n')
+    if (fgetc(file)!= '\n')
         no_newline = true;
     fclose(file);
 
     /* write the new event out to that file */
     do {
         file = fopen(filename, "a");
-        if(file == NULL) {
+        if (file == NULL) {
             pal_output_error(_("ERROR: Can't write to file %s.\n"), filename);
-            if(!pal_rl_get_y_n(_("Try again? [y/n]: "))) {
+            if (!pal_rl_get_y_n(_("Try again? [y/n]: "))) {
                 return;
             }
         }
-    } while(file == NULL);
+    } while (file == NULL);
 
     /* put a newline at end of file if one isn't there already */
-    if(no_newline)
+    if (no_newline)
         fputc('\n', file);
 
     write_line = g_strconcat(key, " ", desc, "\n", NULL);
@@ -438,7 +438,7 @@ pal_add_write_file(char* filename, gchar* key, gchar* desc)
 
 
 void
-pal_add_event( GDate *selected_date )
+pal_add_event(GDate *selected_date)
 {
     char* filename = NULL;
     char* description = NULL;
@@ -452,7 +452,7 @@ pal_add_event( GDate *selected_date )
     pal_output_fg(BRIGHT, GREEN, " * * *\n");
 
     pal_output_fg(BRIGHT, GREEN, _("Selected date: "));
-    g_date_strftime( buf, 128, settings->date_fmt, selected_date );
+    g_date_strftime(buf, 128, settings->date_fmt, selected_date);
     pal_output_attr(BRIGHT, buf);
     pal_output_fg(BRIGHT, GREEN, "\n");
 
@@ -468,7 +468,7 @@ pal_add_event( GDate *selected_date )
 
     /* Check the event is parsable */
     event = pal_event_init();
-    if(!parse_event(event, key)) {
+    if (!parse_event(event, key)) {
         pal_output_error("INTERNAL ERROR: Please report this error message along with\n");
         pal_output_error("                the input that generated it.\n");
         pal_output_error("INVALID KEY: %s\n", key);

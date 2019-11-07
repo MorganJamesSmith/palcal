@@ -31,14 +31,14 @@ static void
 pal_html_escape_print(char* s)
 {
     gunichar c;
-    while( (c = g_utf8_get_char(s)) != '\0') {
-        if(c == '<')        /* < to &lt; */
+    while ((c = g_utf8_get_char(s)) != '\0') {
+        if (c == '<')        /* < to &lt; */
             g_print("&lt;");
-        else if(c == '>')   /* > to &gt; */
+        else if (c == '>')   /* > to &gt; */
             g_print("&gt;");
-        else if(c == '&')   /* & to *amp; */
+        else if (c == '&')   /* & to *amp; */
             g_print("&amp;");
-        else if(c >= 32 && c < 128)  /* ASCII */
+        else if (c >= 32 && c < 128)  /* ASCII */
             g_print("%c", c);
         else
             g_print("&#%d;", c); /* unicode */
@@ -65,7 +65,7 @@ pal_html_month(GDate* date, bool force_month_label, const GDate* today)
 
     fputs("<tr>\n", stdout);
 
-    if(!settings->week_start_monday)
+    if (!settings->week_start_monday)
         g_print("%s%s%s\n", start, _("Sunday"), end);
 
     g_print("%s%s%s\n", start, _("Monday"), end);
@@ -75,45 +75,45 @@ pal_html_month(GDate* date, bool force_month_label, const GDate* today)
     g_print("%s%s%s\n", start, _("Friday"), end);
     g_print("%s%s%s\n", start, _("Saturday"), end);
 
-    if(settings->week_start_monday)
+    if (settings->week_start_monday)
         g_print("%s%s%s\n", start, _("Sunday"), end);
 
     fputs("</tr>\n", stdout);
 
     /* start the month on the right weekday */
-    if(settings->week_start_monday) {
-        if(g_date_get_weekday(date) != 1) {
+    if (settings->week_start_monday) {
+        if (g_date_get_weekday(date) != 1) {
             fputs("<tr>\n", stdout);
 
-            for(i=0; i<g_date_get_weekday(date)-1; i++) {
+            for (i=0; i<g_date_get_weekday(date)-1; i++) {
                 fputs("<td class='pal-blank'>&nbsp;</td>\n", stdout);
             }
         }
     } else {
-        if(g_date_get_weekday(date) != 7) {
+        if (g_date_get_weekday(date) != 7) {
             fputs("<tr>\n", stdout);
 
-            for(i=0; i<g_date_get_weekday(date); i++) {
+            for (i=0; i<g_date_get_weekday(date); i++) {
                 fputs("<td class='pal-blank'>&nbsp;</td>\n", stdout);
             }
         }
     }
 
-    while(g_date_get_month(date) == orig_month) {
+    while (g_date_get_month(date) == orig_month) {
         GList* events = get_events(date);
         int num_events = g_list_length(events);
         int num_events_printed = 0;
         GList* item = NULL;
 
-        if(( settings->week_start_monday && g_date_get_weekday(date) == 1) ||
+        if ((settings->week_start_monday && g_date_get_weekday(date) == 1) ||
                 (!settings->week_start_monday && g_date_get_weekday(date) == 7))
             fputs("<tr>\n", stdout);
 
         /* make today bright */
-        if(g_date_compare(date,today) == 0) {
+        if (g_date_compare(date,today) == 0) {
             g_print("<td class='pal-today' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
         } else {
-            switch(g_date_get_weekday(date))
+            switch (g_date_get_weekday(date))
             {
                 case 1:
                     g_print("<td class='pal-mon' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
@@ -145,7 +145,7 @@ pal_html_month(GDate* date, bool force_month_label, const GDate* today)
         item = g_list_first(events);
 
         /* while there are more events to be displayed */
-        while(num_events > num_events_printed) {
+        while (num_events > num_events_printed) {
             char* event_text = pal_event_escape((PalEvent*) (item->data), date);
             g_print("<span class='pal-event-%s'>\n", string_color_of(((PalEvent*) (item->data))->color));
             fputs("<b>*</b> ", stdout);
@@ -159,7 +159,7 @@ pal_html_month(GDate* date, bool force_month_label, const GDate* today)
 
         g_print("</td>\n");
 
-        if((settings->week_start_monday && g_date_get_weekday(date) == 7) ||
+        if ((settings->week_start_monday && g_date_get_weekday(date) == 7) ||
                 (!settings->week_start_monday && g_date_get_weekday(date) == 6))
             fputs("</tr>\n", stdout);
 
@@ -172,17 +172,17 @@ pal_html_month(GDate* date, bool force_month_label, const GDate* today)
     g_date_subtract_days(date, 1);
 
     /* skip to end of calendar */
-    if(settings->week_start_monday) { /* set i to the number of blanks to print */
+    if (settings->week_start_monday) { /* set i to the number of blanks to print */
         i = 7 - g_date_get_weekday(date);
     } else {
-        if(g_date_get_weekday(date) == 7) {
+        if (g_date_get_weekday(date) == 7) {
             i = 6;
         } else {
             i = 6 - g_date_get_weekday(date);
         }
     }
 
-    while(i > 0) {
+    while (i > 0) {
         fputs("<td class='pal-blank'>&nbsp;</td>", stdout);
         i--;
     }
@@ -202,7 +202,7 @@ pal_html_out()
     GDate* date = g_date_new();
 
 
-    if(settings->query_date == NULL) {
+    if (settings->query_date == NULL) {
         g_date_set_time_t(today, time(NULL));
         g_date_set_time_t(date, time(NULL));
     } else {
@@ -219,7 +219,7 @@ pal_html_out()
 
     g_print("%s %s %s", "<!-- Generated with pal", PAL_VERSION, "-->\n");
 
-    for(on_month=0; on_month < settings->cal_lines; on_month++) {
+    for (on_month=0; on_month < settings->cal_lines; on_month++) {
         pal_html_month(date, true, today);
     }
 

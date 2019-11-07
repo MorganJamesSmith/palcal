@@ -73,54 +73,54 @@ pal_manage_refresh_at()
     pal_output_cal(settings->cal_lines, selected_day);
     g_print("\n");
 
-    memcpy( date, selected_day, sizeof(GDate) );
+    memcpy(date, selected_day, sizeof(GDate));
 
     /* If we are viewing a event, screen is split in two to display
      * details. Set this so pal_output_wrap works properly */
     saved_cols = settings->term_cols;
-    if( selected_event >= 0 )
+    if (selected_event >= 0)
         settings->term_cols /= 2;
 
     /* Note: Because the output of g_print is redirected through
      * ncurses, we don't have to worry about unexpected scrolling */
 
-    while(!finished_printing) {
+    while (!finished_printing) {
         int thisdaycount = 0;
-        bool isselectedday = (g_date_compare ( date, selected_day ) == 0);
+        bool isselectedday = (g_date_compare (date, selected_day) == 0);
         thisdaycount = pal_get_event_count(date);
 
-        if(linecount > 6)
+        if (linecount > 6)
             settings->term_cols = saved_cols;
 
-        if( isselectedday ) {
+        if (isselectedday) {
             events_on_day = thisdaycount;
 
-            if(selected_event >= events_on_day)
+            if (selected_event >= events_on_day)
                 selected_event = events_on_day - 1;
         }
 
-        if( thisdaycount > 0 || isselectedday ) {
+        if (thisdaycount > 0 || isselectedday) {
             int x,y;
-            getyx( stdscr, y, x );
+            getyx(stdscr, y, x);
 
 
-            linecount += pal_output_date(date, true, isselectedday ? selected_event : -1 );
+            linecount += pal_output_date(date, true, isselectedday ? selected_event : -1);
 
             /* if the last thing we printed fell off the screen, erase it */
-            if(linecount + settings->cal_lines+3 > settings->term_rows-1) {
+            if (linecount + settings->cal_lines+3 > settings->term_rows-1) {
                 move(y,x);
                 clrtobot();
                 finished_printing = true; /* break out of loop */
             }
         }
 
-        g_date_add_days( date, 1 );
+        g_date_add_days(date, 1);
     }
     g_date_free(date);
 
 
     /* Draw the event information box if an event is selected */
-    if( selected_event >= 0 && events_on_day > 0 ) {
+    if (selected_event >= 0 && events_on_day > 0) {
         GList *events = get_events(selected_day);
         char *ptr = NULL;
         PalEvent *curevent = NULL;
@@ -128,44 +128,44 @@ pal_manage_refresh_at()
 
         /* If we are viewing a event, screen is split in two to display
          * details. Set this so pal_output_wrap works properly */
-        if( selected_event >= 0 )
+        if (selected_event >= 0)
             settings->term_cols /= 2;
 
         pal_curwin = subwin(stdscr, 5, saved_cols/2,
                 settings->cal_lines + 4, saved_cols/2);
 
-        curevent = g_list_nth_data(events, (selected_event >= 0) ? selected_event : 0 );
+        curevent = g_list_nth_data(events, (selected_event >= 0) ? selected_event : 0);
         g_list_free(events);
 
         wmove(pal_curwin, 0, 0);
-        pal_output_fg(BRIGHT, GREEN, _("Event Type: ") );
-        ptr = curevent->eventtype->get_descr( selected_day );
-        pal_output_wrap( ptr, 12, 5 );
+        pal_output_fg(BRIGHT, GREEN, _("Event Type: "));
+        ptr = curevent->eventtype->get_descr(selected_day);
+        pal_output_wrap(ptr, 12, 5);
         g_free(ptr);
 
-        pal_output_fg(BRIGHT, GREEN, _("Skip count: ") );
-        g_print( "%d\n", curevent->period_count );
+        pal_output_fg(BRIGHT, GREEN, _("Skip count: "));
+        g_print("%d\n", curevent->period_count);
 
-        pal_output_fg(BRIGHT, GREEN, _("Start date: ") );
-        if( curevent->start_date )
+        pal_output_fg(BRIGHT, GREEN, _("Start date: "));
+        if (curevent->start_date)
             g_date_strftime(date_text, 128,
                     settings->date_fmt, curevent->start_date);
         else
-            sprintf( date_text, "None" );
-        g_print( "%s\n", date_text );
+            sprintf(date_text, "None");
+        g_print("%s\n", date_text);
 
-        pal_output_fg(BRIGHT, GREEN, _("End date:   ") );
-        if( curevent->end_date )
+        pal_output_fg(BRIGHT, GREEN, _("End date:   "));
+        if (curevent->end_date)
             g_date_strftime(date_text, 128,
                     settings->date_fmt, curevent->end_date);
         else
-            sprintf( date_text, "None" );
-        g_print( "%s\n", date_text );
+            sprintf(date_text, "None");
+        g_print("%s\n", date_text);
 
-        pal_output_fg(BRIGHT, GREEN, _("Key:        ") );
-        g_print( "%s\n", curevent->key );
+        pal_output_fg(BRIGHT, GREEN, _("Key:        "));
+        g_print("%s\n", curevent->key);
 
-        delwin( pal_curwin );
+        delwin(pal_curwin);
         pal_curwin = stdscr;
     }
 
@@ -201,7 +201,7 @@ static void pal_manage_finish(int sig)
     tputs(clear_screen, lines > 0 ? lines : 1, putchar);
 
     /* set the xterm title to something reasonable */
-    if(gethostname(hostname, 128) == 0)
+    if (gethostname(hostname, 128) == 0)
         colorize_xterm_title(hostname);
 
     exit(0);
@@ -220,7 +220,7 @@ static void pal_manage_resize(int sig)
 #ifndef __CYGWIN__ /* figure out the terminal width if possible */
     {
         struct winsize wsz;
-        if(ioctl(0, TIOCGWINSZ, &wsz) != -1)
+        if (ioctl(0, TIOCGWINSZ, &wsz) != -1)
         {
             settings->term_cols = wsz.ws_col;
             settings->term_rows = wsz.ws_row;
@@ -229,7 +229,7 @@ static void pal_manage_resize(int sig)
 #endif
 
     /* Tell curses that the screen size has been resized */
-    if(is_term_resized(settings->term_rows, settings->term_cols))
+    if (is_term_resized(settings->term_rows, settings->term_cols))
     {
         resizeterm(settings->term_rows, settings->term_cols);
     }
@@ -252,7 +252,7 @@ static void pal_manage_isearch_refresh(void)
     int searchselect = selected_event;
     char buffer[128] = "";
 
-    memcpy( searchdate, selected_day, sizeof(GDate) );
+    memcpy(searchdate, selected_day, sizeof(GDate));
 
     move(0,0);
     clrtoeol();
@@ -268,8 +268,8 @@ static void pal_manage_isearch_refresh(void)
 
 
     /* Only search if there is text to search for */
-    if( *rl_line_buffer && !pal_search_isearch_event( &searchdate, &searchselect,
-                rl_line_buffer, isearch_direction ) )
+    if (*rl_line_buffer && !pal_search_isearch_event(&searchdate, &searchselect,
+                rl_line_buffer, isearch_direction))
     {
         pal_output_fg(BRIGHT, RED, _("No matches found!"));
         rl_ding();
@@ -293,7 +293,7 @@ static void pal_manage_isearch(bool forward)
     GDate *searchdate = g_date_new();
     int searchselect = selected_event;
 
-    memcpy( searchdate, selected_day, sizeof(GDate) );
+    memcpy(searchdate, selected_day, sizeof(GDate));
 
     isearch_direction = forward;
 
@@ -311,9 +311,9 @@ static void pal_manage_isearch(bool forward)
     rl_redisplay_function = pal_rl_ncurses_hack;
 
     /* If the user typed something and we can find event, set selected event */
-    if( *searchstring ) {
-        if( pal_search_isearch_event( &searchdate, &searchselect, rl_line_buffer, isearch_direction ) ) {
-            memcpy( selected_day, searchdate, sizeof(GDate) );
+    if (*searchstring) {
+        if (pal_search_isearch_event(&searchdate, &searchselect, rl_line_buffer, isearch_direction)) {
+            memcpy(selected_day, searchdate, sizeof(GDate));
             selected_event = searchselect;
         }
     }
@@ -323,26 +323,26 @@ static void pal_manage_isearch(bool forward)
 }
 
 /* Scans for the next event in the given direction */
-static void pal_manage_scan_for_event( GDate **date, int *eventnum, int dir )
+static void pal_manage_scan_for_event(GDate **date, int *eventnum, int dir)
 {
     /* Note, the way this code is written handles the case where eventnum is
      * -1. In that case it places on the first event following this date */
-    if( dir > 0 ) {
+    if (dir > 0) {
         int thisdaycount;
         int count = 0;
 
         (*eventnum)++;
-        if( *eventnum < events_on_day )
+        if (*eventnum < events_on_day)
             return;
 
         *eventnum = 0;
 
         /* No more than two months */
-        while( count < 60 ) {
+        while (count < 60) {
             g_date_add_days(*date, 1);
             thisdaycount = pal_get_event_count(*date);
 
-            if( thisdaycount > 0 )
+            if (thisdaycount > 0)
                 return;
 
             count++;
@@ -354,16 +354,16 @@ static void pal_manage_scan_for_event( GDate **date, int *eventnum, int dir )
         int count = 0;
 
         (*eventnum)--;
-        if( *eventnum >= 0 ) {
+        if (*eventnum >= 0) {
             return;
         }
 
         /* No more than two months */
-        while( count < 60 ) {
+        while (count < 60) {
             g_date_subtract_days(*date, 1);
             thisdaycount = pal_get_event_count(*date);
 
-            if( thisdaycount > 0 ) {
+            if (thisdaycount > 0) {
                 *eventnum = thisdaycount - 1;
                 return;
             }
@@ -412,7 +412,7 @@ pal_manage(void)
     settings->curses = true;
     pal_curwin = stdscr;
 
-    if(has_colors()) {
+    if (has_colors()) {
         start_color();
         init_pair(COLOR_BLACK,   COLOR_BLACK,   COLOR_BLACK);
         init_pair(COLOR_GREEN,   COLOR_GREEN,   COLOR_BLACK);
@@ -434,12 +434,12 @@ pal_manage(void)
     g_print(" - ");
     g_print(_("Press 'h' for help, 'q' to quit."));
 
-    for(;;) {
+    for (;;) {
         int c;
-        while((c = getch()) == ERR);
+        while ((c = getch()) == ERR);
 
 
-        switch(c)
+        switch (c)
         {
             case KEY_RESIZE:
                 pal_manage_refresh();
@@ -459,17 +459,17 @@ pal_manage(void)
                 pal_manage_refresh();
                 break;
             case KEY_UP:
-                if(selected_event == -1)
+                if (selected_event == -1)
                     g_date_subtract_days(selected_day, 7);
                 else
-                    pal_manage_scan_for_event( &selected_day, &selected_event, -1 );
+                    pal_manage_scan_for_event(&selected_day, &selected_event, -1);
                 pal_manage_refresh();
                 break;
             case KEY_DOWN:
-                if(selected_event == -1)
+                if (selected_event == -1)
                     g_date_add_days(selected_day, 7);
                 else
-                    pal_manage_scan_for_event( &selected_day, &selected_event, 1 );
+                    pal_manage_scan_for_event(&selected_day, &selected_event, 1);
                 pal_manage_refresh();
                 break;
 
@@ -477,14 +477,14 @@ pal_manage(void)
             case '\r':
             case KEY_ENTER:
 
-                if(selected_event != -1)
+                if (selected_event != -1)
                     selected_event = -1;
 
-                else if(events_on_day != 0)
+                else if (events_on_day != 0)
                     selected_event = 0;
 
                 else /* If no event on current day, scan till we find one */
-                    pal_manage_scan_for_event( &selected_day, &selected_event, 1 );
+                    pal_manage_scan_for_event(&selected_day, &selected_event, 1);
 
 
                 pal_manage_refresh();
@@ -501,10 +501,10 @@ pal_manage(void)
                 {
                     char* str = pal_rl_get_raw_line(_("Goto date: "), 0, 0);
 
-                    if(strlen(str) > 0) {
+                    if (strlen(str) > 0) {
                         GDate* new_date = get_query_date(str, false);
 
-                        if(new_date == NULL) {
+                        if (new_date == NULL) {
                             move(0, 0);
                             clrtoeol();
                             colorize_fg(BRIGHT, RED);
@@ -526,14 +526,14 @@ pal_manage(void)
             case 'e': /* edit description */
             case 'E':
                 /* Shortcut for days with one event */
-                if(selected_event == -1 && events_on_day == 1 )
+                if (selected_event == -1 && events_on_day == 1)
                     selected_event = 0;
-                if(selected_event != -1)
+                if (selected_event != -1)
                 {
                     PalEvent* e = pal_output_event_num(selected_day, selected_event+1);
-                    if(e != NULL)
+                    if (e != NULL)
                     {
-                        if(e->global)
+                        if (e->global)
                         {
                             move(0, 0);
                             clrtoeol();
@@ -565,7 +565,7 @@ pal_manage(void)
 
             case 'v':
             case 'V':
-                if(selected_event != -1)
+                if (selected_event != -1)
                 {
                     pal_edit_event(pal_output_event_num(selected_day, selected_event+1), selected_day);
                     pal_manage_refresh();
@@ -578,18 +578,18 @@ pal_manage(void)
 
             case 'a': /* add event */
             case 'A':
-                pal_add_event( selected_day );
+                pal_add_event(selected_day);
                 break;
 
             case KEY_DC: /* delete key - kill event */
-                if(selected_event != -1) {
+                if (selected_event != -1) {
                     PalEvent* e = pal_output_event_num(selected_day, selected_event+1);
-                    if(e != NULL) {
+                    if (e != NULL) {
                         move(0, 0);
-                        if(e->global) {
+                        if (e->global) {
                             pal_output_fg(BRIGHT, RED, _("Can't delete global event!"));
                         } else {
-                            if(pal_rl_get_y_n(_("Are you sure you want to delete this event? [y/n]: "))) {
+                            if (pal_rl_get_y_n(_("Are you sure you want to delete this event? [y/n]: "))) {
                                 selected_event = -1;
                                 pal_del_write_file(e);
                             }
@@ -608,10 +608,10 @@ pal_manage(void)
             case 'S': break;
 
             case '/': /* forward i-search */
-                      pal_manage_isearch( true );
+                      pal_manage_isearch(true);
                       break;
             case '?': /* backward i-search */
-                      pal_manage_isearch( false );
+                      pal_manage_isearch(false);
                       break;
 
             case 'h': /* help */
@@ -674,7 +674,7 @@ pal_manage(void)
                           int c;
                           do {
                               c = getch();
-                          } while(c == ERR || c == KEY_RESIZE);
+                          } while (c == ERR || c == KEY_RESIZE);
                       }
 
                       pal_manage_refresh();

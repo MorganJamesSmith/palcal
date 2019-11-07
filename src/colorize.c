@@ -39,7 +39,7 @@ color_term(void)
 {
     char *term = getenv("TERM");
 
-    if(term == NULL) {
+    if (term == NULL) {
         return;
     }
 
@@ -47,7 +47,7 @@ color_term(void)
 
 
     /* use colors if TERM variable is one of the following */
-    if( getenv("COLORTERM") != NULL ||
+    if (getenv("COLORTERM") != NULL ||
             !g_ascii_strncasecmp(term, "xterm", 5) ||
             !g_ascii_strncasecmp(term, "xterm-color", 11) ||
             !g_ascii_strncasecmp(term, "linux", 5) || /* linux console */
@@ -60,7 +60,7 @@ color_term(void)
         use_colors = 1;
 
     /* make sure TERM=dumb didn't slip by with COLORTERM set */
-    if(!g_ascii_strncasecmp(term, "dumb", 4)) {
+    if (!g_ascii_strncasecmp(term, "dumb", 4)) {
         use_colors = 0;
     }
 
@@ -71,7 +71,7 @@ color_term(void)
 void
 set_colorize(const int in)
 {
-    if(use_colors != -2) {
+    if (use_colors != -2) {
         use_colors = in;
     }
 }
@@ -80,7 +80,7 @@ set_colorize(const int in)
 static int
 get_curses_color(const int color)
 {
-    switch(color)
+    switch (color)
     {
     case BLACK:   return COLOR_BLACK;
     case RED:     return COLOR_RED;
@@ -98,13 +98,13 @@ get_curses_color(const int color)
 void
 colorize_xterm_title(char *title)
 {
-    if(use_colors == -1) {
+    if (use_colors == -1) {
         color_term();
     }
 
     /* If the terminal doesn't support colors, it probably doesn't
      * support setting the term title */
-    if(use_colors == 0 || use_colors == -2) {
+    if (use_colors == 0 || use_colors == -2) {
         return;
     }
 
@@ -116,17 +116,17 @@ void
 colorize_fg(const int attribute, const int foreground)
 {
     /* determine use_colors variable if it isn't set yet. */
-    if(use_colors == -1) {
+    if (use_colors == -1) {
         color_term();
     }
 
     /* don't do anything if not using colors */
-    if(use_colors == 0 || use_colors == -2) {
+    if (use_colors == 0 || use_colors == -2) {
         return;
     }
 
     /* Command is the control command to the terminal */
-    if(settings->curses) {
+    if (settings->curses) {
         wattrset(pal_curwin, A_BOLD | COLOR_PAIR(get_curses_color(foreground)));
     } else {
         printf("%c[%d;%dm", 0x1B, attribute, foreground+30);
@@ -138,17 +138,17 @@ void
 colorize_bright(void)
 {
     /* determine use_colors variable if it isn't set yet. */
-    if(use_colors == -1) {
+    if (use_colors == -1) {
         color_term();
     }
 
     /* don't do anything if not using colors */
-    if(use_colors == 0 || use_colors == -2) {
+    if (use_colors == 0 || use_colors == -2) {
         return;
     }
 
     /* Command is the control command to the terminal */
-    if(settings->curses) {
+    if (settings->curses) {
         wattrset(pal_curwin, A_BOLD);
     } else {
         printf("%c[%dm", 0x1B, BRIGHT);
@@ -160,17 +160,17 @@ void
 colorize_error(void)
 {
     /* determine use_colors variable if it isn't set yet. */
-    if(use_colors == -1) {
+    if (use_colors == -1) {
         color_term();
     }
 
     /* don't do anything if not using colors */
-    if(use_colors == 0 || use_colors == -2) {
+    if (use_colors == 0 || use_colors == -2) {
         return;
     }
 
     /* Command is the control command to the terminal */
-    if(settings->curses) {
+    if (settings->curses) {
         wattrset(pal_curwin, A_BOLD | COLOR_PAIR(COLOR_RED));
     } else {
         g_printerr("%c[%d;%dm", 0x1B, BRIGHT, RED+30);
@@ -182,16 +182,16 @@ void
 colorize_reset(void)
 {
     /* determine use_colors variable if it isn't set yet. */
-    if(use_colors == -1) {
+    if (use_colors == -1) {
         color_term();
     }
 
     /* don't do anything if not using colors */
-    if(use_colors == 0 || use_colors == -2) {
+    if (use_colors == 0 || use_colors == -2) {
         return;
     }
 
-    if(settings->curses) {
+    if (settings->curses) {
         wattrset(pal_curwin, A_NORMAL);
     } else {
         g_print("%c[0m", 0x1B);
@@ -208,7 +208,7 @@ static const char *string_colors[] = { "black", "red", "green",
 char*
 string_color_of(const int color)
 {
-    if(color >=0 && color < 8) {
+    if (color >=0 && color < 8) {
         return g_strdup(string_colors[color]);
     } else {
         /* when in doubt, use default color */
@@ -221,9 +221,9 @@ string_color_of(const int color)
 int
 int_color_of(char* string)
 {
-    for(int i = 0; i<8; i++)
+    for (int i = 0; i<8; i++)
     {
-        if(g_ascii_strcasecmp(string, string_colors[i]) == 0) {
+        if (g_ascii_strcasecmp(string, string_colors[i]) == 0) {
             return i;
         }
     }

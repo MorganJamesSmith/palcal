@@ -25,11 +25,11 @@
 
 #include "colorize.h"
 
-void pal_output_handler( const char *instr );
+void pal_output_handler(const char *instr);
 
 void pal_output_attr(int attr, char *formatString, ...);
 void pal_output_fg(int attr, int color, char *formatString,...);
-void pal_output_error(char *formatString, ... );
+void pal_output_error(char *formatString, ...);
 
 void pal_output_cal(int num_lines, const GDate* today);
 int pal_output_date(GDate* date, bool show_empty_days, int select_event);

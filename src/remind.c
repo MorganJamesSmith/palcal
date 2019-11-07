@@ -31,9 +31,9 @@
 /* escape ' */
 static void pal_remind_escape(gchar *string, FILE* tmp_stream)
 {
-    while(*string != '\0')
+    while (*string != '\0')
     {
-	if(*string == '$'  ||
+	if (*string == '$'  ||
 	   *string == '`'  ||
 	   *string == '"'  ||
 	   *string == '\\')
@@ -71,7 +71,7 @@ static void pal_remind_event(void)
     remind_event = pal_rl_get_event(&event_date, true);
     g_print("\n");
 
-    if(remind_event->start_time != NULL)
+    if (remind_event->start_time != NULL)
     {
 	snprintf(at_string, 1024, "%02d:%02d %04d-%02d-%02dW",
 		 remind_event->start_time->hour,
@@ -153,7 +153,7 @@ static void pal_remind_event(void)
     g_print("at -f %s %s\n", tmp_name, at_string);
     return_val = system(g_strconcat("at -f ", tmp_name, " ", at_string, NULL));
 
-    if(return_val != 0)
+    if (return_val != 0)
 	pal_output_error(_("ERROR: Date string was invalid or could not run 'at'.  Is 'atd' running?"));
     else
     {

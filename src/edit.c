@@ -51,18 +51,18 @@ pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
 {
     char *buf = NULL;
 
-    switch(i)
+    switch (i)
     {
         case 0:
             return g_strdup(event->text);
         case 1:
-            return event->eventtype->get_descr( d );
+            return event->eventtype->get_descr(d);
         case 2:
             buf = g_malloc(sizeof(char)*128);
             snprintf(buf, 128, "%d", event->period_count);
             return buf;
         case 3:
-            if(event->start_date == NULL)
+            if (event->start_date == NULL)
                 return g_strdup(_("None"));
 
             buf = g_malloc(sizeof(char)*128);
@@ -71,7 +71,7 @@ pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
             return buf;
 
         case 4:
-            if(event->end_date == NULL)
+            if (event->end_date == NULL)
                 return g_strdup(_("None"));
 
             buf = g_malloc(sizeof(char)*128);
@@ -79,7 +79,7 @@ pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
                     settings->date_fmt, event->end_date);
             return buf;
         case 5:
-            if(event->start_time == NULL)
+            if (event->start_time == NULL)
                 return g_strdup(_("None"));
 
             buf = g_malloc(sizeof(char)*128);
@@ -88,7 +88,7 @@ pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
                     event->start_time->min);
             return buf;
         case 6:
-            if(event->end_time == NULL)
+            if (event->end_time == NULL)
                 return g_strdup(_("None"));
 
             buf = g_malloc(sizeof(char)*128);
@@ -108,7 +108,7 @@ pal_edit_get_field_val(int i, PalEvent *event, GDate *d)
                     event->start, event->end);
             return buf;
         case 11:
-            if(event->color == -1)
+            if (event->color == -1)
                 return string_color_of(settings->event_color);
             return string_color_of(settings->event_color);
         default:
@@ -151,11 +151,11 @@ pal_edit_refresh(PalEvent* event, GDate *d)
 
     move(0,0);
 
-    for(int i=0; i<NUM_FIELDS; i++)
+    for (int i=0; i<NUM_FIELDS; i++)
     {
         char *prompt = NULL;
         prompt = g_strconcat(fieldlist[i].prompt, ": ", NULL);
-        if(selectedField == i) {
+        if (selectedField == i) {
             pal_output_fg(BRIGHT, GREEN, align, prompt);
         } else {
             pal_output_fg(BRIGHT, BLACK, align, prompt);
@@ -176,13 +176,13 @@ pal_edit_event(PalEvent* event, GDate *d)
 
     pal_edit_init();
 
-    for(;;) {
+    for (;;) {
         int c;
 
         pal_edit_refresh(event, d);
-        while((c = getch()) == ERR);
+        while ((c = getch()) == ERR);
 
-        switch(c)
+        switch (c)
         {
             case KEY_RESIZE:
                 pal_edit_refresh(event, d);
@@ -190,14 +190,14 @@ pal_edit_event(PalEvent* event, GDate *d)
 
             case KEY_DOWN:
                 selectedField = (selectedField + 1) % NUM_FIELDS;
-                while(!fieldlist[selectedField].editable &&
+                while (!fieldlist[selectedField].editable &&
                         selectedField < NUM_FIELDS)
                     selectedField = (selectedField + 1) % NUM_FIELDS;
                 break;
 
             case KEY_UP:
                 selectedField = (selectedField - 1 + NUM_FIELDS) % NUM_FIELDS;
-                while(!fieldlist[selectedField].editable &&
+                while (!fieldlist[selectedField].editable &&
                         selectedField < NUM_FIELDS)
                     selectedField = (selectedField - 1 + NUM_FIELDS) % NUM_FIELDS;
                 break;

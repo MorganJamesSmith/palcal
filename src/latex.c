@@ -31,26 +31,26 @@ static void pal_latex_escape_print(char* s)
 {
     gunichar c;
     /* Note: g_print uses the current locale encoding, even though we print UTF-8 */
-    while( (c = g_utf8_get_char(s)) != '\0') {
-        if(c == '&')        /* & to \& */
+    while ((c = g_utf8_get_char(s)) != '\0') {
+        if (c == '&')        /* & to \& */
             g_print("\\&");
-        else if(c == '$')   /* $ to \$ */
+        else if (c == '$')   /* $ to \$ */
             g_print("\\$");
-        else if(c == '\\')  /* \ to \\ */
+        else if (c == '\\')  /* \ to \\ */
             g_print("\\\\");
-        else if(c == '}')   /* } to \} */
+        else if (c == '}')   /* } to \} */
             g_print("\\}");
-        else if(c == '{')   /* { to \{ */
+        else if (c == '{')   /* { to \{ */
             g_print("\\{");
-        else if(c == '#')   /* # to \# */
+        else if (c == '#')   /* # to \# */
             g_print("\\#");
-        else if(c == '%')   /* % to \% */
+        else if (c == '%')   /* % to \% */
             g_print("\\%%");
-        else if(c == '^')   /* ^ to \^ */
+        else if (c == '^')   /* ^ to \^ */
             g_print("\\^");
-        else if(c == '_')   /* _ to \_ */
+        else if (c == '_')   /* _ to \_ */
             g_print("\\_");
-        else if(c >= 32 && c < 128)
+        else if (c >= 32 && c < 128)
             g_print("%c", c);
         else
             g_print("\\unichar{%d}", c); /* print 1 char */
@@ -75,7 +75,7 @@ static void pal_latex_month(GDate* date, bool force_month_label)
     g_print("%s", "\\begin{tabularx}{10.0in}{|p{1.26in}|p{1.26in}|p{1.26in}|p{1.26in}|p{1.26in}|p{1.26in}|p{1.24in}|}\n");
     g_print("%s", "\\hline\n");
 
-    if(!settings->week_start_monday)
+    if (!settings->week_start_monday)
         g_print("%s%s%s&", "\\textbf{", _("Sunday"), "}");
 
     g_print("%s%s%s&", "\\textbf{", _("Monday"), "}");
@@ -85,7 +85,7 @@ static void pal_latex_month(GDate* date, bool force_month_label)
     g_print("%s%s%s&", "\\textbf{", _("Friday"), "}");
     g_print("%s%s%s", "\\textbf{", _("Saturday"), "}");
 
-    if(settings->week_start_monday)
+    if (settings->week_start_monday)
         g_print("&%s%s%s", "\\textbf{", _("Sunday"), "}");
 
     g_print("\\\\\n");
@@ -93,19 +93,19 @@ static void pal_latex_month(GDate* date, bool force_month_label)
     g_print("\\hline \\hline\n");
 
     /* start the month on the right weekday */
-    if(settings->week_start_monday)
-        for(i=0; i<g_date_get_weekday(date)-1; i++)
+    if (settings->week_start_monday)
+        for (i=0; i<g_date_get_weekday(date)-1; i++)
             g_print(" & ");
     else
     {
-        if(g_date_get_weekday(date) != 7)
-            for(i=0; i<g_date_get_weekday(date); i++)
+        if (g_date_get_weekday(date) != 7)
+            for (i=0; i<g_date_get_weekday(date); i++)
                 g_print(" & ");
     }
 
 
     /* fill in stuff */
-    while(g_date_get_month(date) == orig_month)
+    while (g_date_get_month(date) == orig_month)
     {
         GList* events = get_events(date);
         int num_events = g_list_length(events);
@@ -117,7 +117,7 @@ static void pal_latex_month(GDate* date, bool force_month_label)
         item = g_list_first(events);
 
         /* while theres more events to be displayed */
-        while(num_events > num_events_printed)
+        while (num_events > num_events_printed)
         {
             char* event_text = pal_event_escape((PalEvent*) (item->data), date);
             g_print("$\\cdot$");
@@ -129,16 +129,16 @@ static void pal_latex_month(GDate* date, bool force_month_label)
         }
 
         g_print("}");
-        if(num_events == 0)
+        if (num_events == 0)
             g_print("\\vspace{.9in}");
         else
             g_print("\\vspace{.3in}");
 
 
-        if((settings->week_start_monday && g_date_get_weekday(date) == 7) ||
+        if ((settings->week_start_monday && g_date_get_weekday(date) == 7) ||
                 (!settings->week_start_monday && g_date_get_weekday(date) == 6))
         {
-            if(!g_date_is_last_of_month(date)) {
+            if (!g_date_is_last_of_month(date)) {
                 g_print("\\\\ \\hline\n");
             } else {
                 g_print("\n");
@@ -153,20 +153,20 @@ static void pal_latex_month(GDate* date, bool force_month_label)
     }
 
     /* skip to end of calendar */
-    if(settings->week_start_monday) {
+    if (settings->week_start_monday) {
         int tmp = g_date_get_weekday(date);
-        if(tmp == 1) {
+        if (tmp == 1) {
             tmp = 7;
         }
 
-        while(tmp != 7) {
+        while (tmp != 7) {
             g_print(" & ");
             tmp++;
         }
     } else {
         int tmp = g_date_get_weekday(date);
-        if(tmp == 7) tmp = 6;
-        while(tmp != 6) {
+        if (tmp == 7) tmp = 6;
+        while (tmp != 6) {
             g_print(" & ");
             tmp++;
         }
@@ -183,8 +183,8 @@ void pal_latex_out(void)
     int on_month = 0;
     GDate* date = g_date_new();
 
-    if( settings->query_date ) {
-        memcpy( date, settings->query_date, sizeof(GDate) );
+    if (settings->query_date) {
+        memcpy(date, settings->query_date, sizeof(GDate));
     } else {
         g_date_set_time_t(date, time(NULL));
     }
@@ -219,8 +219,8 @@ void pal_latex_out(void)
     /* back up to the first of the month */
     g_date_subtract_days(date, g_date_get_day(date) - 1);
 
-    for(on_month=0; on_month < settings->cal_lines; on_month++) {
-        if(on_month != 0) {
+    for (on_month=0; on_month < settings->cal_lines; on_month++) {
+        if (on_month != 0) {
             g_print("%s", "\\newpage\n");
         }
         pal_latex_month(date, true);

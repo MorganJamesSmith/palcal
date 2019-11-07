@@ -24,7 +24,7 @@
 /* returns a list of events on the givent date */
 GList* get_events(const GDate* date);
 /* Return just the count */
-int pal_get_event_count( GDate *date );
+int pal_get_event_count(GDate *date);
 
 
 PalEvent* pal_event_init(void);

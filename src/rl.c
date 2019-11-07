@@ -43,7 +43,7 @@ void pal_rl_default_text_fn()
 {
     char* locale_default_text = g_locale_from_utf8(pal_rl_default_text, -1,
             NULL, NULL, NULL);
-    if(locale_default_text == NULL)
+    if (locale_default_text == NULL)
         rl_insert_text(pal_rl_default_text); /* this shouldn't happen */
     else
     {
@@ -64,9 +64,9 @@ char* pal_rl_get_raw_line(const char* prompt, const int row, const int col)
     char *locale_prompt = NULL;
 
     locale_prompt = g_locale_from_utf8(prompt, -1, NULL, NULL, NULL);
-    readline_x = col + strlen( locale_prompt );
+    readline_x = col + strlen(locale_prompt);
     readline_y = row;
-    if(locale_prompt == NULL)
+    if (locale_prompt == NULL)
         line = readline(prompt); /* this shouldn't happen */
     else
     {
@@ -85,23 +85,23 @@ char* pal_rl_get_raw_line(const char* prompt, const int row, const int col)
     }
 
 
-    if(line == NULL) /* line is null with ^D */
+    if (line == NULL) /* line is null with ^D */
         exit(0);
 
     g_strstrip(line);
 
     /* try to convert to utf8 if it isn't ascii or utf8 already. */
-    if(!g_utf8_validate(line, -1, NULL))
+    if (!g_utf8_validate(line, -1, NULL))
     {
         char* utf8_string = g_locale_to_utf8(line, -1, NULL, NULL, NULL);
-        if(utf8_string == NULL)
+        if (utf8_string == NULL)
         {
             pal_output_error(_("WARNING: Failed to convert your input into UTF-8.\n"));
             return line;
         }
         else
         {
-            if(settings->verbose)
+            if (settings->verbose)
                 g_printerr("%s\n", _("Converted string to UTF-8."));
             g_free(line);
             return utf8_string;
@@ -116,11 +116,11 @@ char* pal_rl_get_line(const char* prompt, const int row, const int col)
 {
     char *line = NULL;
     do {
-        if( line )
+        if (line)
             g_free(line);
 
         line = pal_rl_get_raw_line(prompt, row, col);
-    } while( *line == '\0' );
+    } while (*line == '\0');
 
     return line;
 }
@@ -147,24 +147,24 @@ char* pal_rl_get_line_default(const char* prompt, const int row, const int col, 
 
 
 /* Displays completions */
-void pal_rl_completions_output(char **matches, int num_matches, int max_length )
+void pal_rl_completions_output(char **matches, int num_matches, int max_length)
 {
     int matches_per_line;
-    int matchlen = strlen( matches[0] );
+    int matchlen = strlen(matches[0]);
     int i;
 
     int y,x;
-    getyx( stdscr, y, x );
+    getyx(stdscr, y, x);
 
     max_length += 2;   /* Two spaces between lists */
     matches_per_line = settings->term_cols / max_length;
 
-    move( y+1, 0 );
+    move(y+1, 0);
     clrtobot();
-    for( i=0; i<num_matches-1; i++ )
+    for (i=0; i<num_matches-1; i++)
     {
-        move( (y+1) + (i/matches_per_line), (i%matches_per_line) * max_length );
-        addstr( matches[i+1]+matchlen );
+        move((y+1) + (i/matches_per_line), (i%matches_per_line) * max_length);
+        addstr(matches[i+1]+matchlen);
     }
 }
 
@@ -182,28 +182,28 @@ void pal_rl_ncurses_hack(void)
     /* Move back to the nearest "half" boundary and another block. If we go
      * past the start of the string, reset to the start */
     start = rl_point - (rl_point % half) - half;
-    if( start < 0 )
+    if (start < 0)
         start = 0;
 
     /* Determine where the screen can print upto. If the string ends first,
      * don't worry about it. */
     end = start + settings->term_cols - readline_x - 2;
-    if( end > strlen( rl_line_buffer ) )
+    if (end > strlen(rl_line_buffer))
         end = -1;
 
     /* If we're not starting at the beginning, display marker */
-    if( start > 0 )
-        addch( '<' );
+    if (start > 0)
+        addch('<');
 
     /* Display string, including marker if went off end */
-    if( end > 0 ) {
-        printw( "%.*s>", end - start, rl_line_buffer + start);
+    if (end > 0) {
+        printw("%.*s>", end - start, rl_line_buffer + start);
     } else {
-        printw( "%s", rl_line_buffer + start );
+        printw("%s", rl_line_buffer + start);
     }
 
     /* Place cursor, taking into account marker */
-    move(readline_y, readline_x + rl_point - start + (start > 0) );
+    move(readline_y, readline_x + rl_point - start + (start > 0));
     refresh();
 }
 
@@ -212,17 +212,17 @@ bool pal_rl_get_y_n(const char* prompt)
     char *s = NULL;
 
     int y, x;
-    getyx( stdscr, y, x );
+    getyx(stdscr, y, x);
 
-    for(;;) {
+    for (;;) {
         rl_num_chars_to_read = 1;
         s = pal_rl_get_line(prompt, y, x);
         rl_num_chars_to_read = 0;
 
-        if(g_ascii_strcasecmp(s, _("y")) == 0) {
+        if (g_ascii_strcasecmp(s, _("y")) == 0) {
             g_free(s);
             return true;
-        } else if(g_ascii_strcasecmp(s, _("n")) == 0) {
+        } else if (g_ascii_strcasecmp(s, _("n")) == 0) {
             g_free(s);
             return false;
         }
@@ -241,7 +241,7 @@ PalEvent* pal_rl_get_event(GDate** d, bool allow_global)
     *d = NULL;
 
 
-    while(1) {
+    while (1) {
         pal_output_fg(BRIGHT, YELLOW, "> ");
         pal_output_wrap(_("Use \"today\" to access TODO events."),2,2);
 
@@ -251,7 +251,7 @@ PalEvent* pal_rl_get_event(GDate** d, bool allow_global)
         s = pal_rl_get_line(_("Date for event or search string: "), settings->term_rows-2, 0);
         *d = get_query_date(s, false);
 
-        if(*d != NULL) {
+        if (*d != NULL) {
             int event_num = -1;
 
             g_print("\n");
@@ -261,24 +261,24 @@ PalEvent* pal_rl_get_event(GDate** d, bool allow_global)
             {   /* Don't allow user select a day without events on it */
                 GList* events = get_events(*d);
                 int num_events = g_list_length(events);
-                if(num_events==0)
+                if (num_events==0)
                     continue;
             }
 
-            while(1) {
+            while (1) {
                 pal_output_fg(BRIGHT, YELLOW, "> ");
                 pal_output_wrap(_("Use \"0\" to use a different date or search string."),2,2);
 
                 s = pal_rl_get_line(_("Select event number: "),settings->term_rows-2,0);
-                if(strcmp(s, "0") == 0)
+                if (strcmp(s, "0") == 0)
                     return pal_rl_get_event(d, allow_global);
 
-                if(sscanf(s, "%i", &event_num) != 1)
+                if (sscanf(s, "%i", &event_num) != 1)
                     continue;
 
                 event = pal_output_event_num(*d, event_num);
-                if(event != NULL) {
-                    if(!event->global || allow_global)
+                if (event != NULL) {
+                    if (!event->global || allow_global)
                         return event;
 
                     pal_output_fg(BRIGHT, RED, "> ");
@@ -292,23 +292,23 @@ PalEvent* pal_rl_get_event(GDate** d, bool allow_global)
             GDate* date = g_date_new();
             g_date_set_time_t(date,  time(NULL));
 
-            if(pal_search_view(search_string, date, 365, true) == 0)
+            if (pal_search_view(search_string, date, 365, true) == 0)
                 continue;
 
-            while(1) {
+            while (1) {
                 pal_output_fg(BRIGHT, YELLOW, "> ");
                 pal_output_wrap(_("Use \"0\" to use a different date or search string."),2,2);
 
                 s = pal_rl_get_line(_("Select event number: "),settings->term_rows-2,0);
-                if(strcmp(s, "0") == 0)
+                if (strcmp(s, "0") == 0)
                     return pal_rl_get_event(d, allow_global);
 
-                if(sscanf(s, "%i", &event_num) != 1)
+                if (sscanf(s, "%i", &event_num) != 1)
                     continue;
 
                 event = pal_search_event_num(event_num, d, search_string, date, 365);
-                if(event != NULL) {
-                    if(!event->global || allow_global)
+                if (event != NULL) {
+                    if (!event->global || allow_global)
                         return event;
 
                     pal_output_fg(BRIGHT, RED, "> ");
@@ -322,10 +322,10 @@ PalEvent* pal_rl_get_event(GDate** d, bool allow_global)
 
 
 
-        if(*d != NULL) g_date_free(*d);
-        if(s != NULL) g_free(s);
+        if (*d != NULL) g_date_free(*d);
+        if (s != NULL) g_free(s);
 
-    } /* end while(1); */
+    } /* end while (1); */
 
     /* impossible */
     return NULL;
@@ -341,14 +341,14 @@ static char* pal_rl_get_date(int row, int col)
 
     do
     {
-        move( row, col );
+        move(row, col);
         pal_output_fg(BRIGHT, GREEN, "> ");
         pal_output_wrap(_("Valid date formats include: yyyymmdd, Jan 1 2000, 1 Jan 2000, 4 days away"),2,2);
 
         s = pal_rl_get_line(_("Date for event: "),row+2,0);
         d = get_query_date(s, false);
 
-        if(d != NULL)
+        if (d != NULL)
         {
             char buf[1024];
 
@@ -367,7 +367,7 @@ static char* pal_rl_get_date(int row, int col)
 
             g_date_strftime(buf, 1024, _("%a %e %b %Y - Accept? [y/n]: "), d);
 
-            if(pal_rl_get_y_n(buf))
+            if (pal_rl_get_y_n(buf))
             {
                 s = get_key(d);
                 g_date_free(d);
@@ -377,14 +377,14 @@ static char* pal_rl_get_date(int row, int col)
 
         else
         {
-            if(g_ascii_strcasecmp(s, "todo") == 0)
+            if (g_ascii_strcasecmp(s, "todo") == 0)
                 return g_strdup("TODO");
         }
 
-        if(d != NULL) g_date_free(d);
-        if(s != NULL) g_free(s);
+        if (d != NULL) g_date_free(d);
+        if (s != NULL) g_free(s);
 
-    } while(1);
+    } while (1);
 
 
 
