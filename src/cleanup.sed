@@ -1,0 +1,9 @@
+s/if(/if (/g
+s/( */(/g
+s/ *)/)/g
+s/while(/while (/g
+s/for(/for (/g
+s/switch(/switch (/g
+s/}else/} else/g
+s/else{/else {/g
+s/}while/} while/g
