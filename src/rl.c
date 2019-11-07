@@ -207,7 +207,7 @@ void pal_rl_ncurses_hack(void)
     refresh();
 }
 
-gboolean pal_rl_get_y_n(const char* prompt)
+bool pal_rl_get_y_n(const char* prompt)
 {
     char *s = NULL;
 
@@ -221,10 +221,10 @@ gboolean pal_rl_get_y_n(const char* prompt)
 
         if(g_ascii_strcasecmp(s, _("y")) == 0) {
             g_free(s);
-            return TRUE;
+            return true;
         } else if(g_ascii_strcasecmp(s, _("n")) == 0) {
             g_free(s);
-            return FALSE;
+            return false;
         }
 
         g_free(s);
@@ -234,7 +234,7 @@ gboolean pal_rl_get_y_n(const char* prompt)
 
 
 /* d gets filled in with GDate entered by the user to find the PalEvent. */
-PalEvent* pal_rl_get_event(GDate** d, gboolean allow_global)
+PalEvent* pal_rl_get_event(GDate** d, bool allow_global)
 {
     char* s = NULL;
     PalEvent* event = NULL;
@@ -249,13 +249,13 @@ PalEvent* pal_rl_get_event(GDate** d, gboolean allow_global)
         pal_output_wrap(_("Valid date formats include: yyyymmdd, Jan 1 2000, 1 Jan 2000, 4 days away"),2,2);
 
         s = pal_rl_get_line(_("Date for event or search string: "), settings->term_rows-2, 0);
-        *d = get_query_date(s, FALSE);
+        *d = get_query_date(s, false);
 
         if(*d != NULL) {
             int event_num = -1;
 
             g_print("\n");
-            pal_output_date(*d, TRUE, -1);
+            pal_output_date(*d, true, -1);
             g_print("\n");
 
             {   /* Don't allow user select a day without events on it */
@@ -292,7 +292,7 @@ PalEvent* pal_rl_get_event(GDate** d, gboolean allow_global)
             GDate* date = g_date_new();
             g_date_set_time_t(date,  time(NULL));
 
-            if(pal_search_view(search_string, date, 365, TRUE) == 0)
+            if(pal_search_view(search_string, date, 365, true) == 0)
                 continue;
 
             while(1) {
@@ -346,7 +346,7 @@ static char* pal_rl_get_date(int row, int col)
         pal_output_wrap(_("Valid date formats include: yyyymmdd, Jan 1 2000, 1 Jan 2000, 4 days away"),2,2);
 
         s = pal_rl_get_line(_("Date for event: "),row+2,0);
-        d = get_query_date(s, FALSE);
+        d = get_query_date(s, false);
 
         if(d != NULL)
         {
@@ -358,7 +358,7 @@ static char* pal_rl_get_date(int row, int col)
             g_print(_("Events on the date you selected:\n"));
 
             g_print("\n");
-            pal_output_date(d, TRUE, -1);
+            pal_output_date(d, true, -1);
             g_print("\n");
 
             pal_output_fg(BRIGHT, GREEN, "> ");

@@ -115,7 +115,7 @@ pal_del_event( GDate *date, int eventnum )
     pal_output_fg(BRIGHT, YELLOW, "> ");
     pal_output_wrap(_("If you want to delete old events that won't occur again, you can use pal's -x option instead of deleting the events manually."),2,2);
 
-    dead_event = pal_rl_get_event(&event_date, FALSE);
+    dead_event = pal_rl_get_event(&event_date, false);
 
     g_print("\n");
     pal_output_fg(BRIGHT, GREEN, "> ");

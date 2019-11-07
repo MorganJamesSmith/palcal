@@ -20,6 +20,7 @@
 
 #include <time.h>
 #include <string.h>
+#include <stdbool.h>
 
 /* mkdir */
 #include <sys/stat.h>
@@ -30,17 +31,17 @@
 #include "event.h"
 #include "input.h"
 
-static gboolean pal_input_file_is_global(const char* filename);
+static bool pal_input_file_is_global(const char* filename);
 
 /* checks if events in the format yyyymmdd can be expunged */
-static gboolean
+static bool
 should_be_expunged(const PalEvent* pal_event)
 {
     GDate* today = NULL;
     GDate* event_day = NULL;
 
     if(settings->expunge < 1) {
-        return FALSE;
+        return false;
     }
 
     today = g_date_new();
@@ -54,23 +55,23 @@ should_be_expunged(const PalEvent* pal_event)
                 g_date_days_between(today, pal_event->end_date) <= -1*settings->expunge)
         {
             g_date_free(today);
-            return TRUE;
+            return true;
         }
 
         g_date_free(today);
-        return FALSE;
+        return false;
     }
 
     /* if it is a yyyymmdd event (ie one-time event) */
     if(g_date_days_between(today, event_day) <= -1*settings->expunge) {
         g_date_free(today);
         g_date_free(event_day);
-        return TRUE;
+        return true;
     }
 
     g_date_free(today);
     g_date_free(event_day);
-    return FALSE;
+    return false;
 
 }
 
@@ -226,11 +227,11 @@ PalEvent* pal_input_read_head(FILE* file, FILE* out_file, char* filename)
     return event_head;
 }
 
-gboolean pal_input_eof(FILE* file)
+bool pal_input_eof(FILE* file)
 {
     if(feof(file) != 0)
-        return TRUE;
-    return FALSE;
+        return true;
+    return false;
 }
 
 /* Returns:    The PalEvent for the next event in the file (or del_event if del_event was deleted).
@@ -369,17 +370,17 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
 
 
 /* checks if file is a global */
-static gboolean pal_input_file_is_global(const char* filename)
+static bool pal_input_file_is_global(const char* filename)
 {
     if(strncmp(filename, PREFIX "/share/pal", strlen(PREFIX "/share/pal")) == 0)
-        return TRUE;
-    return FALSE;
+        return true;
+    return false;
 }
 
 
 
 /* loads a pal calendar file, returns the number of events loaded into hashtable */
-static int load_file(char* filename, FILE* file, int filecount, gboolean hide, int color)
+static int load_file(char* filename, FILE* file, int filecount, bool hide, int color)
 {
     int eventcount = 0;
     PalEvent* event_head;
@@ -460,7 +461,7 @@ static int load_file(char* filename, FILE* file, int filecount, gboolean hide, i
 /* gets the pal file to load.  From "file", it looks for a pal
  * calendar file locally or globally to load and puts the path of that
  * file in pal_file.  It returns true if successful. */
-static gboolean get_file_to_load(char* file, char* pal_file, gboolean show_error)
+static bool get_file_to_load(char* file, char* pal_file, bool show_error)
 {
     if(g_path_is_absolute(file))
     {
@@ -468,7 +469,7 @@ static gboolean get_file_to_load(char* file, char* pal_file, gboolean show_error
         {
             if(show_error)
                 pal_output_error(_("ERROR: File doesn't exist: %s\n"), file);
-            return FALSE;
+            return false;
         }
         else
             sprintf(pal_file, file);
@@ -498,13 +499,13 @@ static gboolean get_file_to_load(char* file, char* pal_file, gboolean show_error
             }
 
             g_free(dirname);
-            return FALSE;
+            return false;
         }
 
         g_free(dirname);
     }
 
-    return TRUE;
+    return true;
 }
 
 
@@ -512,7 +513,7 @@ static gboolean get_file_to_load(char* file, char* pal_file, gboolean show_error
  * Returns NULL if can't read, returns a FILE pointer if reading file.
  * fclose() should be called on the returned pointer when done reading
  * the file. */
-static FILE* get_file_handle(char* filename, gboolean show_error)
+static FILE* get_file_handle(char* filename, bool show_error)
 {
     FILE* file = fopen(filename, "r");
 
@@ -542,7 +543,7 @@ GHashTable* load_files()
             g_printerr(_("Looking for data to expunge.\n"));
     }
 
-    file = get_file_handle(settings->conf_file, FALSE);
+    file = get_file_handle(settings->conf_file, false);
 
     if(file == NULL)
     {
@@ -623,13 +624,13 @@ GHashTable* load_files()
         char pal_file[16384];
         FILE* pal_file_handle = NULL;
 
-        if(!get_file_to_load(settings->pal_file, pal_file, FALSE))
+        if(!get_file_to_load(settings->pal_file, pal_file, false))
             sprintf(pal_file, settings->pal_file);
 
-        pal_file_handle = get_file_handle(pal_file, TRUE);
+        pal_file_handle = get_file_handle(pal_file, true);
         if(pal_file_handle != NULL)
         {
-            eventcount += load_file(pal_file, pal_file_handle, filecount, FALSE, -1);
+            eventcount += load_file(pal_file, pal_file_handle, filecount, false, -1);
             fclose(pal_file_handle);
             filecount++;
         }
@@ -649,16 +650,16 @@ GHashTable* load_files()
                 sscanf(s, "file %s\n", text) == 1)
         {
             FILE* pal_file_handle = NULL;
-            gboolean hide = FALSE;
+            bool hide = false;
 
             /* skip this line if we're using -p */
             if(settings->pal_file != NULL)
                 continue;
 
             if(sscanf(s, "file_hide %s (%[a-z])\n", text, color) == 2)
-                hide = TRUE;
+                hide = true;
             else if(sscanf(s, "file_hide %s\n", text) == 1)
-                hide = TRUE;
+                hide = true;
 
             if(color[0] != '\0') {
                 if(int_color_of(color) != -1) {
@@ -672,8 +673,8 @@ GHashTable* load_files()
                 }
             }
 
-            if(get_file_to_load(text, pal_file, TRUE)) {
-                pal_file_handle = get_file_handle(pal_file, TRUE);
+            if(get_file_to_load(text, pal_file, true)) {
+                pal_file_handle = get_file_handle(pal_file, true);
                 if(pal_file_handle != NULL) {
                     /* assign events that are the "default" color to
                      * have a color of -1 the output code will apply
@@ -688,19 +689,19 @@ GHashTable* load_files()
             g_free(settings->date_fmt);
             settings->date_fmt = g_strdup(g_strstrip(&s[9]));
         } else if(strcmp(s, "week_start_monday") == 0) {
-            settings->week_start_monday = TRUE;
+            settings->week_start_monday = true;
         } else if(strcmp(s, "show_weeknum") == 0) {
-            settings->show_weeknum = TRUE;
+            settings->show_weeknum = true;
         } else if(strcmp(s, "reverse_order") == 0) {
-            settings->reverse_order = TRUE;
+            settings->reverse_order = true;
         } else if(strcmp(s, "cal_on_bottom") == 0) {
-            settings->cal_on_bottom = TRUE;
+            settings->cal_on_bottom = true;
         } else if(strcmp(s, "no_columns") == 0) {
-            settings->no_columns = TRUE;
+            settings->no_columns = true;
         } else if(strcmp(s, "hide_event_type") == 0) {
-            settings->hide_event_type = TRUE;
+            settings->hide_event_type = true;
         } else if(strcmp(s, "compact_list") == 0) {
-            settings->compact_list = TRUE;
+            settings->compact_list = true;
         } else if(sscanf(s, "compact_date_fmt %s",text) == 1) {
             g_free(settings->compact_date_fmt);
             settings->compact_date_fmt = g_strdup(g_strstrip(&s[17]));

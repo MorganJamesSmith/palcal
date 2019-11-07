@@ -33,8 +33,8 @@
 
 typedef struct _PalViewEvent {
     char *prompt;
-    gboolean editable;
-    gboolean changed;
+    bool editable;
+    bool changed;
 } PalViewEvent;
 
 
@@ -122,18 +122,18 @@ void
 pal_edit_init()
 {
     PalViewEvent initfieldlist[NUM_FIELDS] = {
-        { _("Event Description"), TRUE, FALSE },
-        { _("Event Type"),        TRUE, FALSE },
-        { _("Skip Count"),        TRUE, FALSE },
-        { _("Start Date"),        TRUE, FALSE },
-        { _("End Date"),          TRUE, FALSE },
-        { _("Start Time"),        TRUE, FALSE },
-        { _("End Time"),          TRUE, FALSE },
-        { _("Hashtable Key"),     FALSE, FALSE },
-        { _("Date in File"),      FALSE, FALSE },
-        { _("Event File"),        FALSE, FALSE },
-        { _("Event Marked on Calendar?"), FALSE, FALSE },
-        { _("File Color"),        FALSE, FALSE } };
+        { _("Event Description"), true, false },
+        { _("Event Type"),        true, false },
+        { _("Skip Count"),        true, false },
+        { _("Start Date"),        true, false },
+        { _("End Date"),          true, false },
+        { _("Start Time"),        true, false },
+        { _("End Time"),          true, false },
+        { _("Hashtable Key"),     false, false },
+        { _("Date in File"),      false, false },
+        { _("Event File"),        false, false },
+        { _("Event Marked on Calendar?"), false, false },
+        { _("File Color"),        false, false } };
 
 
     selectedField = 0;

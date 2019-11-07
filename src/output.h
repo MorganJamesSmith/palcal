@@ -32,9 +32,9 @@ void pal_output_fg(int attr, int color, char *formatString,...);
 void pal_output_error(char *formatString, ... );
 
 void pal_output_cal(int num_lines, const GDate* today);
-int pal_output_date(GDate* date, gboolean show_empty_days, int select_event);
+int pal_output_date(GDate* date, bool show_empty_days, int select_event);
 void pal_output_date_line(const GDate* date);
-int pal_output_event(const PalEvent* event, const GDate* date, const gboolean selected);
+int pal_output_event(const PalEvent* event, const GDate* date, const bool selected);
 int pal_output_wrap(char* string, int chars_used, int indent);
 PalEvent* pal_output_event_num(const GDate* date, int event_number);
 #endif

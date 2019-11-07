@@ -64,7 +64,7 @@ pal_manage_refresh_at()
     GDate *date = g_date_new();
     int saved_cols;
 
-    gboolean finished_printing = FALSE;
+    bool finished_printing = false;
 
     /* Don't touch the first two lines---they are reserved for
      * prompts! */
@@ -104,13 +104,13 @@ pal_manage_refresh_at()
             getyx( stdscr, y, x );
 
 
-            linecount += pal_output_date(date, TRUE, isselectedday ? selected_event : -1 );
+            linecount += pal_output_date(date, true, isselectedday ? selected_event : -1 );
 
             /* if the last thing we printed fell off the screen, erase it */
             if(linecount + settings->cal_lines+3 > settings->term_rows-1) {
                 move(y,x);
                 clrtobot();
-                finished_printing = TRUE; /* break out of loop */
+                finished_printing = true; /* break out of loop */
             }
         }
 
@@ -243,7 +243,7 @@ static void pal_manage_resize(int sig)
 
 
 
-static gboolean isearch_direction;
+static bool isearch_direction;
 
 /* Refresh function for the isearch */
 static void pal_manage_isearch_refresh(void)
@@ -287,7 +287,7 @@ static void pal_manage_isearch_refresh(void)
 
 /* Does a basic interactive search in the given direction. This is different
  * from the full search handled in search.c */
-static void pal_manage_isearch(gboolean forward)
+static void pal_manage_isearch(bool forward)
 {
     char *searchstring = NULL;
     GDate *searchdate = g_date_new();
@@ -396,7 +396,7 @@ pal_manage(void)
     (void) signal(SIGINT, pal_manage_finish);      /* arrange interrupts to terminate */
 
     (void) initscr();      /* initialize the curses library */
-    keypad(stdscr, TRUE);  /* enable keyboard mapping */
+    keypad(stdscr, true);  /* enable keyboard mapping */
     (void) nonl();         /* tell curses not to do NL->CR/NL on output */
     (void) cbreak();       /* take input chars one at a time, no wait for \n */
     (void) halfdelay(1);   /* always return from getch() within a tenth of a second */
@@ -409,7 +409,7 @@ pal_manage(void)
     /* adjust some settings if necessary */
     getmaxyx(stdscr,settings->term_rows,settings->term_cols);
     settings->cal_lines = 5;
-    settings->curses = TRUE;
+    settings->curses = true;
     pal_curwin = stdscr;
 
     if(has_colors()) {
@@ -502,7 +502,7 @@ pal_manage(void)
                     char* str = pal_rl_get_raw_line(_("Goto date: "), 0, 0);
 
                     if(strlen(str) > 0) {
-                        GDate* new_date = get_query_date(str, FALSE);
+                        GDate* new_date = get_query_date(str, false);
 
                         if(new_date == NULL) {
                             move(0, 0);
@@ -608,10 +608,10 @@ pal_manage(void)
             case 'S': break;
 
             case '/': /* forward i-search */
-                      pal_manage_isearch( TRUE );
+                      pal_manage_isearch( true );
                       break;
             case '?': /* backward i-search */
-                      pal_manage_isearch( FALSE );
+                      pal_manage_isearch( false );
                       break;
 
             case 'h': /* help */

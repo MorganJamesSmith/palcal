@@ -87,7 +87,7 @@ static GList* pal_search_get_results(const char* search, const GDate* date, cons
 
 
 /* returns the number of events found */
-int pal_search_view(const char* search_string, GDate* date, const int window, const gboolean number_events)
+int pal_search_view(const char* search_string, GDate* date, const int window, const bool number_events)
 {
     GList* hit_list = pal_search_get_results(search_string, date, window);
     GList* item = NULL;
@@ -203,9 +203,9 @@ PalEvent* pal_search_event_num(int event_number, GDate** store_date, const char*
 /* A simpler search, just searches for the first event which contains this
  * string. Used by the interactive search in the manage interface. Attempts
  * a semblance of case-insensetivity */
-gboolean pal_search_isearch_event( GDate **date, int *selected, char *string, gboolean forward)
+bool pal_search_isearch_event( GDate **date, int *selected, char *string, bool forward)
 {
-    gboolean found = FALSE;
+    bool found = false;
     char *searchstring = g_utf8_casefold(string,-1);
 
     /* Search upto a year */
@@ -220,7 +220,7 @@ gboolean pal_search_isearch_event( GDate **date, int *selected, char *string, gb
 
                 if( strstr( string2, searchstring ) ) {
                     *selected = j;
-                    found = TRUE;
+                    found = true;
                 }
 
                 g_free(string);

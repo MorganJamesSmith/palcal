@@ -30,14 +30,14 @@ int pal_get_event_count( GDate *date );
 PalEvent* pal_event_init(void);
 void pal_event_free(PalEvent* event);
 void pal_event_fill_dates(PalEvent* pal_event, const char* date_string);
-gboolean parse_event(PalEvent *event, const char* date_string);
+bool parse_event(PalEvent *event, const char* date_string);
 char* get_key(const GDate* date);
 GDate* get_date(const char* key);
 char* pal_event_date_string_to_key(const char* date_string);
 PalEvent* pal_event_copy(PalEvent* orig);
 char* pal_event_escape(const PalEvent* event, const GDate* today);
 
-gboolean is_valid_yyyymmdd(const char* date_string);
-gboolean is_valid_0000mmdd(const char* date_string);
+bool is_valid_yyyymmdd(const char* date_string);
+bool is_valid_0000mmdd(const char* date_string);
 
 #endif

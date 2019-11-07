@@ -24,13 +24,14 @@
 #include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include <libintl.h>
 #define _(String) gettext (String)
 #define gettext_noop(String) String
 #define N_(String) gettext_noop (String)
 
-GDate* get_query_date(char* date_string, gboolean show_error);
+GDate* get_query_date(char* date_string, bool show_error);
 void pal_main_reload(void);
 
 /* a structure that contains all of the runtime settings */
@@ -38,29 +39,29 @@ typedef struct _Settings {
     int cal_lines;           /* number of lines for calendar */
     int range_days;          /* print events in the next 'range_days' days */
     int range_neg_days;      /* print events within 'range_neg_days' days old */
-    gboolean range_arg;       /* user started pal with -r */
+    bool range_arg;          /* user started pal with -r */
     char* search_string;     /* regex to search for */
-    gboolean verbose;         /* verbose output */
-    GDate* query_date;        /* from argument used after -d */
+    bool verbose;            /* verbose output */
+    GDate* query_date;       /* from argument used after -d */
     int expunge;             /* expunge events older than 'expunge' days */
-    gboolean mail;            /* --mail */
+    bool mail;               /* --mail */
     char* conf_file;         /* .conf file to use */
-    gboolean specified_conf_file;  /* user specified a .conf file */
+    bool specified_conf_file;/* user specified a .conf file */
     char* date_fmt;          /* format of date to use with -r */
-    gboolean week_start_monday; /* weeks should start on monday */
-    gboolean reverse_order;   /* show things in reverse order */
-    gboolean cal_on_bottom;   /* show calendar last */
-    gboolean no_columns;      /* don't use columns */
-    gboolean hide_event_type; /* hide the type of listed events */
+    bool week_start_monday;  /* weeks should start on monday */
+    bool reverse_order;      /* show things in reverse order */
+    bool cal_on_bottom;      /* show calendar last */
+    bool no_columns;         /* don't use columns */
+    bool hide_event_type;    /* hide the type of listed events */
     int term_cols;           /* number of columns in terminal */
     int term_rows;           /* number of rows in terminal */
-    gboolean manage_events;   /* add an event to pal, interactive */
-    gboolean curses;          /* use curses output functions instead of glib */
+    bool manage_events;      /* add an event to pal, interactive */
+    bool curses;             /* use curses output functions instead of glib */
     int event_color;         /* default event color */
-    gboolean html_out;        /* html output */
-    gboolean latex_out;       /* LaTeX output */
-    gboolean compact_list;    /* show a compact list */
-    gboolean show_weeknum;    /* Show weeknum in output */
+    bool html_out;           /* html output */
+    bool latex_out;          /* LaTeX output */
+    bool compact_list;       /* show a compact list */
+    bool show_weeknum;       /* Show weeknum in output */
     char* compact_date_fmt;  /* comapct list date format */
     char* pal_file;          /* specified one pal file to load instead
 			       * of those in pal.conf */
@@ -85,9 +86,9 @@ typedef enum _PalPeriodic {
 
 typedef struct _PalEventType {
     PalPeriodic period;
-    gboolean (*valid_string)(const char *);     /* Returns true if this string is valid for this event type */
-    gboolean (*get_key)(const GDate *, char *); /* For the given date, return the key for this event type */
-    char *(*get_descr)(const GDate *);          /* For the given date, return a textual representation */
+    bool (*valid_string)(const char *);     /* Returns true if this string is valid for this event type */
+    bool (*get_key)(const GDate *, char *); /* For the given date, return the key for this event type */
+    char *(*get_descr)(const GDate *);      /* For the given date, return a textual representation */
 } PalEventType;
 
 
@@ -99,7 +100,7 @@ typedef struct _PalEvent {
     char* text;               /* description of event */
     gunichar start;           /* character used before the day in calendar */
     gunichar end;             /* character used after the day in calendar */
-    gboolean hide;            /* should the event be hidden on the calendar? */
+    bool hide;                /* should the event be hidden on the calendar? */
     char* type;               /* type of event it is (from top of calendar file) */
     int file_num;             /* this event was in the file_num-th file loaded */
     char* file_name;          /* name of the file containing this event */
@@ -109,7 +110,7 @@ typedef struct _PalEvent {
     PalTime* start_time;      /* 1st time listed in event description */
     PalTime* end_time;        /* 2nd time listed in event description */
     char* date_string;        /* date string used in the file for this event */
-    gboolean global;          /* TRUE if event is in a global file */
+    bool global;              /* true if event is in a global file */
     int period_count;         /* How often repeat (default=1) */
     char* key;                /* Key in hash table */
     PalEventType *eventtype;  /* Pointer to eventtype struct */

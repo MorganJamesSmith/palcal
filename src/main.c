@@ -52,7 +52,8 @@ view_range(GDate* starting_date, int window)
     }
 
     for(int i = 0; i<window; i++) {
-        pal_output_date(starting_date,FALSE,-1);
+
+        pal_output_date(starting_date,false,-1);
 
         if(settings->reverse_order) {
             g_date_subtract_days(starting_date,1);
@@ -68,7 +69,7 @@ view_range(GDate* starting_date, int window)
  * recurring events).  It returns NULL on a failure and can optionally
  * print an error message on failure. */
 GDate*
-get_query_date(char* in_string, gboolean show_error)
+get_query_date(char* in_string, bool show_error)
 {
     GDate* to_show = NULL;
     char* date_string = g_ascii_strdown(in_string, -1);
@@ -369,7 +370,7 @@ view_details(void)
     {
         /* if -d is used, show that day.  Otherwise, show nothing */
         if(to_show != NULL)
-            pal_output_date(to_show, TRUE, -1);
+            pal_output_date(to_show, true, -1);
     }
 
     /* if -r or -s is used, show range of dates relative to -d */
@@ -391,7 +392,7 @@ view_details(void)
         if(settings->search_string == NULL)
             view_range(starting_date, settings->range_neg_days + settings->range_days);
         else
-            pal_search_view(settings->search_string, starting_date, settings->range_neg_days + settings->range_days, FALSE);
+            pal_search_view(settings->search_string, starting_date, settings->range_neg_days + settings->range_days, false);
 
         g_date_free(starting_date);
     }
@@ -427,7 +428,7 @@ parse_args(int argc, char** argv)
         switch (opt) {
 		case 'a': /* --mail */
 			set_colorize(-2); /* overrides a later --color argument */
-			settings->mail = TRUE;
+			settings->mail = true;
 			break;
 		case 'b': /* --color */
 			set_colorize(1);
@@ -442,7 +443,7 @@ parse_args(int argc, char** argv)
 			break;
 		case 'd':
 			tofree = g_locale_to_utf8(optarg, -1, NULL, NULL, NULL);
-			settings->query_date = get_query_date(tofree, TRUE);
+			settings->query_date = get_query_date(tofree, true);
 			g_free(tofree);
 			if(settings->query_date == NULL)
 				pal_output_error(_("NOTE: Use quotes around the date if it has spaces.\n"));
@@ -455,16 +456,16 @@ parse_args(int argc, char** argv)
 		case 'f':
 			free(settings->conf_file);
 			settings->conf_file = strdup(optarg);
-			settings->specified_conf_file = TRUE;
+			settings->specified_conf_file = true;
 			break;
 		case 'g': /* --nocolor */
 			set_colorize(0);
 			break;
 		case 'l': /* --latex */
-			settings->latex_out = TRUE;
+			settings->latex_out = true;
 			break;
 		case 'm':
-			settings->manage_events = TRUE;
+			settings->manage_events = true;
 			break;
 		case 'p':
 			settings->pal_file = strdup(optarg);
@@ -497,21 +498,21 @@ parse_args(int argc, char** argv)
 				optind++;
 			}
 			free(tofree);
-			settings->range_arg = TRUE;
+			settings->range_arg = true;
 			break;
 		case 's':
 			settings->search_string = strdup(optarg);
 			break;
 		case 't': /* --html */
-			settings->html_out = TRUE;
+			settings->html_out = true;
 			break;
 		case 'u':
 			free(settings->conf_file);
 			settings->conf_file = g_strconcat("/home/", optarg, "/.pal/pal.conf", NULL);
-			settings->specified_conf_file = TRUE;
+			settings->specified_conf_file = true;
 			break;
 		case 'v':
-			settings->verbose = TRUE;
+			settings->verbose = true;
 			break;
 		case 'x':
 			settings->expunge = strtoull(optarg, NULL, 10);
@@ -607,31 +608,31 @@ main(int argc, char** argv)
     settings->cal_lines           = 5;
     settings->range_days          = 0;
     settings->range_neg_days      = 0;
-    settings->range_arg           = FALSE;
+    settings->range_arg           = false;
     settings->search_string       = NULL;
-    settings->verbose             = FALSE;
-    settings->mail                = FALSE;
+    settings->verbose             = false;
+    settings->mail                = false;
     settings->query_date          = NULL;
     settings->expunge             = -1;
     settings->date_fmt            = g_strdup("%a %e %b %Y");
-    settings->week_start_monday   = FALSE;
-    settings->reverse_order       = FALSE;
-    settings->cal_on_bottom       = FALSE;
-    settings->specified_conf_file = FALSE;
-    settings->no_columns          = FALSE;
-    settings->hide_event_type     = FALSE;
-    settings->manage_events       = FALSE;
-    settings->curses              = FALSE;
+    settings->week_start_monday   = false;
+    settings->reverse_order       = false;
+    settings->cal_on_bottom       = false;
+    settings->specified_conf_file = false;
+    settings->no_columns          = false;
+    settings->hide_event_type     = false;
+    settings->manage_events       = false;
+    settings->curses              = false;
     settings->event_color         = BLUE;
     settings->pal_file            = NULL;
-    settings->html_out            = FALSE;
-    settings->latex_out           = FALSE;
-    settings->compact_list        = FALSE;
+    settings->html_out            = false;
+    settings->latex_out           = false;
+    settings->compact_list        = false;
     settings->term_cols           = 80;
     settings->term_rows           = 24;
     settings->compact_date_fmt    = g_strdup("%m/%d/%Y");
     settings->conf_file = g_strconcat(g_get_home_dir(), "/.pal/pal.conf", NULL);
-    settings->show_weeknum        = FALSE;
+    settings->show_weeknum        = false;
 
     g_set_print_handler( pal_output_handler );
     g_set_printerr_handler( pal_output_handler );

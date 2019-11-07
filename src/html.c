@@ -50,7 +50,7 @@ pal_html_escape_print(char* s)
 
 /* finishes with date on the first day of the next month */
 static void
-pal_html_month(GDate* date, gboolean force_month_label, const GDate* today)
+pal_html_month(GDate* date, bool force_month_label, const GDate* today)
 {
     int orig_month = g_date_get_month(date);
     int i;
@@ -220,7 +220,7 @@ pal_html_out()
     g_print("%s %s %s", "<!-- Generated with pal", PAL_VERSION, "-->\n");
 
     for(on_month=0; on_month < settings->cal_lines; on_month++) {
-        pal_html_month(date, TRUE, today);
+        pal_html_month(date, true, today);
     }
 
     g_print("<div class='pal-tagline'><p><i>%s</i></p></div>\n",

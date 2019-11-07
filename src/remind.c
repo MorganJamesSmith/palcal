@@ -68,7 +68,7 @@ static void pal_remind_event(void)
 
     g_print("\n");
 
-    remind_event = pal_rl_get_event(&event_date, TRUE);
+    remind_event = pal_rl_get_event(&event_date, true);
     g_print("\n");
 
     if(remind_event->start_time != NULL)

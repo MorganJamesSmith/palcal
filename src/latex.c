@@ -61,7 +61,7 @@ static void pal_latex_escape_print(char* s)
 
 
 /* finishes with date on the first day in the next month */
-static void pal_latex_month(GDate* date, gboolean force_month_label)
+static void pal_latex_month(GDate* date, bool force_month_label)
 {
     int i;
     char buf[1024];
@@ -223,7 +223,7 @@ void pal_latex_out(void)
         if(on_month != 0) {
             g_print("%s", "\\newpage\n");
         }
-        pal_latex_month(date, TRUE);
+        pal_latex_month(date, true);
     }
 
     g_print("%s", "\n\\end{center}\n");

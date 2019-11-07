@@ -105,7 +105,7 @@ void pal_output_error(char *formatString, ... )
 
 
 /* finishes with date on the sunday of the next week */
-static void pal_output_text_week(GDate* date, gboolean force_month_label,
+static void pal_output_text_week(GDate* date, bool force_month_label,
         const GDate* today)
 {
     int i=0;
@@ -123,7 +123,7 @@ static void pal_output_text_week(GDate* date, gboolean force_month_label,
     for(i=0; i<7; i++)
     {
         if(g_date_get_day(date) == 1)
-            force_month_label = TRUE;
+            force_month_label = true;
 
         g_date_subtract_days(date,1);
     }
@@ -180,8 +180,8 @@ static void pal_output_text_week(GDate* date, gboolean force_month_label,
             GList* item  = g_list_first(events);
             PalEvent *event = (PalEvent*) item->data;
 
-            gboolean same_char = TRUE;
-            gboolean same_color = TRUE;
+            bool same_char = true;
+            bool same_color = true;
 
             /* skip to a event that isn't hidden or to the end of the list */
             while(g_list_length(item) > 1 && event->hide)
@@ -222,13 +222,13 @@ static void pal_output_text_week(GDate* date, gboolean force_month_label,
                     int     new_color = event->color;
 
                     if(new_start != start || new_end != end)
-                        same_char = FALSE;
+                        same_char = false;
                     if(new_color != color)
-                        same_color = FALSE;
+                        same_color = false;
                 }
-                if(same_char == FALSE)
+                if(same_char == false)
                     start = '*', end = '*';
-                if(same_color == FALSE)
+                if(same_color == false)
                     color = -1;
             }
         }
@@ -280,7 +280,7 @@ static void pal_output_text_week(GDate* date, gboolean force_month_label,
 
 
 
-static void pal_output_week(GDate* date, gboolean force_month_label, const GDate* today)
+static void pal_output_week(GDate* date, bool force_month_label, const GDate* today)
 {
 
     pal_output_text_week(date, force_month_label, today);
@@ -343,9 +343,9 @@ void pal_output_cal(int num_lines, const GDate* today)
     while(on_week < num_lines)
     {
         if(on_week == 0)
-            pal_output_week(date, TRUE, today);
+            pal_output_week(date, true, today);
         else
-            pal_output_week(date, FALSE, today);
+            pal_output_week(date, false, today);
 
         on_week++;
 
@@ -487,7 +487,7 @@ int pal_output_wrap(char* string, int chars_used, int indent)
 /* If event_number is -1, don't number the events.
    Returns the number of lines printed.
    */
-int pal_output_event(const PalEvent* event, const GDate* date, const gboolean selected)
+int pal_output_event(const PalEvent* event, const GDate* date, const bool selected)
 {
     int numlines = 0;
     char date_text[128];
@@ -572,7 +572,7 @@ void pal_output_date_line(const GDate* date)
 
 /* outputs the events in the order of PalEvent->file_num.
    Returns the number of lines printed. */
-int pal_output_date(GDate* date, gboolean show_empty_days, int selected_event)
+int pal_output_date(GDate* date, bool show_empty_days, int selected_event)
 {
     int numlines = 0;
     GList* events = get_events(date);

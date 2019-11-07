@@ -110,7 +110,7 @@ pal_add_get_range( GDate *date )
                 s = pal_rl_get_line_default(_("Start date: "), y, 0, buf);
                 g_print("\n");
 
-                d1 = get_query_date(s, TRUE);
+                d1 = get_query_date(s, true);
                 if( !d1 )
                     rl_ding();
                 g_free(s);
@@ -126,7 +126,7 @@ pal_add_get_range( GDate *date )
                 }
 
                 g_print("\n");
-                d2 = get_query_date(s, TRUE);
+                d2 = get_query_date(s, true);
                 if( !d2 ) {
                     rl_ding();
                 } else {
@@ -215,7 +215,7 @@ pal_add_get_recur(GDate* date)
             continue;
         }
 
-        if( PalEventTypes[sel].get_key( date, selkey ) != TRUE ) {
+        if( PalEventTypes[sel].get_key( date, selkey ) != true ) {
             rl_ding();
             continue;
         }
@@ -278,7 +278,7 @@ static char*
 pal_add_get_file(void)
 {
     char* filename = NULL;
-    gboolean prompt_again = FALSE;
+    bool prompt_again = false;
 
     pal_output_fg(BRIGHT, GREEN, "> ");
     g_print(_("Calendar file (usually ending with \".pal\") to add event to:\n"));
@@ -290,7 +290,7 @@ pal_add_get_file(void)
     do {
         rl_completion_entry_function = rl_filename_completion_function;
 
-        prompt_again = FALSE;
+        prompt_again = false;
 
         filename = pal_rl_get_line_default(_("Filename: "), y, 0, g_strdup("~/.pal/"));
 
@@ -314,7 +314,7 @@ pal_add_get_file(void)
             {
                 g_print("\n");
                 pal_output_error(_("ERROR: %s is a directory.\n"), filename);
-                prompt_again = TRUE;
+                prompt_again = true;
             }
         }
         else
@@ -329,7 +329,7 @@ pal_add_get_file(void)
             if(!pal_rl_get_y_n(_("Create? [y/n]: "))) {
                 move(y,x);
                 clrtobot();
-                prompt_again = TRUE;
+                prompt_again = true;
             } else {
                 /* create the file */
                 FILE*  file = fopen(filename, "w");
@@ -338,7 +338,7 @@ pal_add_get_file(void)
                     pal_output_error(_("ERROR: Can't create %s.\n"), filename);
                     clrtobot();
 
-                    prompt_again = TRUE;
+                    prompt_again = true;
                 } else {
                     char *markers = NULL;
                     char *event_type = NULL;
@@ -393,7 +393,7 @@ pal_add_write_file(char* filename, gchar* key, gchar* desc)
 {
     FILE *file = NULL;
     char* write_line = NULL;
-    gboolean no_newline = FALSE;
+    bool no_newline = false;
 
     /* check for newline at end of file */
     do {
@@ -408,7 +408,7 @@ pal_add_write_file(char* filename, gchar* key, gchar* desc)
 
     fseek(file, -1, SEEK_END);
     if(fgetc(file)!= '\n')
-        no_newline = TRUE;
+        no_newline = true;
     fclose(file);
 
     /* write the new event out to that file */
