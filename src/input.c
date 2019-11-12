@@ -21,6 +21,8 @@
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
+#include <assert.h>
 
 /* mkdir */
 #include <sys/stat.h>
@@ -76,71 +78,51 @@ should_be_expunged(const PalEvent* pal_event)
 }
 
 
-/* Returns the n'th time of the format h:mm or hh:mm that occurs in
- * the string s.  Returns NULL if no time exists in the string */
+/* Returns the n'th time the format hh:mm occurs in
+ * the string s. Returns NULL if no time exists in the string */
 static PalTime*
-pal_input_get_time(char* s, int n)
+pal_input_get_time(char *s, int n)
 {
-    char* s_start = s;
-    char *h1, *h2, *m1, *m2;
+    assert(n > 0);
+    assert(s != NULL);
 
-    if (n < 1 || s == NULL)
-        return NULL;
+    /* We start at the third character because we're looking for a ':' */
+    for (s+=2; *s != '\0'; s++) {
 
-    while (1)
-    {
-        s = g_utf8_find_next_char(s, NULL);
+        if (*s != ':') {
+            continue;
+        }
 
-        if (*s == '\0')
+        /* At this point we think we might be in the middle of a time.
+         * We think the hours are at s - 2 and s - 1.
+         * We think the minutes are at s + 1 and s + 2. */
+        if (*(s + 1) == '\0' || *(s + 2) == '\0') {
             return NULL;
+        }
 
-        if (*s == ':')
-        {
-            /* get the digits in the hour */
-            h1 = g_utf8_find_prev_char(s_start, s);
-            h2 = g_utf8_find_prev_char(s_start, h1);
+        int hour = 10*(*(s - 2) - '0') + (*(s - 1) - '0');
+        int min = 10*(*(s + 1) - '0') + (*(s + 2) - '0');
 
-            /* get the minutes digits */
-            m2 = g_utf8_find_next_char(s, NULL);
-            if (m2 == '\0')
-                return NULL;  /* hit end of line, done */
-            m1 = g_utf8_find_next_char(m2, NULL);
-
-            /* check for digits surrounding the : */
-            if (g_ascii_isdigit(*h1) &&
-                    g_ascii_isdigit(*m1) && g_ascii_isdigit(*m2))
-            {
-                int hour = 0;
-                int min = 0;
-
-                /* use 10s digit place in hours if it is a digit */
-                if (h2 != NULL && *h2 != '\0' && g_ascii_isdigit(*h2))
-                    hour = 10*g_ascii_digit_value(*h2);
-
-                hour += g_ascii_digit_value(*h1);
-
-                min = 10*g_ascii_digit_value(*m2);
-                min += g_ascii_digit_value(*m1);
-
-                if (min >= 0 && min < 60 &&
-                        hour >= 0 && hour < 24)
-                {
-                    /* we just found a VALID date, if it is the nth
-                     * one, return it */
-                    if (n == 1)
-                    {
-                        PalTime* time = g_malloc(sizeof(PalTime));
-                        time->hour = hour;
-                        time->min = min;
-                        return time;
-                    }
-                    else
-                        n--;
-                }
+        if (min < 0 && min >= 60 && hour < 0 && hour >= 24) {
+            /* Slight optimization here where we won't find ':' that's an
+             * actual time until at least 3 characters later */
+            if (*(++s) == '\0' || *(++s) == '\0') {
+                return NULL;
             }
+            continue;
+        }
+
+        /* we just found a VALID date, if it is the nth one, return it */
+        if (n == 1) {
+            PalTime* time = g_malloc(sizeof(PalTime));
+            time->hour = hour;
+            time->min = min;
+            return time;
+        } else {
+            n--;
         }
     }
-
+    return NULL;
 }
 
 
