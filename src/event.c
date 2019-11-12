@@ -22,6 +22,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include "main.h"
 #include "event.h"
@@ -68,31 +69,31 @@ pal_event_copy(PalEvent* orig)
     new->color = orig->color;
 
     if (orig->start_date == NULL) {
-	    new->start_date = NULL;
+        new->start_date = NULL;
     } else {
-	    new->start_date = g_malloc(sizeof(GDate));
-	    memcpy(new->start_date, orig->start_date, sizeof(GDate));
+        new->start_date = g_malloc(sizeof(GDate));
+        memcpy(new->start_date, orig->start_date, sizeof(GDate));
     }
 
     if (orig->end_date == NULL) {
-	    new->end_date = NULL;
+        new->end_date = NULL;
     } else {
-	    new->end_date = g_malloc(sizeof(GDate));
-	    memcpy(new->end_date, orig->end_date, sizeof(GDate));
+        new->end_date = g_malloc(sizeof(GDate));
+        memcpy(new->end_date, orig->end_date, sizeof(GDate));
     }
 
     if (orig->start_time == NULL) {
-	    new->start_time = NULL;
+        new->start_time = NULL;
     } else {
-	    new->start_time = g_malloc(sizeof(PalTime));
-	    memcpy(new->start_time, orig->start_time, sizeof(PalTime));
+        new->start_time = g_malloc(sizeof(PalTime));
+        memcpy(new->start_time, orig->start_time, sizeof(PalTime));
     }
 
     if (orig->end_time == NULL) {
-	    new->end_time = NULL;
+        new->end_time = NULL;
     } else {
-	    new->end_time = g_malloc(sizeof(PalTime));
-	    memcpy(new->end_time, orig->end_time, sizeof(PalTime));
+        new->end_time = g_malloc(sizeof(PalTime));
+        memcpy(new->end_time, orig->end_time, sizeof(PalTime));
     }
 
 
@@ -132,10 +133,10 @@ pal_event_free(PalEvent* event)
         g_free(event->end_time);
 
     if (event->file_name != NULL)
-	    g_free(event->file_name);
+        g_free(event->file_name);
 
     if (event->key != NULL)
-	    g_free(event->key);
+        g_free(event->key);
 
     g_free(event);
 
@@ -161,7 +162,7 @@ get_key_todo(const GDate* date, char *buffer)
     GDate* today = g_date_new();
     g_date_set_time_t(today, time(NULL));
     if (g_date_days_between(today, date) != 0) {
-	    g_date_free(today);
+        g_date_free(today);
         return false;
     }
 
@@ -174,7 +175,7 @@ get_key_todo(const GDate* date, char *buffer)
 static char*
 get_descr_todo(const GDate *date)
 {
-    (void)date;	/* Avoid unused warning */
+    (void)date;    /* Avoid unused warning */
     return g_strdup("TODO event");
 }
 
@@ -191,7 +192,7 @@ is_valid_daily(const char* date_string)
 static bool
 get_key_daily(const GDate* date, char *buffer)
 {
-    (void)date;	/* Avoid unused warning */
+    (void)date;    /* Avoid unused warning */
     strcpy(buffer, "DAILY");
     return true;
 }
@@ -200,7 +201,7 @@ get_key_daily(const GDate* date, char *buffer)
 static char*
 get_descr_daily(const GDate *date)
 {
-    (void)date;	/* Avoid unused warning */
+    (void)date;    /* Avoid unused warning */
     return g_strdup("Daily");
 }
 
@@ -213,30 +214,30 @@ is_valid_yyyymmdd(const char* date_string)
     /* if key is regular event in the form:
        single day, monthly, yearly, yearly/monthly */
     if (sscanf(date_string, "%1d%1d%1d%1d%1d%1d%1d%1d",
-	      &d[0],&d[1],&d[2],&d[3],&d[4],&d[5],&d[6],&d[7]) == 8)
+          &d[0],&d[1],&d[2],&d[3],&d[4],&d[5],&d[6],&d[7]) == 8)
     {
-	int year, month, day;
+    int year, month, day;
 
-	year  = d[0] * 1000 + d[1] * 100 + d[2] * 10 + d[3];
-	month = d[4] * 10 + d[5];
-	day   = d[6] * 10 + d[7];
+    year  = d[0] * 1000 + d[1] * 100 + d[2] * 10 + d[3];
+    month = d[4] * 10 + d[5];
+    day   = d[6] * 10 + d[7];
 
-	if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1)
-	    return false;
+    if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1)
+        return false;
 
-	/* FIXME: Don't allow one-time events on leap day in years
-	 * that leap day doesn't exist */
-	if (month == 2 && day > 29)
-	    return false;
+    /* FIXME: Don't allow one-time events on leap day in years
+     * that leap day doesn't exist */
+    if (month == 2 && day > 29)
+        return false;
 
-	/* 30 days in april, june, sept, nov */
-	if ((month == 4 || month == 6 || month == 9 || month == 11) &&
-	   day > 30)
-	    return false;
+    /* 30 days in april, june, sept, nov */
+    if ((month == 4 || month == 6 || month == 9 || month == 11) &&
+       day > 30)
+        return false;
 
-	/* make sure there weren't more characters that sscanf didn't see */
-	if (strlen(date_string) == 8)
-	    return true;
+    /* make sure there weren't more characters that sscanf didn't see */
+    if (strlen(date_string) == 8)
+        return true;
     }
 
     return false;
@@ -247,7 +248,7 @@ static bool
 get_key_yyyymmdd(const GDate* date, char *buffer)
 {
     snprintf(buffer, 9, "%04d%02d%02d", g_date_get_year(date),
-	    g_date_get_month(date), g_date_get_day(date));
+        g_date_get_month(date), g_date_get_day(date));
     return true;
 }
 
@@ -281,8 +282,8 @@ is_valid_weekly(const char* date_string)
     for (int i = 1; i<=7; i++) {
         if (strcmp(date_string, day_names[i]) == 0) {
             return true;
-		}
-	}
+        }
+    }
     return false;
 }
 
@@ -310,13 +311,13 @@ is_valid_000000dd(const char* date_string)
     int d[8];
 
     if (sscanf(date_string, "000000%1d%1d", &d[6],&d[7]) == 2) {
-		int day   = d[6] * 10 + d[7];
+        int day   = d[6] * 10 + d[7];
 
-		if (day < 1 || day > 31)
-			return false;
+        if (day < 1 || day > 31)
+            return false;
 
-		if (strlen(date_string) == 8)
-			return true;
+        if (strlen(date_string) == 8)
+            return true;
     }
     return false;
 }
@@ -346,24 +347,24 @@ is_valid_0000mmdd(const char* date_string)
 
     if (sscanf(date_string, "0000%1d%1d%1d%1d", &d[4],&d[5],&d[6],&d[7]) == 4) {
 
-		int day   = d[6] * 10 + d[7];
-		int month = d[4] * 10 + d[5];
+        int day   = d[6] * 10 + d[7];
+        int month = d[4] * 10 + d[5];
 
-		if (day < 1 || day > 31 || month < 1 || month > 12)
-		    return false;
+        if (day < 1 || day > 31 || month < 1 || month > 12)
+            return false;
 
-		/* FIXME: Don't allow one-time events on leap day in years
-		 * that leap day doesn't exist */
-		if (month == 2 && day > 29)
-		    return false;
+        /* FIXME: Don't allow one-time events on leap day in years
+         * that leap day doesn't exist */
+        if (month == 2 && day > 29)
+            return false;
 
-		/* 30 days in april, june, sept, nov */
-		if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)
-		    return false;
+        /* 30 days in april, june, sept, nov */
+        if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)
+            return false;
 
-		if (strlen(date_string) == 8) {
-		    return true;
-		}
+        if (strlen(date_string) == 8) {
+            return true;
+        }
     }
     return false;
 }
@@ -393,17 +394,17 @@ is_valid_star_00nd(const char* date_string)
 {
     int d[2];
 
-	/* nth weekday of month  */
+    /* nth weekday of month  */
     if (sscanf(date_string, "*00%1d%1d", &d[0],&d[1]) == 2) {
-		int n = d[0];
-		int weekday = d[1];
+        int n = d[0];
+        int weekday = d[1];
 
-		if (weekday >  0 && weekday < 8  &&
-		         n >  0 &&       n < 6)	   /* no more than 5 weeks in a month */
-		{
-		    if (strlen(date_string) == 5)
-				return true;
-		}
+        if (weekday >  0 && weekday < 8  &&
+                 n >  0 &&       n < 6)       /* no more than 5 weeks in a month */
+        {
+            if (strlen(date_string) == 5)
+                return true;
+        }
     }
     return false;
 }
@@ -440,19 +441,19 @@ is_valid_star_mmnd(const char* date_string)
 {
     int d[8];
 
-	/* nth weekday of month  */
+    /* nth weekday of month  */
     if (sscanf(date_string, "*%1d%1d%1d%1d", &d[0],&d[1],&d[2],&d[3]) == 4) {
-		int month = d[0] * 10 + d[1];
-		int n = d[2];
-		int weekday = d[3];
+        int month = d[0] * 10 + d[1];
+        int n = d[2];
+        int weekday = d[3];
 
-		if (weekday >  0 && weekday < 8  &&
-		     month >  0 &&   month < 13 &&
-		         n >  0 &&       n < 6)	   /* no more than 5 weeks in a month */
-		{
-		    if (strlen(date_string) == 5)
-				return true;
-		}
+        if (weekday >  0 && weekday < 8  &&
+             month >  0 &&   month < 13 &&
+                 n >  0 &&       n < 6)       /* no more than 5 weeks in a month */
+        {
+            if (strlen(date_string) == 5)
+                return true;
+        }
     }
     return false;
 }
@@ -490,14 +491,14 @@ is_valid_star_00Ld(const char* date_string)
 {
     int d[2];
 
-	/* last weekday of month */
+    /* last weekday of month */
     if (sscanf(date_string, "*00L%1d", &d[0]) == 1) {
 
-		int weekday = d[0];
-		if (weekday >  0 && weekday < 8) {
-		    if (strlen(date_string) == 5)
-				return true;
-		}
+        int weekday = d[0];
+        if (weekday >  0 && weekday < 8) {
+            if (strlen(date_string) == 5)
+                return true;
+        }
     }
     return false;
 }
@@ -541,16 +542,16 @@ is_valid_star_mmLd(const char* date_string)
 {
     int d[8];
 
-	/* last weekday of month */
+    /* last weekday of month */
     if (sscanf(date_string, "*%1d%1dL%1d", &d[0],&d[1],&d[2]) == 3) {
 
-		int month = d[0] * 10 + d[1];
-		int weekday = d[2];
+        int month = d[0] * 10 + d[1];
+        int weekday = d[2];
 
-		if (weekday >  0 && weekday < 8 && month   >  0 &&   month < 13) {
-		    if (strlen(date_string) == 5)
-				return true;
-		}
+        if (weekday >  0 && weekday < 8 && month   >  0 &&   month < 13) {
+            if (strlen(date_string) == 5)
+                return true;
+        }
     }
     return false;
 }
@@ -596,19 +597,19 @@ is_valid_EASTER(const char* date_string)
 
     if (strncmp(date_string, "EASTER", 6) == 0) {
 
-		if (strlen(date_string) == 6) {
-		    return true;
-		}
+        if (strlen(date_string) == 6) {
+            return true;
+        }
 
-		if (date_string[6] == '-' || date_string[6] == '+') {
-		    if (g_ascii_isdigit(date_string[7]) &&
-		       g_ascii_isdigit(date_string[8]) &&
-		       g_ascii_isdigit(date_string[9]))
-		    {
-				if (date_string[10] == '\0')
-					return true;
-		    }
-		}
+        if (date_string[6] == '-' || date_string[6] == '+') {
+            if (isdigit(date_string[7]) &&
+               isdigit(date_string[8]) &&
+               isdigit(date_string[9]))
+            {
+                if (date_string[10] == '\0')
+                    return true;
+            }
+        }
     }
     return false;
 }
@@ -629,47 +630,47 @@ parse_event(PalEvent *event, const char* date_string)
 
     s = g_strsplit(date_string, ":", 3);
 
-	if (s[1] && !is_valid_yyyymmdd(s[1]))  /* start date */
-		goto FAILURE;
+    if (s[1] && !is_valid_yyyymmdd(s[1]))  /* start date */
+        goto FAILURE;
 
-	/* Need to check both, if s[1] is NULL, s[2] isn't valid */
-	if (s[1] && s[2] && !is_valid_yyyymmdd(s[2]))  /* end date */
-		goto FAILURE;
+    /* Need to check both, if s[1] is NULL, s[2] isn't valid */
+    if (s[1] && s[2] && !is_valid_yyyymmdd(s[2]))  /* end date */
+        goto FAILURE;
 
-	/* Repeat counter */
-	if ((ptr = strrchr(s[0], '/')) != NULL) {
-		if (sscanf(ptr+1, "%d%*s", &count) != 1 || count < 1)  /* Invalid count */
-			goto FAILURE;
+    /* Repeat counter */
+    if ((ptr = strrchr(s[0], '/')) != NULL) {
+        if (sscanf(ptr+1, "%d%*s", &count) != 1 || count < 1)  /* Invalid count */
+            goto FAILURE;
 
-		*ptr = '\0';
-	}
+        *ptr = '\0';
+    }
 
-	for (i=0; i < PAL_NUM_EVENTTYPES; i++) {
-		if (PalEventTypes[i].valid_string(s[0])) {
-			period = PalEventTypes[i].period;
-			break;
-		}
-	}
+    for (i=0; i < PAL_NUM_EVENTTYPES; i++) {
+        if (PalEventTypes[i].valid_string(s[0])) {
+            period = PalEventTypes[i].period;
+            break;
+        }
+    }
 
-	if (i == PAL_NUM_EVENTTYPES)
-		goto FAILURE;
+    if (i == PAL_NUM_EVENTTYPES)
+        goto FAILURE;
 
-	/* We now know the string is valid */
+    /* We now know the string is valid */
 
-	if (s[1]) {
-		event->start_date = get_date(s[1]);
+    if (s[1]) {
+        event->start_date = get_date(s[1]);
 
-		if (s[2]) {
-			event->end_date = get_date(s[2]);
-		} else {
-			event->end_date = g_date_new_dmy(1,1,3000);
-		}
-	}
-	event->period_count = count;
-	event->eventtype = &PalEventTypes[i];
-	event->key = g_strdup(s[0]);
-	g_strfreev(s);
-	return true;
+        if (s[2]) {
+            event->end_date = get_date(s[2]);
+        } else {
+            event->end_date = g_date_new_dmy(1,1,3000);
+        }
+    }
+    event->period_count = count;
+    event->eventtype = &PalEventTypes[i];
+    event->key = g_strdup(s[0]);
+    g_strfreev(s);
+    return true;
 
 FAILURE:
 
@@ -700,7 +701,7 @@ find_easter(int year)
     day = p+1;
 
     return g_date_new_dmy((GDateDay) day, (GDateMonth) month,
-			  (GDateYear) year);
+              (GDateYear) year);
 }
 
 
@@ -712,9 +713,9 @@ get_key_EASTER(const GDate* date, char *buffer)
     g_date_free(easter);
 
     if (diff != 0)
-	snprintf(buffer, 12, "EASTER%c%03d", (diff > 0) ? '-' : '+', (diff > 0) ? diff : -diff);
+    snprintf(buffer, 12, "EASTER%c%03d", (diff > 0) ? '-' : '+', (diff > 0) ? diff : -diff);
     else
-	snprintf(buffer, 12, "EASTER");
+    snprintf(buffer, 12, "EASTER");
 
     return true;
 }
@@ -729,9 +730,9 @@ get_descr_EASTER(const GDate* date)
     g_date_free(easter);
 
     if (diff != 0)
-	snprintf(buf, 128, "%d days %s Easter", (diff > 0) ? diff : -diff, (diff > 0) ? "before" : "after");
+    snprintf(buf, 128, "%d days %s Easter", (diff > 0) ? diff : -diff, (diff > 0) ? "before" : "after");
     else
-	snprintf(buf, 128, "Easter");
+    snprintf(buf, 128, "Easter");
 
     return g_strdup(buf);
 }
@@ -745,7 +746,7 @@ get_key(const GDate* date)
     char* key = g_malloc(sizeof(char)*9);
 
     snprintf(key, 9, "%04d%02d%02d", g_date_get_year(date),
-	    g_date_get_month(date), g_date_get_day(date));
+        g_date_get_month(date), g_date_get_day(date));
     return key;
 }
 
@@ -762,12 +763,11 @@ get_date(const char* key)
     sscanf(key, "%04d%02d%02d", &year, &month, &day);
 
     if (g_date_valid_dmy((GDateDay) day, (GDateMonth) month,
-			(GDateYear) year))
-	date = g_date_new_dmy((GDateDay) day, (GDateMonth) month,
-			      (GDateYear) year);
+            (GDateYear) year))
+    date = g_date_new_dmy((GDateDay) day, (GDateMonth) month,
+                  (GDateYear) year);
 
     return date;
-
 }
 
 
@@ -778,8 +778,8 @@ last_weekday_of_month(const GDate* date)
 
     g_date_add_days(local,7);
     if (g_date_get_month(local) != g_date_get_month(date)) {
-		g_date_free(local);
-		return true;
+        g_date_free(local);
+        return true;
     }
     g_date_free(local);
 
@@ -794,8 +794,8 @@ get_nth_day(const GDate* date)
 {
     int i = (g_date_get_day(date) / 7) + 1;
     if (g_date_get_day(date) % 7 == 0) {
-		i--;
-	}
+        i--;
+    }
     return i;
 }
 
@@ -809,72 +809,72 @@ static GList*
 inspect_range(GList* list, const GDate* date)
 {
     if (list == NULL)
-		return list;
+        return list;
 
     GList* item = list;
 
 
     while (g_list_length(item) > 0) {
-		bool remove = false;
-		PalEvent *event = (PalEvent*) item->data;
-		if (event->start_date != NULL && event->end_date != NULL) {
+        bool remove = false;
+        PalEvent *event = (PalEvent*) item->data;
+        if (event->start_date != NULL && event->end_date != NULL) {
 
-		    if (g_date_days_between(date, event->start_date) > 0 ||
-		       g_date_days_between(date, event->end_date) < 0)
-			remove = true;
-		    else if (event->period_count != 1) {
-	                int event_count = 0; /* Number of times event has happened since start */
+            if (g_date_days_between(date, event->start_date) > 0 ||
+               g_date_days_between(date, event->end_date) < 0)
+            remove = true;
+            else if (event->period_count != 1) {
+                    int event_count = 0; /* Number of times event has happened since start */
 
-	                switch (event->eventtype->period)
-	                {
-	                  case PAL_ONCEONLY:
-	                      event_count = 1;
-	                      break;
-	                  case PAL_DAILY:
-	                      event_count = g_date_days_between(event->start_date, date);
-	                      break;
-	                  case PAL_WEEKLY:
-	                      event_count = g_date_days_between(event->start_date, date) / 7;
-	                      break;
-	                  case PAL_MONTHLY:
-	                  {
-	                      int month_start = g_date_get_month(event->start_date) + 12*g_date_get_year(event->start_date);
-	                      int month_cur   = g_date_get_month(date)              + 12*g_date_get_year(date);
-	                      event_count     = month_cur - month_start;
-	                      break;
-	                  }
-	                  case PAL_YEARLY:
-	                  {
-	                      event_count     = g_date_get_year(date) - g_date_get_year(event->start_date);
-	                      break;
-	                  }
-	               }
-	               if ((event_count % event->period_count) != 0)
-	                   remove = true;
-		    }
+                    switch (event->eventtype->period)
+                    {
+                      case PAL_ONCEONLY:
+                          event_count = 1;
+                          break;
+                      case PAL_DAILY:
+                          event_count = g_date_days_between(event->start_date, date);
+                          break;
+                      case PAL_WEEKLY:
+                          event_count = g_date_days_between(event->start_date, date) / 7;
+                          break;
+                      case PAL_MONTHLY:
+                      {
+                          int month_start = g_date_get_month(event->start_date) + 12*g_date_get_year(event->start_date);
+                          int month_cur   = g_date_get_month(date)              + 12*g_date_get_year(date);
+                          event_count     = month_cur - month_start;
+                          break;
+                      }
+                      case PAL_YEARLY:
+                      {
+                          event_count     = g_date_get_year(date) - g_date_get_year(event->start_date);
+                          break;
+                      }
+                   }
+                   if ((event_count % event->period_count) != 0)
+                       remove = true;
+            }
 
-		    if (remove) {
-				/* if not on last item */
-				if (g_list_length(item) > 1) {
-				    /* save reference to next data item */
-				    gpointer n = g_list_next(item)->data;
+            if (remove) {
+                /* if not on last item */
+                if (g_list_length(item) > 1) {
+                    /* save reference to next data item */
+                    gpointer n = g_list_next(item)->data;
 
-				    /* remove this list element */
-				    list = g_list_remove(list, item->data);
+                    /* remove this list element */
+                    list = g_list_remove(list, item->data);
 
-				    /* find what we need to look at next */
-				    item = g_list_find(list, n);
-				} else {
-					/* we're on last item */
-				    list = g_list_remove(list, item->data);
-				    item = g_list_last(list);
-				}
-		    } else {
-				item = g_list_next(item);
-			}
-		} else {
-		    item = g_list_next(item);
-		}
+                    /* find what we need to look at next */
+                    item = g_list_find(list, n);
+                } else {
+                    /* we're on last item */
+                    list = g_list_remove(list, item->data);
+                    item = g_list_last(list);
+                }
+            } else {
+                item = g_list_next(item);
+            }
+        } else {
+            item = g_list_next(item);
+        }
     }
     return list;
 }
@@ -888,33 +888,33 @@ pal_event_sort_fn(gconstpointer x, gconstpointer y)
 
     /* Put events with start times before events without start times */
     if (a->start_time != NULL && b->start_time == NULL)
-		return 1;
+        return 1;
     if (a->start_time == NULL && b->start_time != NULL)
-		return -1;
+        return -1;
 
     /* if both events have start times, sort by start time */
     if (a->start_time != NULL && b->start_time != NULL) {
-		if (a->start_time->hour < b->start_time->hour)
-		    return -1;
-		if (a->start_time->hour > b->start_time->hour)
-		    return 1;
+        if (a->start_time->hour < b->start_time->hour)
+            return -1;
+        if (a->start_time->hour > b->start_time->hour)
+            return 1;
 
-		/* if we get here, the hours are the same */
-		if (a->start_time->min < b->start_time->min)
-		    return -1;
-		if (a->start_time->min > b->start_time->min)
-		    return 1;
-		return 0;
+        /* if we get here, the hours are the same */
+        if (a->start_time->min < b->start_time->min)
+            return -1;
+        if (a->start_time->min > b->start_time->min)
+            return 1;
+        return 0;
     }
 
     /* if neither event has start times, sort by order in pal.conf */
     if (a->file_num == b->file_num)
-		return 0;
+        return 0;
     if (a->file_num <  b->file_num) {
-		return -1;
-	} else {
-		return 1;
-	}
+        return -1;
+    } else {
+        return 1;
+    }
 }
 
 
@@ -922,10 +922,9 @@ static GList*
 pal_event_sort_events(GList* events)
 {
     if (events == NULL)
-		return NULL;
+        return NULL;
 
     return g_list_sort(events, pal_event_sort_fn);
-
 }
 
 
@@ -973,30 +972,30 @@ pal_event_escape(const PalEvent* event, const GDate* today)
     char* out = out_string;
 
     while (*in != '\0') {
-		if (*in == '!' && strlen(in) > 5 &&
-		    g_ascii_isdigit(*(in+1)) &&
-		    g_ascii_isdigit(*(in+2)) &&
-		    g_ascii_isdigit(*(in+3)) &&
-		    g_ascii_isdigit(*(in+4)) &&
-		    *(in+5) == '!')
-		{
-		    int diff;
-		    int now = g_date_get_year(today);
-		    int event = g_ascii_digit_value(*(in+1));
-		    event *= 10;
-		    event += g_ascii_digit_value(*(in+2));
-		    event *= 10;
-		    event += g_ascii_digit_value(*(in+3));
-		    event *= 10;
-		    event += g_ascii_digit_value(*(in+4));
-		    diff = now-event;
-		    out += sprintf(out, "%i", diff);
-		    in += 6;
-		} else {
-		    *out = *in;
-		    out++;
-		    in++;
-		}
+        if (*in == '!' && strlen(in) > 5 &&
+            isdigit(*(in+1)) &&
+            isdigit(*(in+2)) &&
+            isdigit(*(in+3)) &&
+            isdigit(*(in+4)) &&
+            *(in+5) == '!')
+        {
+            int diff;
+            int now = g_date_get_year(today);
+            int event = g_ascii_digit_value(*(in+1));
+            event *= 10;
+            event += g_ascii_digit_value(*(in+2));
+            event *= 10;
+            event += g_ascii_digit_value(*(in+3));
+            event *= 10;
+            event += g_ascii_digit_value(*(in+4));
+            diff = now-event;
+            out += sprintf(out, "%i", diff);
+            in += 6;
+        } else {
+            *out = *in;
+            out++;
+            in++;
+        }
     }
 
     *out = '\0';

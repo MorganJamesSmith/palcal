@@ -64,7 +64,7 @@ typedef struct _Settings {
     bool show_weeknum;       /* Show weeknum in output */
     char* compact_date_fmt;  /* comapct list date format */
     char* pal_file;          /* specified one pal file to load instead
-			       * of those in pal.conf */
+                              * of those in pal.conf */
 } Settings;
 
 typedef struct _PalTime {

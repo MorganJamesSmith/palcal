@@ -61,11 +61,10 @@ pal_del_write_file(PalEvent* dead_event)
     }
 
 
-
     pal_input_skip_comments(file, out_file);
     event_head = pal_input_read_head(file, out_file, filename);
 
-    while (1) {
+    while (true) {
         PalEvent* pal_event = NULL;
 
         pal_input_skip_comments(file, out_file);
@@ -126,6 +125,5 @@ pal_del_event(GDate *date, int eventnum)
         pal_del_write_file(dead_event);
 
     pal_main_reload();
-
 }
 

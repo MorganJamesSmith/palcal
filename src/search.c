@@ -41,7 +41,6 @@
 static GList* pal_search_get_results(const char* search, const GDate* date, const int window)
 {
     regex_t preg;
-    int i,j;
     GList* hit_list = NULL;
     GDate *searchdate = g_date_new();
 
@@ -52,15 +51,12 @@ static GList* pal_search_get_results(const char* search, const GDate* date, cons
 
     regcomp(&preg, search, REG_ICASE|REG_NOSUB);
 
-    for (i=0; i<window; i++)
-    {
+    for (int i = 0; i < window; i++) {
         GList* events = get_events(searchdate);
 
-        if (events != NULL)
-        {
+        if (events != NULL) {
             GList* item = g_list_first(events);
-            for (j=0; j<g_list_length(events); j++)
-            {
+            for (int j = 0; j < g_list_length(events); j++) {
 
                 if (regexec(&preg, ((PalEvent*) (item->data))->text, 0, NULL, 0)==0 ||
                         regexec(&preg, ((PalEvent*) (item->data))->type, 0, NULL, 0)==0)
@@ -75,12 +71,12 @@ static GList* pal_search_get_results(const char* search, const GDate* date, cons
             }
         }
 
-        if (settings->reverse_order)
+        if (settings->reverse_order) {
             g_date_subtract_days(searchdate, 1);
-        else
+        } else {
             g_date_add_days(searchdate, 1);
+        }
     }
-
     regfree(&preg);
     return hit_list;
 }
@@ -106,8 +102,7 @@ int pal_search_view(const char* search_string, GDate* date, const int window, co
 
     item = g_list_first(hit_list);
 
-    while (g_list_length(item) != 0)
-    {
+    while (g_list_length(item) != 0) {
         PalEvent* event_tmp = NULL;
         GDate* date_tmp = NULL;
         GDate* next_date = NULL;
@@ -120,16 +115,16 @@ int pal_search_view(const char* search_string, GDate* date, const int window, co
         if (!settings->compact_list)
             pal_output_date_line(date_tmp);
 
-        if (number_events)
+        if (number_events) {
             pal_output_event(event_tmp, date_tmp, event_count++);
-        else
+        } else {
             pal_output_event(event_tmp, date_tmp, -1);
+        }
 
         if (g_list_length(item) != 0)
             next_date = (GDate*) item->data;
 
-        while (g_list_length(item) != 0 && g_date_compare(next_date, date_tmp) == 0)
-        {
+        while (g_list_length(item) != 0 && g_date_compare(next_date, date_tmp) == 0) {
             g_date_free(date_tmp);
 
             date_tmp  = (GDate*)    (item->data);
@@ -166,7 +161,6 @@ int pal_search_view(const char* search_string, GDate* date, const int window, co
 }
 
 
-
 /* Returns the event 'event_number' from the search.  Stores the date
  * the event occurs on in store_date */
 PalEvent* pal_search_event_num(int event_number, GDate** store_date, const char* search_string,
@@ -184,20 +178,16 @@ PalEvent* pal_search_event_num(int event_number, GDate** store_date, const char*
     ret_val = (PalEvent*) g_list_nth_data(hit_list, (event_number-1)*2+1);
 
     tmp = g_list_first(hit_list);
-    while (tmp != NULL)
-    {
-        if (*store_date != (GDate*) (tmp->data))
+    while (tmp != NULL) {
+        if (*store_date != (GDate*) (tmp->data)) {
             g_date_free((GDate*) (tmp->data));
+        }
         tmp = g_list_next(tmp);
         tmp = g_list_next(tmp);
     }
-
     g_list_free(hit_list);
-
     return ret_val;
-
 }
-
 
 
 /* A simpler search, just searches for the first event which contains this
@@ -243,3 +233,4 @@ bool pal_search_isearch_event(GDate **date, int *selected, char *string, bool fo
     g_free(searchstring);
     return found;
 }
+

@@ -63,7 +63,6 @@ color_term(void)
     if (!g_ascii_strncasecmp(term, "dumb", 4)) {
         use_colors = 0;
     }
-
 }
 
 
@@ -80,8 +79,7 @@ set_colorize(const int in)
 static int
 get_curses_color(const int color)
 {
-    switch (color)
-    {
+    switch (color) {
     case BLACK:   return COLOR_BLACK;
     case RED:     return COLOR_RED;
     case GREEN:   return COLOR_GREEN;

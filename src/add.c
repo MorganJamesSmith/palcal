@@ -32,20 +32,20 @@ void
 pal_add_suffix(int number, char* suffix, int buf_size)
 {
     number = number % 10;
-    switch (number)
-    {
-        case 1:  snprintf(suffix, buf_size, "%s", gettext("1st")); return;
-        case 2:  snprintf(suffix, buf_size, "%s", gettext("2nd")); return;
-        case 3:  snprintf(suffix, buf_size, "%s", gettext("3rd")); return;
-        case 4:  snprintf(suffix, buf_size, "%s", gettext("4th")); return;
-        case 5:  snprintf(suffix, buf_size, "%s", gettext("5th")); return;
-        case 6:  snprintf(suffix, buf_size, "%s", gettext("6th")); return;
-        case 7:  snprintf(suffix, buf_size, "%s", gettext("7th")); return;
-        case 8:  snprintf(suffix, buf_size, "%s", gettext("8th")); return;
-        case 9:  snprintf(suffix, buf_size, "%s", gettext("9th")); return;
-        case 10: snprintf(suffix, buf_size, "%s", gettext("10th")); return;
 
-        default: *suffix = '\0'; return;
+    switch (number) {
+    case 1:  snprintf(suffix, buf_size, "%s", gettext("1st")); return;
+    case 2:  snprintf(suffix, buf_size, "%s", gettext("2nd")); return;
+    case 3:  snprintf(suffix, buf_size, "%s", gettext("3rd")); return;
+    case 4:  snprintf(suffix, buf_size, "%s", gettext("4th")); return;
+    case 5:  snprintf(suffix, buf_size, "%s", gettext("5th")); return;
+    case 6:  snprintf(suffix, buf_size, "%s", gettext("6th")); return;
+    case 7:  snprintf(suffix, buf_size, "%s", gettext("7th")); return;
+    case 8:  snprintf(suffix, buf_size, "%s", gettext("8th")); return;
+    case 9:  snprintf(suffix, buf_size, "%s", gettext("9th")); return;
+    case 10: snprintf(suffix, buf_size, "%s", gettext("10th")); return;
+
+    default: *suffix = '\0'; return;
     }
 }
 
@@ -56,11 +56,7 @@ to:   1(sun) -> 7(sat) */
 static inline int
 pal_add_weekday_convert(int weekday)
 {
-    if (weekday == 7) {
-        return 1;
-    } else {
-        return weekday+1;
-    }
+    return (weekday % 7) + 1;
 }
 
 
@@ -153,18 +149,13 @@ pal_add_get_range(GDate *date)
             g_print("%s\n", buf);
 
             snprintf(buf, 1024, "%s ", _("Accept? [y/n]:"));
-
-
         } while (!pal_rl_get_y_n(buf));
 
         s = g_strconcat(":", get_key(d1), ":", get_key(d2), NULL);
         g_date_free(d1);
         g_date_free(d2);
         return s;
-
-    }
-    else return g_strdup("");
-
+    } else return g_strdup("");
 }
 
 
@@ -231,7 +222,7 @@ pal_add_get_recur(GDate* date)
             return g_strdup(selkey);
 
         return g_strconcat(selkey, pal_add_get_range(date), NULL);
-    } while (1);
+    } while (true);
 }
 
 
@@ -299,26 +290,21 @@ pal_add_get_file(void)
         clrtobot();
 
         /* if first character is ~, replace it with the home directory */
-        if (*filename == '~')
-        {
+        if (*filename == '~') {
             char* orig_filename = filename;
             filename = g_strconcat(g_get_home_dir(), filename+1, NULL);
             g_free(orig_filename);
         }
 
         /* check if file exists */
-        if (g_file_test(filename, G_FILE_TEST_EXISTS))
-        {
+        if (g_file_test(filename, G_FILE_TEST_EXISTS)) {
             /* make sure it aint a directory */
-            if (g_file_test(filename, G_FILE_TEST_IS_DIR))
-            {
+            if (g_file_test(filename, G_FILE_TEST_IS_DIR)) {
                 g_print("\n");
                 pal_output_error(_("ERROR: %s is a directory.\n"), filename);
                 prompt_again = true;
             }
-        }
-        else
-        {
+        } else {
             int y,x;
             getyx(stdscr, y,x);
 
@@ -375,10 +361,8 @@ pal_add_get_file(void)
                 }
             }
         }
-
         if (prompt_again)
             g_free(filename);
-
     } while (prompt_again);
 
     /* no more completion necessary */
@@ -389,7 +373,7 @@ pal_add_get_file(void)
 
 
 void
-pal_add_write_file(char* filename, gchar* key, gchar* desc)
+pal_add_write_file(char* filename, char* key, char* desc)
 {
     FILE *file = NULL;
     char* write_line = NULL;
@@ -433,7 +417,6 @@ pal_add_write_file(char* filename, gchar* key, gchar* desc)
     g_print(_("Wrote new event \"%s %s\" to %s.\n"), key, desc, filename);
     g_free(write_line);
     fclose(file);
-
 }
 
 
@@ -484,6 +467,5 @@ pal_add_event(GDate *selected_date)
     g_free(key);
 
     pal_main_reload();
-
 }
 

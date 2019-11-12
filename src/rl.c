@@ -45,8 +45,7 @@ void pal_rl_default_text_fn()
             NULL, NULL, NULL);
     if (locale_default_text == NULL)
         rl_insert_text(pal_rl_default_text); /* this shouldn't happen */
-    else
-    {
+    else {
         rl_insert_text(locale_default_text);
         g_free(locale_default_text);
     }
@@ -68,8 +67,7 @@ char* pal_rl_get_raw_line(const char* prompt, const int row, const int col)
     readline_y = row;
     if (locale_prompt == NULL)
         line = readline(prompt); /* this shouldn't happen */
-    else
-    {
+    else {
         move(row, col);
         clrtoeol();
         move(row,col);
@@ -98,9 +96,7 @@ char* pal_rl_get_raw_line(const char* prompt, const int row, const int col)
         {
             pal_output_error(_("WARNING: Failed to convert your input into UTF-8.\n"));
             return line;
-        }
-        else
-        {
+        } else {
             if (settings->verbose)
                 g_printerr("%s\n", _("Converted string to UTF-8."));
             g_free(line);
@@ -241,7 +237,7 @@ PalEvent* pal_rl_get_event(GDate** d, bool allow_global)
     *d = NULL;
 
 
-    while (1) {
+    while (true) {
         pal_output_fg(BRIGHT, YELLOW, "> ");
         pal_output_wrap(_("Use \"today\" to access TODO events."),2,2);
 
@@ -265,7 +261,7 @@ PalEvent* pal_rl_get_event(GDate** d, bool allow_global)
                     continue;
             }
 
-            while (1) {
+            while (true) {
                 pal_output_fg(BRIGHT, YELLOW, "> ");
                 pal_output_wrap(_("Use \"0\" to use a different date or search string."),2,2);
 
@@ -295,7 +291,7 @@ PalEvent* pal_rl_get_event(GDate** d, bool allow_global)
             if (pal_search_view(search_string, date, 365, true) == 0)
                 continue;
 
-            while (1) {
+            while (true) {
                 pal_output_fg(BRIGHT, YELLOW, "> ");
                 pal_output_wrap(_("Use \"0\" to use a different date or search string."),2,2);
 
@@ -313,7 +309,6 @@ PalEvent* pal_rl_get_event(GDate** d, bool allow_global)
 
                     pal_output_fg(BRIGHT, RED, "> ");
                     pal_output_wrap(_("This event is in a global calendar file.  You can change this event only by editing the global calendar file manually (root access might be required)."),2,2);
-
                 }
             }
 
@@ -322,10 +317,11 @@ PalEvent* pal_rl_get_event(GDate** d, bool allow_global)
 
 
 
-        if (*d != NULL) g_date_free(*d);
-        if (s != NULL) g_free(s);
-
-    } /* end while (1); */
+        if (*d != NULL)
+            g_date_free(*d);
+        if (s != NULL)
+            g_free(s);
+    } /* end while (true); */
 
     /* impossible */
     return NULL;
@@ -339,8 +335,7 @@ static char* pal_rl_get_date(int row, int col)
     char* s = NULL;
     GDate* d = NULL;
 
-    do
-    {
+    do {
         move(row, col);
         pal_output_fg(BRIGHT, GREEN, "> ");
         pal_output_wrap(_("Valid date formats include: yyyymmdd, Jan 1 2000, 1 Jan 2000, 4 days away"),2,2);
@@ -348,8 +343,7 @@ static char* pal_rl_get_date(int row, int col)
         s = pal_rl_get_line(_("Date for event: "),row+2,0);
         d = get_query_date(s, false);
 
-        if (d != NULL)
-        {
+        if (d != NULL) {
             char buf[1024];
 
             g_print("\n");
@@ -367,25 +361,19 @@ static char* pal_rl_get_date(int row, int col)
 
             g_date_strftime(buf, 1024, _("%a %e %b %Y - Accept? [y/n]: "), d);
 
-            if (pal_rl_get_y_n(buf))
-            {
+            if (pal_rl_get_y_n(buf)) {
                 s = get_key(d);
                 g_date_free(d);
                 return s;
             }
-        }
-
-        else
-        {
+        } else {
             if (g_ascii_strcasecmp(s, "todo") == 0)
                 return g_strdup("TODO");
         }
 
         if (d != NULL) g_date_free(d);
         if (s != NULL) g_free(s);
-
-    } while (1);
-
+    } while (true);
 
 
     /* impossible */

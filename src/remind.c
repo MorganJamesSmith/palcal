@@ -29,21 +29,20 @@
 #include "edit.h"
 
 /* escape ' */
-static void pal_remind_escape(gchar *string, FILE* tmp_stream)
+static void pal_remind_escape(char *string, FILE* tmp_stream)
 {
     while (*string != '\0')
     {
-	if (*string == '$'  ||
-	   *string == '`'  ||
-	   *string == '"'  ||
-	   *string == '\\')
-	{
-	    fputc('\\', tmp_stream);
-	    fputc(*string, tmp_stream);
-	}
-	else
-	    fputc(*string, tmp_stream);
-	string++;
+    if (*string == '$'  ||
+       *string == '`'  ||
+       *string == '"'  ||
+       *string == '\\')
+    {
+        fputc('\\', tmp_stream);
+        fputc(*string, tmp_stream);
+    } else
+        fputc(*string, tmp_stream);
+    string++;
     }
 }
 
@@ -51,13 +50,13 @@ static void pal_remind_event(void)
 {
     PalEvent* remind_event = NULL;
     GDate* event_date = NULL;
-    gchar* at_string;
-    gchar tmp_name[] = "/tmp/pal-XXXXXX";
+    char* at_string;
+    char tmp_name[] = "/tmp/pal-XXXXXX";
     FILE* tmp_stream;
     int return_val;
-    gchar* email_add;
-    G_CONST_RETURN gchar *charset;
-    at_string = g_malloc(1024*sizeof(gchar));
+    char* email_add;
+    const char *charset;
+    at_string = g_malloc(1024*sizeof(char));
 
     pal_output_fg(BRIGHT, GREEN, "* * * ");
     pal_output_attr(BRIGHT, _("Event reminder"));
@@ -71,23 +70,18 @@ static void pal_remind_event(void)
     remind_event = pal_rl_get_event(&event_date, true);
     g_print("\n");
 
-    if (remind_event->start_time != NULL)
-    {
-	snprintf(at_string, 1024, "%02d:%02d %04d-%02d-%02dW",
-		 remind_event->start_time->hour,
-		 remind_event->start_time->min,
-		 g_date_get_year(event_date),
-		 g_date_get_month(event_date),
-		 g_date_get_day(event_date));
-
-    }
-    else
-    {
-	snprintf(at_string, 1024, "%02d:%02d %04d-%02d-%02d", 0,0,
-		 g_date_get_year(event_date),
-		 g_date_get_month(event_date),
-		 g_date_get_day(event_date));
-
+    if (remind_event->start_time != NULL) {
+    snprintf(at_string, 1024, "%02d:%02d %04d-%02d-%02dW",
+         remind_event->start_time->hour,
+         remind_event->start_time->min,
+         g_date_get_year(event_date),
+         g_date_get_month(event_date),
+         g_date_get_day(event_date));
+    } else {
+    snprintf(at_string, 1024, "%02d:%02d %04d-%02d-%02d", 0,0,
+         g_date_get_year(event_date),
+         g_date_get_month(event_date),
+         g_date_get_day(event_date));
     }
 
 
@@ -106,7 +100,7 @@ static void pal_remind_event(void)
     email_add = pal_rl_get_line(_("Username on local machine or email address: "), settings->term_rows-2, 0);
     rl_pre_input_hook = NULL;
 #endif
-    
+
     email_add = pal_rl_get_line_default(_("Username on local machine or email address: "), settings->term_rows-2, 0, g_strdup(g_get_user_name()));
 
     mkstemp(tmp_name);
@@ -134,9 +128,9 @@ static void pal_remind_event(void)
     fputs(_("Event date: "), tmp_stream);
 
     {
-	gchar pretty_date[128];
-	g_date_strftime(pretty_date, 128, settings->date_fmt, event_date);
-	fputs(pretty_date, tmp_stream);
+    char pretty_date[128];
+    g_date_strftime(pretty_date, 128, settings->date_fmt, event_date);
+    fputs(pretty_date, tmp_stream);
     }
     fputs("\n", tmp_stream);
 
@@ -154,11 +148,10 @@ static void pal_remind_event(void)
     return_val = system(g_strconcat("at -f ", tmp_name, " ", at_string, NULL));
 
     if (return_val != 0)
-	pal_output_error(_("ERROR: Date string was invalid or could not run 'at'.  Is 'atd' running?"));
-    else
-    {
-	pal_output_fg(BRIGHT, GREEN, ">>> ");
-	g_print(_("Successfully added event to the 'at' queue.\n"));
+    pal_output_error(_("ERROR: Date string was invalid or could not run 'at'.  Is 'atd' running?"));
+    else {
+    pal_output_fg(BRIGHT, GREEN, ">>> ");
+    g_print(_("Successfully added event to the 'at' queue.\n"));
     }
 
     remove(tmp_name);

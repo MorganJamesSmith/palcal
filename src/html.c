@@ -85,7 +85,7 @@ pal_html_month(GDate* date, bool force_month_label, const GDate* today)
         if (g_date_get_weekday(date) != 1) {
             fputs("<tr>\n", stdout);
 
-            for (i=0; i<g_date_get_weekday(date)-1; i++) {
+            for (i = 0; i < g_date_get_weekday(date) - 1; i++) {
                 fputs("<td class='pal-blank'>&nbsp;</td>\n", stdout);
             }
         }
@@ -93,7 +93,7 @@ pal_html_month(GDate* date, bool force_month_label, const GDate* today)
         if (g_date_get_weekday(date) != 7) {
             fputs("<tr>\n", stdout);
 
-            for (i=0; i<g_date_get_weekday(date); i++) {
+            for (i = 0; i < g_date_get_weekday(date); i++) {
                 fputs("<td class='pal-blank'>&nbsp;</td>\n", stdout);
             }
         }
@@ -113,32 +113,30 @@ pal_html_month(GDate* date, bool force_month_label, const GDate* today)
         if (g_date_compare(date,today) == 0) {
             g_print("<td class='pal-today' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
         } else {
-            switch (g_date_get_weekday(date))
-            {
-                case 1:
-                    g_print("<td class='pal-mon' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
-                    break;
-                case 2:
-                    g_print("<td class='pal-tue' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
-                    break;
-                case 3:
-                    g_print("<td class='pal-wed' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
-                    break;
-                case 4:
-                    g_print("<td class='pal-thu' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
-                    break;
-                case 5:
-                    g_print("<td class='pal-fri' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
-                    break;
-                case 6:
-                    g_print("<td class='pal-sat' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
-                    break;
-                case 7:
-                    g_print("<td class='pal-sun' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
-                    break;
-                default: /* shouldn't happen */
-                    break;
-
+            switch (g_date_get_weekday(date)) {
+            case 1:
+                g_print("<td class='pal-mon' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+                break;
+            case 2:
+                g_print("<td class='pal-tue' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+                break;
+            case 3:
+                g_print("<td class='pal-wed' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+                break;
+            case 4:
+                g_print("<td class='pal-thu' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+                break;
+            case 5:
+                g_print("<td class='pal-fri' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+                break;
+            case 6:
+                g_print("<td class='pal-sat' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+                break;
+            case 7:
+                g_print("<td class='pal-sun' valign='top'><b>%02d</b><br />\n", g_date_get_day(date));
+                break;
+            default: /* shouldn't happen */
+                break;
             }
         }
 
@@ -225,6 +223,5 @@ pal_html_out()
 
     g_print("<div class='pal-tagline'><p><i>%s</i></p></div>\n",
             _("Calendar created with <a href='http://palcal.sourceforge.net/'>pal</a>."));
-
 }
 

@@ -103,7 +103,6 @@ pal_manage_refresh_at()
             int x,y;
             getyx(stdscr, y, x);
 
-
             linecount += pal_output_date(date, true, isselectedday ? selected_event : -1);
 
             /* if the last thing we printed fell off the screen, erase it */
@@ -113,7 +112,6 @@ pal_manage_refresh_at()
                 finished_printing = true; /* break out of loop */
             }
         }
-
         g_date_add_days(date, 1);
     }
     g_date_free(date);
@@ -128,11 +126,11 @@ pal_manage_refresh_at()
 
         /* If we are viewing a event, screen is split in two to display
          * details. Set this so pal_output_wrap works properly */
-        if (selected_event >= 0)
+        if (selected_event >= 0) {
             settings->term_cols /= 2;
+        }
 
-        pal_curwin = subwin(stdscr, 5, saved_cols/2,
-                settings->cal_lines + 4, saved_cols/2);
+        pal_curwin = subwin(stdscr, 5, saved_cols/2, settings->cal_lines + 4, saved_cols/2);
 
         curevent = g_list_nth_data(events, (selected_event >= 0) ? selected_event : 0);
         g_list_free(events);
@@ -147,19 +145,19 @@ pal_manage_refresh_at()
         g_print("%d\n", curevent->period_count);
 
         pal_output_fg(BRIGHT, GREEN, _("Start date: "));
-        if (curevent->start_date)
-            g_date_strftime(date_text, 128,
-                    settings->date_fmt, curevent->start_date);
-        else
+        if (curevent->start_date) {
+            g_date_strftime(date_text, 128, settings->date_fmt, curevent->start_date);
+        } else {
             sprintf(date_text, "None");
+        }
         g_print("%s\n", date_text);
 
         pal_output_fg(BRIGHT, GREEN, _("End date:   "));
-        if (curevent->end_date)
-            g_date_strftime(date_text, 128,
-                    settings->date_fmt, curevent->end_date);
-        else
+        if (curevent->end_date) {
+            g_date_strftime(date_text, 128, settings->date_fmt, curevent->end_date);
+        } else {
             sprintf(date_text, "None");
+        }
         g_print("%s\n", date_text);
 
         pal_output_fg(BRIGHT, GREEN, _("Key:        "));
@@ -170,9 +168,9 @@ pal_manage_refresh_at()
     }
 
     settings->term_cols = saved_cols;
-
     refresh();
 }
+
 
 /* pal_manage_refresh clears the entire screen and redraws the
  * calendar and list of events.  */
@@ -204,7 +202,7 @@ static void pal_manage_finish(int sig)
     if (gethostname(hostname, 128) == 0)
         colorize_xterm_title(hostname);
 
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 
@@ -273,9 +271,7 @@ static void pal_manage_isearch_refresh(void)
     {
         pal_output_fg(BRIGHT, RED, _("No matches found!"));
         rl_ding();
-    }
-    else
-    {
+    } else {
         g_date_free(selected_day);
         selected_day = searchdate;
         selected_event = searchselect;
@@ -434,252 +430,247 @@ pal_manage(void)
     g_print(" - ");
     g_print(_("Press 'h' for help, 'q' to quit."));
 
-    for (;;) {
+    while (true) {
         int c;
         while ((c = getch()) == ERR);
 
 
-        switch (c)
-        {
-            case KEY_RESIZE:
-                pal_manage_refresh();
-                break;
-            case 'q':
-            case 'Q':
-                pal_manage_finish(0);
-                return;
+        switch (c) {
+        case KEY_RESIZE:
+            pal_manage_refresh();
+            break;
+        case 'q':
+        case 'Q':
+            pal_manage_finish(0);
+            return;
 
-            case KEY_LEFT:
-                g_date_subtract_days(selected_day, 1);
-                pal_manage_refresh();
-                break;
-            case KEY_RIGHT:
-            case ' ':
-                g_date_add_days(selected_day, 1);
-                pal_manage_refresh();
-                break;
-            case KEY_UP:
-                if (selected_event == -1)
-                    g_date_subtract_days(selected_day, 7);
-                else
-                    pal_manage_scan_for_event(&selected_day, &selected_event, -1);
-                pal_manage_refresh();
-                break;
-            case KEY_DOWN:
-                if (selected_event == -1)
-                    g_date_add_days(selected_day, 7);
-                else
-                    pal_manage_scan_for_event(&selected_day, &selected_event, 1);
-                pal_manage_refresh();
-                break;
+        case KEY_LEFT:
+            g_date_subtract_days(selected_day, 1);
+            pal_manage_refresh();
+            break;
+        case KEY_RIGHT:
+        case ' ':
+            g_date_add_days(selected_day, 1);
+            pal_manage_refresh();
+            break;
+        case KEY_UP:
+            if (selected_event == -1)
+                g_date_subtract_days(selected_day, 7);
+            else
+                pal_manage_scan_for_event(&selected_day, &selected_event, -1);
+            pal_manage_refresh();
+            break;
+        case KEY_DOWN:
+            if (selected_event == -1)
+                g_date_add_days(selected_day, 7);
+            else
+                pal_manage_scan_for_event(&selected_day, &selected_event, 1);
+            pal_manage_refresh();
+            break;
 
-            case '\t':
-            case '\r':
-            case KEY_ENTER:
+        case '\t':
+        case '\r':
+        case KEY_ENTER:
 
-                if (selected_event != -1)
-                    selected_event = -1;
+            if (selected_event != -1)
+                selected_event = -1;
 
-                else if (events_on_day != 0)
-                    selected_event = 0;
+            else if (events_on_day != 0)
+                selected_event = 0;
 
-                else /* If no event on current day, scan till we find one */
-                    pal_manage_scan_for_event(&selected_day, &selected_event, 1);
+            else /* If no event on current day, scan till we find one */
+                pal_manage_scan_for_event(&selected_day, &selected_event, 1);
 
 
-                pal_manage_refresh();
-                break;
+            pal_manage_refresh();
+            break;
 
-            case 't': /* today */
-            case 'T':
-                g_date_set_time_t(selected_day, time(NULL));
-                pal_manage_refresh();
-                break;
+        case 't': /* today */
+        case 'T':
+            g_date_set_time_t(selected_day, time(NULL));
+            pal_manage_refresh();
+            break;
 
-            case 'g': /* goto date */
-            case 'G':
-                {
-                    char* str = pal_rl_get_raw_line(_("Goto date: "), 0, 0);
+        case 'g': /* goto date */
+        case 'G':
+            {
+                char* str = pal_rl_get_raw_line(_("Goto date: "), 0, 0);
 
-                    if (strlen(str) > 0) {
-                        GDate* new_date = get_query_date(str, false);
+                if (strlen(str) > 0) {
+                    GDate* new_date = get_query_date(str, false);
 
-                        if (new_date == NULL) {
-                            move(0, 0);
-                            clrtoeol();
-                            colorize_fg(BRIGHT, RED);
-                            g_print("%s is an invalid date!", str);
-                            colorize_reset();
-                        } else {
-                            g_date_free(selected_day);
-                            selected_day = new_date;
-                            pal_manage_refresh();
-                        }
-                    } else {
-                        move(0,0);
+                    if (new_date == NULL) {
+                        move(0, 0);
                         clrtoeol();
+                        colorize_fg(BRIGHT, RED);
+                        g_print("%s is an invalid date!", str);
+                        colorize_reset();
+                    } else {
+                        g_date_free(selected_day);
+                        selected_day = new_date;
+                        pal_manage_refresh();
                     }
-
-                    break;
-                }
-
-            case 'e': /* edit description */
-            case 'E':
-                /* Shortcut for days with one event */
-                if (selected_event == -1 && events_on_day == 1)
-                    selected_event = 0;
-                if (selected_event != -1)
-                {
-                    PalEvent* e = pal_output_event_num(selected_day, selected_event+1);
-                    if (e != NULL)
-                    {
-                        if (e->global)
-                        {
-                            move(0, 0);
-                            clrtoeol();
-                            pal_output_fg(BRIGHT, RED, _("Can't edit global event!"));
-                        }
-                        else
-                        {
-                            //			    char* new_text = pal_edit_desc(e->text);
-                            char* new_text = pal_rl_get_line_default(_("New description: "), 0, 0, e->text);
-
-                            pal_del_write_file(e);
-                            pal_add_write_file(e->file_name, e->date_string, new_text);
-                            /* need to check for error here! */
-
-                            g_free(new_text);
-                            pal_main_reload();
-
-                            pal_manage_refresh();
-                        }
-                    }
-                }
-                else
-                {
+                } else {
                     move(0,0);
                     clrtoeol();
-                    pal_output_fg(BRIGHT, RED, _("No event selected."));
                 }
-                break;
 
-            case 'v':
-            case 'V':
-                if (selected_event != -1)
+                break;
+            }
+
+        case 'e': /* edit description */
+        case 'E':
+            /* Shortcut for days with one event */
+            if (selected_event == -1 && events_on_day == 1)
+                selected_event = 0;
+            if (selected_event != -1)
+            {
+                PalEvent* e = pal_output_event_num(selected_day, selected_event+1);
+                if (e != NULL)
                 {
-                    pal_edit_event(pal_output_event_num(selected_day, selected_event+1), selected_day);
-                    pal_manage_refresh();
-                }
-                break;
-
-            case 'd': /* edit event date */
-            case 'D':
-                break;
-
-            case 'a': /* add event */
-            case 'A':
-                pal_add_event(selected_day);
-                break;
-
-            case KEY_DC: /* delete key - kill event */
-                if (selected_event != -1) {
-                    PalEvent* e = pal_output_event_num(selected_day, selected_event+1);
-                    if (e != NULL) {
+                    if (e->global)
+                    {
                         move(0, 0);
-                        if (e->global) {
-                            pal_output_fg(BRIGHT, RED, _("Can't delete global event!"));
-                        } else {
-                            if (pal_rl_get_y_n(_("Are you sure you want to delete this event? [y/n]: "))) {
-                                selected_event = -1;
-                                pal_del_write_file(e);
-                            }
+                        clrtoeol();
+                        pal_output_fg(BRIGHT, RED, _("Can't edit global event!"));
+                    } else {
+                        //                char* new_text = pal_edit_desc(e->text);
+                        char* new_text = pal_rl_get_line_default(_("New description: "), 0, 0, e->text);
 
-                            pal_main_reload();
-                            pal_manage_refresh();
-                        }
+                        pal_del_write_file(e);
+                        pal_add_write_file(e->file_name, e->date_string, new_text);
+                        /* need to check for error here! */
+
+                        g_free(new_text);
+                        pal_main_reload();
+
+                        pal_manage_refresh();
                     }
                 }
-                break;
+            } else {
+                move(0,0);
+                clrtoeol();
+                pal_output_fg(BRIGHT, RED, _("No event selected."));
+            }
+            break;
 
-            case 'r': /* reminder */
-            case 'R': break;
+        case 'v':
+        case 'V':
+            if (selected_event != -1)
+            {
+                pal_edit_event(pal_output_event_num(selected_day, selected_event+1), selected_day);
+                pal_manage_refresh();
+            }
+            break;
 
-            case 's': /* search */
-            case 'S': break;
+        case 'd': /* edit event date */
+        case 'D':
+            break;
 
-            case '/': /* forward i-search */
-                      pal_manage_isearch(true);
-                      break;
-            case '?': /* backward i-search */
-                      pal_manage_isearch(false);
-                      break;
+        case 'a': /* add event */
+        case 'A':
+            pal_add_event(selected_day);
+            break;
 
-            case 'h': /* help */
-            case 'H':
-                      clear();
-                      move(0,0);
-                      pal_output_fg(BRIGHT, GREEN, "pal %s\n\n", PAL_VERSION);
+        case KEY_DC: /* delete key - kill event */
+            if (selected_event != -1) {
+                PalEvent* e = pal_output_event_num(selected_day, selected_event+1);
+                if (e != NULL) {
+                    move(0, 0);
+                    if (e->global) {
+                        pal_output_fg(BRIGHT, RED, _("Can't delete global event!"));
+                    } else {
+                        if (pal_rl_get_y_n(_("Are you sure you want to delete this event? [y/n]: "))) {
+                            selected_event = -1;
+                            pal_del_write_file(e);
+                        }
 
-                      pal_output_fg(BRIGHT, GREEN, _("LeftArrow"));
-                      g_print(" - %s\n", _("Back one day"));
+                        pal_main_reload();
+                        pal_manage_refresh();
+                    }
+                }
+            }
+            break;
 
-                      pal_output_fg(BRIGHT, GREEN, _("RightArrow"));
-                      g_print(" - %s\n", _("Forward one day"));
+        case 'r': /* reminder */
+        case 'R': break;
 
-                      pal_output_fg(BRIGHT, GREEN, _("UpArrow"));
-                      g_print(" - %s\n", _("Back one week or event (if in event selection mode)"));
+        case 's': /* search */
+        case 'S': break;
 
-                      pal_output_fg(BRIGHT, GREEN, _("DownArrow"));
-                      g_print(" - %s\n", _("Forward one week or event (if in event selection mode)"));
+        case '/': /* forward i-search */
+                  pal_manage_isearch(true);
+                  break;
+        case '?': /* backward i-search */
+                  pal_manage_isearch(false);
+                  break;
 
-                      pal_output_fg(BRIGHT, GREEN, "h");
-                      g_print(" - %s\n", _("This help screen."));
+        case 'h': /* help */
+        case 'H':
+                  clear();
+                  move(0,0);
+                  pal_output_fg(BRIGHT, GREEN, "pal %s\n\n", PAL_VERSION);
 
-                      pal_output_fg(BRIGHT, GREEN, "q");
-                      g_print(" - %s\n", _("Quit"));
+                  pal_output_fg(BRIGHT, GREEN, _("LeftArrow"));
+                  g_print(" - %s\n", _("Back one day"));
 
-                      pal_output_fg(BRIGHT, GREEN, _("Tab, Enter"));
-                      g_print(" - %s\n", _("Toggle event selection"));
+                  pal_output_fg(BRIGHT, GREEN, _("RightArrow"));
+                  g_print(" - %s\n", _("Forward one day"));
 
-                      pal_output_fg(BRIGHT, GREEN, "g");
-                      g_print(" - %s\n", _("Jump to a specific date."));
+                  pal_output_fg(BRIGHT, GREEN, _("UpArrow"));
+                  g_print(" - %s\n", _("Back one week or event (if in event selection mode)"));
 
-                      pal_output_fg(BRIGHT, GREEN, "t");
-                      g_print(" - %s\n", _("Jump to today."));
+                  pal_output_fg(BRIGHT, GREEN, _("DownArrow"));
+                  g_print(" - %s\n", _("Forward one week or event (if in event selection mode)"));
 
-                      pal_output_fg(BRIGHT, GREEN, "e");
-                      g_print(" - %s\n", _("Edit description of the selected event."));
+                  pal_output_fg(BRIGHT, GREEN, "h");
+                  g_print(" - %s\n", _("This help screen."));
 
-                      pal_output_fg(BRIGHT, GREEN, "a");
-                      g_print(" - %s\n", _("Add an event to the selected date."));
+                  pal_output_fg(BRIGHT, GREEN, "q");
+                  g_print(" - %s\n", _("Quit"));
 
-                      pal_output_fg(BRIGHT, GREEN, "/, ?");
-                      g_print(" - %s\n", _("Forward/reverse i-search"));
+                  pal_output_fg(BRIGHT, GREEN, _("Tab, Enter"));
+                  g_print(" - %s\n", _("Toggle event selection"));
 
-                      pal_output_fg(BRIGHT, GREEN, _("Delete"));
-                      g_print(" - %s\n", _("Delete selected event."));
+                  pal_output_fg(BRIGHT, GREEN, "g");
+                  g_print(" - %s\n", _("Jump to a specific date."));
 
-                      g_print("\n");
+                  pal_output_fg(BRIGHT, GREEN, "t");
+                  g_print(" - %s\n", _("Jump to today."));
 
-                      pal_output_fg(BRIGHT, RED, "UNIMPLEMENTED:\n");
-                      g_print("d - %s\n", _("Edit date for selected event."));
-                      g_print("s - %s\n", _("Search for event."));
-                      g_print("r - %s\n", _("Remind me about an event."));
+                  pal_output_fg(BRIGHT, GREEN, "e");
+                  g_print(" - %s\n", _("Edit description of the selected event."));
 
-                      g_print("\n");
-                      g_print(_("Press any key to exit help."));
-                      g_print("\n");
+                  pal_output_fg(BRIGHT, GREEN, "a");
+                  g_print(" - %s\n", _("Add an event to the selected date."));
 
-                      {
-                          int c;
-                          do {
-                              c = getch();
-                          } while (c == ERR || c == KEY_RESIZE);
-                      }
+                  pal_output_fg(BRIGHT, GREEN, "/, ?");
+                  g_print(" - %s\n", _("Forward/reverse i-search"));
 
-                      pal_manage_refresh();
+                  pal_output_fg(BRIGHT, GREEN, _("Delete"));
+                  g_print(" - %s\n", _("Delete selected event."));
 
-                      break;
+                  g_print("\n");
+
+                  pal_output_fg(BRIGHT, RED, "UNIMPLEMENTED:\n");
+                  g_print("d - %s\n", _("Edit date for selected event."));
+                  g_print("s - %s\n", _("Search for event."));
+                  g_print("r - %s\n", _("Remind me about an event."));
+
+                  g_print("\n");
+                  g_print(_("Press any key to exit help."));
+                  g_print("\n");
+
+                  {
+                      int c;
+                      do {
+                          c = getch();
+                      } while (c == ERR || c == KEY_RESIZE);
+                  }
+
+                  pal_manage_refresh();
+
+                  break;
         }
     }
 }

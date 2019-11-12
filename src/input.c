@@ -53,9 +53,7 @@ should_be_expunged(const PalEvent* pal_event)
     /* if not a yyyymmdd (ie, not recurring) */
     if (event_day == NULL) {
         /* recurring event with end_date */
-        if (pal_event->end_date != NULL &&
-                g_date_days_between(today, pal_event->end_date) <= -1*settings->expunge)
-        {
+        if (pal_event->end_date != NULL && g_date_days_between(today, pal_event->end_date) <= -1*settings->expunge) {
             g_date_free(today);
             return true;
         }
@@ -74,7 +72,6 @@ should_be_expunged(const PalEvent* pal_event)
     g_date_free(today);
     g_date_free(event_day);
     return false;
-
 }
 
 
@@ -134,8 +131,7 @@ void pal_input_skip_comments(FILE* file, FILE* out_file)
     long start_of_line;
     char s[2048];
 
-    do
-    {
+    do {
         char* orig_string = NULL;
 
         start_of_line = ftell(file);
@@ -150,14 +146,12 @@ void pal_input_skip_comments(FILE* file, FILE* out_file)
             fputs(orig_string, out_file);
 
         g_free(orig_string);
-
     } while (*s == '#' || *s == '\0');
 
     /* now we are on the next non-comment, non-emtpy line. */
     /* jump back in stream so the next line read is not a comment */
     fseek(file, start_of_line, SEEK_SET);
 }
-
 
 
 /* reads in the 'first' line of the .pal file (two marker characters
@@ -168,8 +162,7 @@ PalEvent* pal_input_read_head(FILE* file, FILE* out_file, char* filename)
     char c;
     PalEvent* event_head = NULL;
 
-    if (fgets(s, 2048, file) == NULL)
-    {
+    if (fgets(s, 2048, file) == NULL) {
         pal_output_error(_("WARNING: File is missing 2 character marker and event type: %s\n"), filename);
         return NULL;
     }
@@ -188,8 +181,8 @@ PalEvent* pal_input_read_head(FILE* file, FILE* out_file, char* filename)
     event_head->file_name = g_strdup(filename);
     event_head->global = pal_input_file_is_global(filename);
 
-    if (c != ' ' && c != '\t') /* there should be white space here */
-    {
+    /* there should be white space here */
+    if (c != ' ' && c != '\t') {
         char* file = g_path_get_basename(filename);
         pal_output_error(_("ERROR: First line is improperly formatted.\n"));
         pal_output_error("       %s: %s\n", _("FILE"), file);
@@ -211,9 +204,11 @@ PalEvent* pal_input_read_head(FILE* file, FILE* out_file, char* filename)
 
 bool pal_input_eof(FILE* file)
 {
-    if (feof(file) != 0)
+    if (feof(file) != 0) {
         return true;
-    return false;
+    } else {
+        return false;
+    }
 }
 
 /* Returns:    The PalEvent for the next event in the file (or del_event if del_event was deleted).
@@ -253,8 +248,7 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
 
     pal_event = pal_event_copy(event_head);
     /* check for a valid date_string */
-    if (!parse_event(pal_event, date_string))
-    {
+    if (!parse_event(pal_event, date_string)) {
         char* file = g_path_get_basename(filename);
         pal_output_error(_("ERROR: Invalid date string.\n"));
         pal_output_error("       %s: %s\n", _("FILE"), file);
@@ -271,8 +265,7 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
     }
 
     /* require a description for a event */
-    if (strlen(text_string) == 0)
-    {
+    if (strlen(text_string) == 0) {
         char* file = g_path_get_basename(filename);
         pal_output_error(_("ERROR: Event description missing.\n"));
         pal_output_error("       %s: %s\n", _("FILE"), file);
@@ -294,8 +287,7 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
                 text_string, filename);
 
     /* Sanity checks */
-    if (pal_event->period_count != 1 && !pal_event->start_date)
-    {
+    if (pal_event->period_count != 1 && !pal_event->start_date) {
         char* file = g_path_get_basename(filename);
         pal_event->start_date = g_date_new();
         g_date_set_time_t(pal_event->start_date, time(NULL));
@@ -318,11 +310,9 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
     pal_event->date_string = g_strdup(date_string);
 
 
-    if (out_file != NULL)
-    {
+    if (out_file != NULL) {
         /* don't print to out_file if event should be expunged */
-        if (should_be_expunged(pal_event))
-        {
+        if (should_be_expunged(pal_event)) {
             if (settings->verbose)
                 g_printerr("%s: %s", _("Expunged"), s);
 
@@ -332,18 +322,17 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
         }
 
         /* don't print to out_file if event should be deleted */
-        else if (del_event != NULL &&
+        if (del_event != NULL &&
                 strcmp(pal_event->date_string, del_event->date_string) == 0 &&
                 strcmp(pal_event->text,        del_event->text)        == 0)
         {
             pal_event_free(pal_event);
             g_free(text_string);
             return del_event;
-        }
-        else /* otherwise, print to out_file */
+        } else { /* otherwise, print to out_file */
             fputs(s, out_file);
+        }
     }
-
 
     g_free(text_string);
     return pal_event;
@@ -354,9 +343,11 @@ PalEvent* pal_input_read_event(FILE* file, FILE* out_file, char* filename, PalEv
 /* checks if file is a global */
 static bool pal_input_file_is_global(const char* filename)
 {
-    if (strncmp(filename, PREFIX "/share/pal", strlen(PREFIX "/share/pal")) == 0)
+    if (strncmp(filename, PREFIX "/share/pal", strlen(PREFIX "/share/pal")) == 0) {
         return true;
-    return false;
+    } else {
+        return false;
+    }
 }
 
 
@@ -374,11 +365,9 @@ static int load_file(char* filename, FILE* file, int filecount, bool hide, int c
     out_filename = g_strconcat(filename, ".paltmp", NULL);
 
     /* if -x is used and the file isn't a global calendar, expunge */
-    if (settings->expunge > 0 && !pal_input_file_is_global(out_filename))
-    {
+    if (settings->expunge > 0 && !pal_input_file_is_global(out_filename)) {
         out_file = fopen(out_filename, "w");
-        if (out_file == NULL)
-        {
+        if (out_file == NULL) {
             pal_output_error(_("ERROR: Can't write file: %s\n"), out_filename);
             pal_output_error("       %s\n", _("File will not be expunged: %s"), filename);
         }
@@ -387,14 +376,12 @@ static int load_file(char* filename, FILE* file, int filecount, bool hide, int c
     pal_input_skip_comments(file, out_file);
     event_head = pal_input_read_head(file, out_file, filename);
 
-    if (event_head != NULL)
-    {
+    if (event_head != NULL) {
         event_head->color = color;
         event_head->file_num = filecount;
         event_head->hide = hide;
 
-        while (1)
-        {
+        while (true) {
             GList* days_events = NULL;
             PalEvent* pal_event = NULL;
 
@@ -404,30 +391,24 @@ static int load_file(char* filename, FILE* file, int filecount, bool hide, int c
             if (pal_event == NULL && pal_input_eof(file))
                 break;
 
-            if (pal_event != NULL)
-            {
+            if (pal_event != NULL) {
                 char* key = pal_event->key;
                 eventcount++;
 
                 /* if no list exists for that key, make new list */
-                if (g_hash_table_lookup(ht, key) == NULL)
-                {
+                if (g_hash_table_lookup(ht, key) == NULL) {
                     days_events = NULL;
                     days_events = g_list_append(days_events, pal_event);
                     g_hash_table_insert(ht,g_strdup(key),days_events);
-                }
-                else /* else, append to current list */
-                {
+                } else { /* else, append to current list */
                     days_events = g_hash_table_lookup(ht,key);
                     days_events = g_list_append(days_events,pal_event);
                 }
             }
-
         }
     }
 
-    if (out_file != NULL)
-    {
+    if (out_file != NULL) {
         fclose(out_file);
         if (rename(out_filename, filename) != 0)
             pal_output_error(_("ERROR: Can't rename %s to %s\n"), out_filename, filename);
@@ -445,20 +426,16 @@ static int load_file(char* filename, FILE* file, int filecount, bool hide, int c
  * file in pal_file.  It returns true if successful. */
 static bool get_file_to_load(char* file, char* pal_file, bool show_error)
 {
-    if (g_path_is_absolute(file))
-    {
-        if (! g_file_test(file, G_FILE_TEST_EXISTS) || g_file_test(file, G_FILE_TEST_IS_DIR))
-        {
-            if (show_error)
+    if (g_path_is_absolute(file)) {
+        if (! g_file_test(file, G_FILE_TEST_EXISTS) || g_file_test(file, G_FILE_TEST_IS_DIR)) {
+            if (show_error) {
                 pal_output_error(_("ERROR: File doesn't exist: %s\n"), file);
+            }
             return false;
-        }
-        else
+        } else {
             sprintf(pal_file, file);
-    }
-
-    else
-    {
+        }
+    } else {
         /* if a relative path, try looking in the path found in settings->conf_file */
         char* dirname = g_path_get_dirname(settings->conf_file);
         sprintf(pal_file, "%s/%s", dirname, file);
@@ -468,25 +445,20 @@ static bool get_file_to_load(char* file, char* pal_file, bool show_error)
             sprintf(pal_file, PREFIX "/share/pal/%s", file);
 
         /* if that doesn't work, print message */
-        if (! g_file_test(pal_file, G_FILE_TEST_EXISTS) || g_file_test(pal_file, G_FILE_TEST_IS_DIR))
-        {
+        if (! g_file_test(pal_file, G_FILE_TEST_EXISTS) || g_file_test(pal_file, G_FILE_TEST_IS_DIR)) {
             char other_file[2048];
             sprintf(other_file, "%s/%s", dirname, file);
-            if (show_error)
-            {
+            if (show_error) {
                 pal_output_error(_("ERROR: Can't find file.  I tried %s and %s.\n"),
                         other_file, pal_file);
                 exit(1); /* if we don't exit, this error gets buried
                           * when -m is used. */
             }
-
             g_free(dirname);
             return false;
         }
-
         g_free(dirname);
     }
-
     return true;
 }
 
@@ -519,23 +491,18 @@ GHashTable* load_files()
 
     ht = g_hash_table_new(g_str_hash,g_str_equal);
 
-    if (settings->verbose)
-    {
+    if (settings->verbose) {
         if (settings->expunge >= 0)
             g_printerr(_("Looking for data to expunge.\n"));
     }
 
     file = get_file_handle(settings->conf_file, false);
 
-    if (file == NULL)
-    {
-        if (settings->specified_conf_file)
-        {
+    if (file == NULL) {
+        if (settings->specified_conf_file) {
             pal_output_error(_("ERROR: Can't open file: %s\n"), settings->conf_file);
             return ht;
-        }
-        else /* didn't specify conf file, and couldn't find conf file: create a default one */
-        {
+        } else { /* didn't specify conf file, and couldn't find conf file: create a default one */
             FILE* out_file;
             char* out_dirname;
             char* out_path;
@@ -549,10 +516,8 @@ GHashTable* load_files()
                     out_path);
 
             /* create directory if it doesn't exist */
-            if (!g_file_test(out_dirname, G_FILE_TEST_IS_DIR))
-            {
-                if (mkdir(out_dirname, 0755) != 0)
-                {
+            if (!g_file_test(out_dirname, G_FILE_TEST_IS_DIR)) {
+                if (mkdir(out_dirname, 0755) != 0) {
                     pal_output_error(_("ERROR: Can't create directory: %s\n"), out_dirname);
                     return ht;
                 }
@@ -597,12 +562,10 @@ GHashTable* load_files()
             /* open file to read it as usual */
             file = fopen(settings->conf_file, "r");
         }
-
     } /* done opening/creating file */
 
     /* if using -p, load that .pal file now. */
-    if (settings->pal_file != NULL)
-    {
+    if (settings->pal_file != NULL) {
         char pal_file[16384];
         FILE* pal_file_handle = NULL;
 
@@ -610,17 +573,14 @@ GHashTable* load_files()
             sprintf(pal_file, settings->pal_file);
 
         pal_file_handle = get_file_handle(pal_file, true);
-        if (pal_file_handle != NULL)
-        {
+        if (pal_file_handle != NULL) {
             eventcount += load_file(pal_file, pal_file_handle, filecount, false, -1);
             fclose(pal_file_handle);
             filecount++;
         }
     }
 
-
-    while (fgets(s, 2048, file) != NULL)
-    {
+    while (fgets(s, 2048, file) != NULL) {
         char pal_file[16384];
         char color[16384];
         int int_color = -1;

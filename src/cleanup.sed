@@ -1,3 +1,10 @@
+:start
+# spaces > tabs
+s/\t/    /g
+
+# trailing whitespace
+s/[[:space:]]*$//g
+
 # ( stuff ) -> (stuff)
 s/([[:space:]]*/(/g
 s/[[:space:]]*)/)/g
@@ -13,9 +20,13 @@ s/}else/} else/g
 s/else{/else {/g
 s/}while/} while/g
 
+# Consistent never ending loops
+s/while (1)/while (true)/g
+s/for(;;)/while (true)/g
+
 # Two-Line matches
-t ml
-:ml
+t clear
+:clear
 $ b
 N
 
@@ -25,6 +36,9 @@ N
 s/}\n[[:space:]]*else/} else/
 s/else\n[[:space:]]*{/else {/
 
-t ml
+# Removes empty lines before closing curly braces
+/^\n[[:space:]]*}/ s/\n//g
+
+t start
 P
 D

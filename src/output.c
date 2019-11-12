@@ -42,10 +42,11 @@ void pal_output_handler(const char *instr)
     gsize strsize;
     char *outstr = g_locale_from_utf8(instr, -1, NULL, &strsize, NULL);
 
-    if (settings->curses)
+    if (settings->curses) {
         waddnstr(pal_curwin, outstr, strsize);
-    else
+    } else {
         fputs(outstr, stdout);
+    }
 
     g_free(outstr);
 }
@@ -110,18 +111,18 @@ static void pal_output_text_week(GDate* date, bool force_month_label,
 {
     int i=0;
 
-    if (settings->week_start_monday)
+    if (settings->week_start_monday) {
         /* go to last day in week (sun) */
         while (g_date_get_weekday(date) != 7)
             g_date_add_days(date,1);
-    else
+    } else {
         /* go to last day in week (sat) */
         while (g_date_get_weekday(date) != 6)
             g_date_add_days(date,1);
+    }
 
 
-    for (i=0; i<7; i++)
-    {
+    for (i=0; i<7; i++) {
         if (g_date_get_day(date) == 1)
             force_month_label = true;
 
@@ -131,8 +132,7 @@ static void pal_output_text_week(GDate* date, bool force_month_label,
     g_date_add_days(date,1);
     /* date is now at beginning of week */
 
-    if (force_month_label)
-    {
+    if (force_month_label) {
         char buf[1024];
 
         g_date_add_days(date,6);
@@ -140,8 +140,7 @@ static void pal_output_text_week(GDate* date, bool force_month_label,
         g_date_subtract_days(date,6);
 
         /* make sure we're only showing 3 characters */
-        if (g_utf8_strlen(buf, -1) != 3)
-        {
+        if (g_utf8_strlen(buf, -1) != 3) {
             /* append whitespace in case "buf" is too short */
             char* s = g_strconcat(buf, "        ", NULL);
 
@@ -151,10 +150,7 @@ static void pal_output_text_week(GDate* date, bool force_month_label,
         }
 
         pal_output_fg(BRIGHT, GREEN, "%s ", buf);
-
-    }
-    else if (settings->show_weeknum)
-    {
+    } else if (settings->show_weeknum) {
         int weeknum = settings->week_start_monday ? g_date_get_monday_week_of_year(date)
             : g_date_get_sunday_week_of_year(date);
         pal_output_fg(BRIGHT, GREEN, " %2d ", weeknum);
@@ -164,19 +160,16 @@ static void pal_output_text_week(GDate* date, bool force_month_label,
         g_print("    ");
 
 
-    for (i=0; i<7; i++)
-    {
+    for (i=0; i<7; i++) {
         GList* events = NULL;
         gunichar start=' ', end=' ';
         char utf8_buf[8];
         int color = settings->event_color;
         events = get_events(date);
 
-        if (g_date_compare(date,today) == 0)
+        if (g_date_compare(date,today) == 0) {
             start = end = '@';
-
-        else if (events != NULL)
-        {
+        } else if (events != NULL) {
             GList* item  = g_list_first(events);
             PalEvent *event = (PalEvent*) item->data;
 
@@ -184,39 +177,34 @@ static void pal_output_text_week(GDate* date, bool force_month_label,
             bool same_color = true;
 
             /* skip to a event that isn't hidden or to the end of the list */
-            while (g_list_length(item) > 1 && event->hide)
-            {
+            while (g_list_length(item) > 1 && event->hide) {
                 item = g_list_next(item);
                 event = (PalEvent*) item->data;
             }
 
             /* save the markers for the event */
-            if (event->hide)
+            if (event->hide) {
                 start = ' ', end = ' ';
-            else
-            {
+            } else {
                 start = event->start;
                 end   = event->end;
                 color = event->color;
             }
 
             /* if multiple events left */
-            while (g_list_length(item) > 1)
-            {
+            while (g_list_length(item) > 1) {
                 item = g_list_next(item);
                 event = (PalEvent*) item->data;
 
                 /* find next non-hidden event */
-                while (g_list_length(item) > 1 && event->hide)
-                {
+                while (g_list_length(item) > 1 && event->hide) {
                     item = g_list_next(item);
                     event = (PalEvent*) item->data;
                 }
 
                 /* if this event is hidden, there aren't any more non-hidden events left */
                 /* if this event isn't hidden, then determine if it has different markers */
-                if (! event->hide)
-                {
+                if (! event->hide) {
                     gunichar new_start = event->start;
                     gunichar new_end   = event->end;
                     int     new_color = event->color;
@@ -236,36 +224,36 @@ static void pal_output_text_week(GDate* date, bool force_month_label,
         utf8_buf[g_unichar_to_utf8(start, utf8_buf)] = '\0';
 
         /* print color for marker if needed */
-        if (start != ' ' && end != ' ')
-        {
-            if (color == -1)
+        if (start != ' ' && end != ' ') {
+            if (color == -1) {
                 pal_output_fg(BRIGHT, settings->event_color, utf8_buf);
-            else
+            } else {
                 pal_output_fg(BRIGHT, color, utf8_buf);
-        }
-        else
+            }
+        } else {
             g_print(utf8_buf);
+        }
 
 
-        if (g_date_compare(date,today) == 0)	/* make today bright */
+        if (g_date_compare(date,today) == 0) {    /* make today bright */
             pal_output_attr(BRIGHT, "%02d", g_date_get_day(date));
-        else
+        } else {
             g_print("%02d", g_date_get_day(date));
+        }
 
 
         utf8_buf[g_unichar_to_utf8(end, utf8_buf)] = '\0';
 
         /* print color for marker if needed */
-        if (start != ' ' && end != ' ')
-        {
-            if (color == -1)
+        if (start != ' ' && end != ' ') {
+            if (color == -1) {
                 pal_output_fg(BRIGHT, settings->event_color, utf8_buf);
-            else
+            } else {
                 pal_output_fg(BRIGHT, color, utf8_buf);
-
-        }
-        else
+            }
+        } else {
             g_print(utf8_buf);
+        }
 
 
         /* print extra space between days */
@@ -275,9 +263,7 @@ static void pal_output_text_week(GDate* date, bool force_month_label,
         g_date_add_days(date,1);
         g_list_free(events);
     }
-
 }
-
 
 
 static void pal_output_week(GDate* date, bool force_month_label, const GDate* today)
@@ -285,8 +271,7 @@ static void pal_output_week(GDate* date, bool force_month_label, const GDate* to
 
     pal_output_text_week(date, force_month_label, today);
 
-    if (!settings->no_columns && settings->term_cols >= 77)
-    {
+    if (!settings->no_columns && settings->term_cols >= 77) {
         pal_output_fg(DIM,YELLOW,"%s","|");
 
         /* skip ahead to next column */
@@ -296,14 +281,11 @@ static void pal_output_week(GDate* date, bool force_month_label, const GDate* to
 
         /* skip back to where we were */
         g_date_subtract_days(date, settings->cal_lines*7);
-
     }
 
     if (settings->term_cols != 77)
         g_print("\n");
-
 }
-
 
 
 void pal_output_cal(int num_lines, const GDate* today)
@@ -318,21 +300,20 @@ void pal_output_cal(int num_lines, const GDate* today)
     date = g_date_new();
     memcpy(date, today, sizeof(GDate));
 
-    if (settings->week_start_monday)
+    if (settings->week_start_monday) {
         week_hdr = g_strdup(_("Mo   Tu   We   Th   Fr   Sa   Su"));
-    else
+    } else {
         week_hdr = g_strdup(_("Su   Mo   Tu   We   Th   Fr   Sa"));
+    }
 
 
     /* if showing enough lines, show previous week. */
     if (num_lines > 3)
         g_date_subtract_days(date, 7);
 
-    if (settings->no_columns || settings->term_cols < 77)
+    if (settings->no_columns || settings->term_cols < 77) {
         pal_output_fg(BRIGHT,GREEN, "     %s\n", week_hdr);
-
-    else
-    {
+    } else {
         pal_output_fg(BRIGHT,GREEN,"     %s ", week_hdr);
         pal_output_fg(DIM,YELLOW,"%s","|");
         pal_output_fg(BRIGHT,GREEN,"     %s\n", week_hdr);
@@ -340,28 +321,24 @@ void pal_output_cal(int num_lines, const GDate* today)
 
     g_free(week_hdr);
 
-    while (on_week < num_lines)
-    {
-        if (on_week == 0)
+    while (on_week < num_lines) {
+        if (on_week == 0) {
             pal_output_week(date, true, today);
-        else
+        } else {
             pal_output_week(date, false, today);
-
+        }
         on_week++;
-
     }
     g_date_free(date);
 }
 
+
 /* replaces tabs with spaces */
 static void pal_output_strip_tabs(char* string)
 {
-    char *ptr = string;
-    while (*ptr != '\0')
-    {
+    for (char *ptr = string; *ptr != '0'; ptr++) {
         if (*ptr == '\t')
             *ptr = ' ';
-        ptr++;
     }
 }
 
@@ -371,12 +348,10 @@ static int pal_output_wordlen(char* string)
 {
     char* p = string;
     int i=0;
-    while (*p != ' ' && *p != '\0')
-    {
+    while (*p != ' ' && *p != '\0') {
         p = g_utf8_next_char(p);
         i++;
     }
-
     return i;
 }
 
@@ -395,36 +370,30 @@ int pal_output_wrap(char* string, int chars_used, int indent)
     if (width <= 0)
         width = 10000;
 
-    while (*s != '\0')
-    {
+    while (*s != '\0') {
         /* print out any leading whitespace on this line */
-        while (*s == ' ' && chars_used < width)
-        {
+        while (*s == ' ' && chars_used < width) {
             g_print(" ");
             chars_used++;
             s = g_utf8_next_char(s);
         }
 
         /* if word doesn't fit on line, split it */
-        if (pal_output_wordlen(s)+chars_used > width)
-        {
+        if (pal_output_wordlen(s)+chars_used > width) {
             char line[2048];
             g_utf8_strncpy(line, s, width - chars_used);
             g_print("%s\n", line); /* print as much as we can */
             numlines++;
             s = g_utf8_offset_to_pointer(s, width - chars_used);
             chars_used = 0;
-        }
-        else /* if next word fits on line */
-        {
+        } else { /* if next word fits on line */
 
             while (*s != '\0' &&
                     pal_output_wordlen(s)+chars_used <= width)
             {
 
                 /* if the next word is not a blank, copy the word */
-                if (*s != ' ')
-                {
+                if (*s != ' ') {
                     int word_len = pal_output_wordlen(s);
                     char word[2048];
                     g_utf8_strncpy(word, s, word_len);
@@ -434,8 +403,7 @@ int pal_output_wrap(char* string, int chars_used, int indent)
                 }
 
                 /* print out any spaces that follow the word */
-                while (*s == ' ' && chars_used < width)
-                {
+                while (*s == ' ' && chars_used < width) {
                     g_print(" ");
                     chars_used++;
                     s = g_utf8_next_char(s);
@@ -445,8 +413,7 @@ int pal_output_wrap(char* string, int chars_used, int indent)
                 /* if we filled line up perfectly, and there is a
                  * space next in the string, ignore it---the newline
                  * will act as the space */
-                if (chars_used == width && *s == ' ')
-                {
+                if (chars_used == width && *s == ' ') {
                     s = g_utf8_next_char(s);
 
                     /* if the next line is a space too, break out of
@@ -464,24 +431,16 @@ int pal_output_wrap(char* string, int chars_used, int indent)
         }
 
         /* if not done, print indents for next line */
-        if (*s != '\0')
-        {
-            int i;
-
+        if (*s != '\0') {
             /* now, chars_used == width, onto the next line! */
             chars_used = indent;
 
-            for (i=0; i<indent; i++)
+            for (int i = 0; i < indent; i++)
                 g_print(" ");
         }
-
     }
-
     return numlines;
-
 }
-
-
 
 
 /* If event_number is -1, don't number the events.
@@ -495,20 +454,20 @@ int pal_output_event(const PalEvent* event, const GDate* date, const bool select
     char* event_text = NULL;
     date_text[0] = '\0';
 
-    if (selected)
+    if (selected) {
         pal_output_fg(BRIGHT, GREEN, "%s ", ">");
-    else if (event->color == -1)
+    } else if (event->color == -1) {
         pal_output_fg(BRIGHT, settings->event_color, "%s ", "*");
-    else
+    } else {
         pal_output_fg(BRIGHT, event->color, "%s ", "*");
+    }
 
     pal_output_strip_tabs(event->text);
     pal_output_strip_tabs(event->type);
 
     event_text = pal_event_escape(event, date);
 
-    if (settings->compact_list)
-    {
+    if (settings->compact_list) {
         char* s = NULL;
         g_date_strftime(date_text, 128,
                 settings->compact_date_fmt, date);
@@ -521,13 +480,10 @@ int pal_output_event(const PalEvent* event, const GDate* date, const bool select
 
         numlines += pal_output_wrap(s, indent+g_utf8_strlen(date_text,-1)+1, indent);
         g_free(s);
-    }
-    else
-    {
-        if (settings->hide_event_type)
+    } else {
+        if (settings->hide_event_type) {
             numlines += pal_output_wrap(event_text, indent, indent);
-        else
-        {
+        } else {
             char* s = g_strconcat(event->type, ": ", event_text, NULL);
             numlines += pal_output_wrap(s, indent, indent);
             g_free(s);
@@ -578,32 +534,25 @@ int pal_output_date(GDate* date, bool show_empty_days, int selected_event)
     GList* events = get_events(date);
     int num_events = g_list_length(events);
 
-    if (events != NULL || show_empty_days)
-    {
+    if (events != NULL || show_empty_days) {
         GList* item = NULL;
-        int i;
 
-        if (!settings->compact_list)
-        {
+        if (!settings->compact_list) {
             pal_output_date_line(date);
             numlines++;
         }
 
         item = g_list_first(events);
 
-        for (i=0; i<num_events; i++)
-        {
+        for (int i = 0; i < num_events; i++) {
             numlines += pal_output_event((PalEvent*) (item->data),
                     date, i==selected_event);
 
             item = g_list_next(item);
         }
 
-
-        if (num_events == 0)
-        {
-            if (settings->compact_list)
-            {
+        if (num_events == 0) {
+            if (settings->compact_list) {
                 char pretty_date[128];
 
                 g_date_strftime(pretty_date, 128,
@@ -612,24 +561,19 @@ int pal_output_date(GDate* date, bool show_empty_days, int selected_event)
                 g_print("%s\n", _("No events."));
 
                 numlines++;
-            }
-            else
-            {
+            } else {
                 g_print("%s\n", _("No events."));
                 numlines++;
             }
         }
 
-        if (!settings->compact_list)
-        {
+        if (!settings->compact_list) {
             g_print("\n");
             numlines++;
         }
     }
-
     return numlines;
 }
-
 
 
 /* returns the PalEvent for the given event_number */
@@ -643,5 +587,4 @@ PalEvent* pal_output_event_num(const GDate* date, int event_number)
 
     return (PalEvent*) g_list_nth_data(events, event_number-1);
 }
-
 

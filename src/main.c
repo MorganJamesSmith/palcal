@@ -52,7 +52,6 @@ view_range(GDate* starting_date, int window)
     }
 
     for (int i = 0; i<window; i++) {
-
         pal_output_date(starting_date,false,-1);
 
         if (settings->reverse_order) {
@@ -76,7 +75,7 @@ get_query_date(char* in_string, bool show_error)
 
     if (date_string == NULL) {
         return NULL;
-	}
+    }
 
     g_strstrip(date_string);
 
@@ -202,8 +201,9 @@ get_query_date(char* in_string, bool show_error)
         if (regexec(&preg, date_string, 0, NULL, 0)==0) {
             char* ptr = date_string;
             int date_offset = 0;
-            while (!g_ascii_isdigit(*ptr) && ptr != NULL)
+            while (!isdigit(*ptr) && ptr != NULL) {
                 ptr = g_utf8_find_next_char(ptr, NULL);
+            }
 
             sscanf(ptr, "%d", &date_offset);
 
@@ -219,8 +219,9 @@ get_query_date(char* in_string, bool show_error)
         if (regexec(&preg, date_string, 0, NULL, 0)==0) {
             char* ptr = date_string;
             int date_offset = 0;
-            while (!g_ascii_isdigit(*ptr) && ptr != NULL)
+            while (!isdigit(*ptr) && ptr != NULL) {
                 ptr = g_utf8_find_next_char(ptr, NULL);
+            }
 
             sscanf(ptr, "%d", &date_offset);
 
@@ -234,10 +235,10 @@ get_query_date(char* in_string, bool show_error)
     }
 
     /* if it begins with a digit ... */
-    if (g_ascii_isdigit(*(date_string))) {
+    if (isdigit(*(date_string))) {
         char* ptr = date_string;
 
-        while (g_ascii_isdigit(*ptr)) {
+        while (isdigit(*ptr)) {
             ptr++;
         }
 
@@ -374,29 +375,26 @@ view_details(void)
     }
 
     /* if -r or -s is used, show range of dates relative to -d */
-    else if (settings->range_days     != 0 ||
-            settings->range_neg_days != 0)
-    {
+    else if (settings->range_days     != 0 || settings->range_neg_days != 0) {
         GDate* starting_date = NULL;
 
-        if (to_show == NULL) /* if -d isn't used, start from current date */
-        {
+        /* if -d isn't used, start from current date */
+        if (to_show == NULL) {
             starting_date = g_date_new();
             g_date_set_time_t(starting_date, time(NULL));
-        }
-        else /* otherwise, start from date specified */
+        } else { /* otherwise, start from date specified */
             starting_date = g_memdup(to_show, sizeof(GDate));
+        }
 
         g_date_subtract_days(starting_date, settings->range_neg_days);
 
-        if (settings->search_string == NULL)
+        if (settings->search_string == NULL) {
             view_range(starting_date, settings->range_neg_days + settings->range_days);
-        else
+        } else {
             pal_search_view(settings->search_string, starting_date, settings->range_neg_days + settings->range_days, false);
-
+        }
         g_date_free(starting_date);
     }
-
 }
 
 
@@ -418,135 +416,136 @@ parse_args(int argc, char** argv)
         {0, 0, 0, 0}
     };
 
-    while (1) {
+    while (true) {
 
         opt = getopt_long(argc, argv, "c:d:f:lmp:r:s:u:vh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if (opt == -1)
             break;
+
         switch (opt) {
-		case 'a': /* --mail */
-			set_colorize(-2); /* overrides a later --color argument */
-			settings->mail = true;
-			break;
-		case 'b': /* --color */
-			set_colorize(1);
-			break;
-		case 'c':
-			if (optarg[0] > '9' || optarg[0] < '0') {
-				pal_output_error("%s\n", _("ERROR: Number required after -c argument."));
-				pal_output_error("       %s\n", _("Use --help for more information."));
-				break;
-			}
-			settings->cal_lines = strtoull(optarg, NULL, 10);
-			break;
-		case 'd':
-			tofree = g_locale_to_utf8(optarg, -1, NULL, NULL, NULL);
-			settings->query_date = get_query_date(tofree, true);
-			g_free(tofree);
-			if (settings->query_date == NULL)
-				pal_output_error(_("NOTE: Use quotes around the date if it has spaces.\n"));
-			break;
-		case 'e': /* --version */
-			printf("pal %s\n", PAL_VERSION);
-			printf("Compiled with prefix: %s\n", PREFIX);
-			exit(EXIT_SUCCESS);
-			break;
-		case 'f':
-			free(settings->conf_file);
-			settings->conf_file = strdup(optarg);
-			settings->specified_conf_file = true;
-			break;
-		case 'g': /* --nocolor */
-			set_colorize(0);
-			break;
-		case 'l': /* --latex */
-			settings->latex_out = true;
-			break;
-		case 'm':
-			settings->manage_events = true;
-			break;
-		case 'p':
-			settings->pal_file = strdup(optarg);
-			break;
-		case 'r':
-			/* This option will set range_days if there is one number
-			 * If there is two numbers it will set the first to range_neg_days
-			 * and the second to range_days
-			 *
-			 * Cases handled
-			 *  - Space seperated string ("5 6")
-			 *  - Dash seperated string (5-6)
-			 *  - Comma seperated string (5,6)
-			 *  - Space seperated (5 6) (takes up the next argument)
-			 */
-			if (optarg[0] > '9' || optarg[0] < '0') {
-				pal_output_error("%s\n", _("ERROR: Number required after -r argument."));
-				pal_output_error("       %s\n", _("Use --help for more information."));
-				break;
-			}
-			tofree = str = strdup(optarg);
-			token = strsep(&str, "-" " " ",");
-			settings->range_days = strtoull(token, NULL, 10);
-			if (str != NULL) {
-				settings->range_neg_days = settings->range_days;
-				settings->range_days = strtoull(str, NULL, 10);
-			} else if (argv[optind] && argv[optind][0] <= '9' && argv[optind][0] >= '0'){
-				settings->range_neg_days = settings->range_days;
-				settings->range_days = strtoull(argv[optind], NULL, 10);
-				optind++;
-			}
-			free(tofree);
-			settings->range_arg = true;
-			break;
-		case 's':
-			settings->search_string = strdup(optarg);
-			break;
-		case 't': /* --html */
-			settings->html_out = true;
-			break;
-		case 'u':
-			free(settings->conf_file);
-			settings->conf_file = g_strconcat("/home/", optarg, "/.pal/pal.conf", NULL);
-			settings->specified_conf_file = true;
-			break;
-		case 'v':
-			settings->verbose = true;
-			break;
-		case 'x':
-			settings->expunge = strtoull(optarg, NULL, 10);
-			break;
-		case 'h': /* fallthrough */
-		default:
-			g_print("%s %s - %s\n", "pal", PAL_VERSION, "Copyright (C) 2006, Scott Kuhl");
+        case 'a': /* --mail */
+            set_colorize(-2); /* overrides a later --color argument */
+            settings->mail = true;
+            break;
+        case 'b': /* --color */
+            set_colorize(1);
+            break;
+        case 'c':
+            if (optarg[0] > '9' || optarg[0] < '0') {
+                pal_output_error("%s\n", _("ERROR: Number required after -c argument."));
+                pal_output_error("       %s\n", _("Use --help for more information."));
+                break;
+            }
+            settings->cal_lines = strtoull(optarg, NULL, 10);
+            break;
+        case 'd':
+            tofree = g_locale_to_utf8(optarg, -1, NULL, NULL, NULL);
+            settings->query_date = get_query_date(tofree, true);
+            g_free(tofree);
+            if (settings->query_date == NULL)
+                pal_output_error(_("NOTE: Use quotes around the date if it has spaces.\n"));
+            break;
+        case 'e': /* --version */
+            printf("pal %s\n", PAL_VERSION);
+            printf("Compiled with prefix: %s\n", PREFIX);
+            exit(EXIT_SUCCESS);
+            break;
+        case 'f':
+            free(settings->conf_file);
+            settings->conf_file = strdup(optarg);
+            settings->specified_conf_file = true;
+            break;
+        case 'g': /* --nocolor */
+            set_colorize(0);
+            break;
+        case 'l': /* --latex */
+            settings->latex_out = true;
+            break;
+        case 'm':
+            settings->manage_events = true;
+            break;
+        case 'p':
+            settings->pal_file = strdup(optarg);
+            break;
+        case 'r':
+            /* This option will set range_days if there is one number
+             * If there is two numbers it will set the first to range_neg_days
+             * and the second to range_days
+             *
+             * Cases handled
+             *  - Space seperated string ("5 6")
+             *  - Dash seperated string (5-6)
+             *  - Comma seperated string (5,6)
+             *  - Space seperated (5 6) (takes up the next argument)
+             */
+            if (optarg[0] > '9' || optarg[0] < '0') {
+                pal_output_error("%s\n", _("ERROR: Number required after -r argument."));
+                pal_output_error("       %s\n", _("Use --help for more information."));
+                break;
+            }
+            tofree = str = strdup(optarg);
+            token = strsep(&str, "-" " " ",");
+            settings->range_days = strtoull(token, NULL, 10);
+            if (str != NULL) {
+                settings->range_neg_days = settings->range_days;
+                settings->range_days = strtoull(str, NULL, 10);
+            } else if (argv[optind] && argv[optind][0] <= '9' && argv[optind][0] >= '0'){
+                settings->range_neg_days = settings->range_days;
+                settings->range_days = strtoull(argv[optind], NULL, 10);
+                optind++;
+            }
+            free(tofree);
+            settings->range_arg = true;
+            break;
+        case 's':
+            settings->search_string = strdup(optarg);
+            break;
+        case 't': /* --html */
+            settings->html_out = true;
+            break;
+        case 'u':
+            free(settings->conf_file);
+            settings->conf_file = g_strconcat("/home/", optarg, "/.pal/pal.conf", NULL);
+            settings->specified_conf_file = true;
+            break;
+        case 'v':
+            settings->verbose = true;
+            break;
+        case 'x':
+            settings->expunge = strtoull(optarg, NULL, 10);
+            break;
+        case 'h': /* fallthrough */
+        default:
+            g_print("%s %s - %s\n", "pal", PAL_VERSION, "Copyright (C) 2006, Scott Kuhl");
 
-			g_print("  ");
-			pal_output_wrap("pal is licensed under the GNU General Public License and has NO WARRANTY.", 2, 2);
-			g_print("\n");
+            g_print("  ");
+            pal_output_wrap("pal is licensed under the GNU General Public License and has NO WARRANTY.", 2, 2);
+            g_print("\n");
 
-			pal_output_wrap(" -d date		 Show events on the given date.  Valid formats for date include: dd, mmdd, yyyymmdd, 'Jan 1 2000'.	Run 'man pal' for a list of all valid formats.", 0, 16);
-			pal_output_wrap(" -r n		 Display events within n days after today or a date used with -d. (default: n=0, show nothing)", 0, 16);
-			pal_output_wrap(" -r p-n		 Display events within p days before and n days after today or a date used with -d.", 0, 16);
-			pal_output_wrap(" -s regex	 Search for events matching the regular expression. Use -r to select range of days to search.", 0, 16);
-			pal_output_wrap(" -x n		 Expunge events that are n or more days old.", 0, 16);
+            pal_output_wrap(" -d date         Show events on the given date.  Valid formats for date include: dd, mmdd, yyyymmdd, 'Jan 1 2000'.    Run 'man pal' for a list of all valid formats.", 0, 16);
+            pal_output_wrap(" -r n         Display events within n days after today or a date used with -d. (default: n=0, show nothing)", 0, 16);
+            pal_output_wrap(" -r p-n         Display events within p days before and n days after today or a date used with -d.", 0, 16);
+            pal_output_wrap(" -s regex     Search for events matching the regular expression. Use -r to select range of days to search.", 0, 16);
+            pal_output_wrap(" -x n         Expunge events that are n or more days old.", 0, 16);
 
-			pal_output_wrap(" -c n		 Display calendar with n lines. (default: 5)", 0, 16);
-			pal_output_wrap(" -f file		 Load 'file' instead of ~/.pal/pal.conf", 0, 16);
-			pal_output_wrap(" -p palfile	 Load *.pal file only (overrides files loaded from pal.conf)", 0, 16);
-			pal_output_wrap(" -m			 Add/Modify/Delete events interactively.", 0, 16);
-			pal_output_wrap(" --color		 Force colors, regardless of terminal type.", 0, 16);
-			pal_output_wrap(" --nocolor	 Force no colors, regardless of terminal type.", 0, 16);
-			pal_output_wrap(" --mail		 Generate output readable by sendmail.", 0, 16);
-			pal_output_wrap(" --html		 Generate HTML calendar.  Set size of calendar with -c.", 0, 16);
-			pal_output_wrap(" --latex		 Generate LaTeX calendar.  Set size of calendar with -c.", 0, 16);
-			pal_output_wrap(" -v			 Verbose output.", 0, 16);
-			pal_output_wrap(" --version	 Display version information.", 0, 16);
-			pal_output_wrap(" -h, --help	 Display this help message.", 0, 16);
+            pal_output_wrap(" -c n         Display calendar with n lines. (default: 5)", 0, 16);
+            pal_output_wrap(" -f file         Load 'file' instead of ~/.pal/pal.conf", 0, 16);
+            pal_output_wrap(" -p palfile     Load *.pal file only (overrides files loaded from pal.conf)", 0, 16);
+            pal_output_wrap(" -m             Add/Modify/Delete events interactively.", 0, 16);
+            pal_output_wrap(" --color         Force colors, regardless of terminal type.", 0, 16);
+            pal_output_wrap(" --nocolor     Force no colors, regardless of terminal type.", 0, 16);
+            pal_output_wrap(" --mail         Generate output readable by sendmail.", 0, 16);
+            pal_output_wrap(" --html         Generate HTML calendar.  Set size of calendar with -c.", 0, 16);
+            pal_output_wrap(" --latex         Generate LaTeX calendar.  Set size of calendar with -c.", 0, 16);
+            pal_output_wrap(" -v             Verbose output.", 0, 16);
+            pal_output_wrap(" --version     Display version information.", 0, 16);
+            pal_output_wrap(" -h, --help     Display this help message.", 0, 16);
 
-			g_print("\n");
-			pal_output_wrap("Type \"man pal\" for more information.", 0, 16);
-			exit(0);
+            g_print("\n");
+            pal_output_wrap("Type \"man pal\" for more information.", 0, 16);
+            exit(0);
         }
     }
 return 0;
@@ -658,7 +657,7 @@ main(int argc, char** argv)
 #endif
 
     /* parse all the arguments */
-	parse_args(argc,argv);
+    parse_args(argc,argv);
 
     g_get_charset(&charset);
     if (settings->verbose) {
