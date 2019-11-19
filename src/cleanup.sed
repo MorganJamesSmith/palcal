@@ -22,7 +22,7 @@ s/}while/} while/g
 
 # Consistent never ending loops
 s/while (1)/while (true)/g
-s/for(;;)/while (true)/g
+s/for (;;)/while (true)/g
 
 # Two-Line matches
 t clear
@@ -36,7 +36,11 @@ N
 s/}\n[[:space:]]*else/} else/
 s/else\n[[:space:]]*{/else {/
 
-# Removes empty lines before closing curly braces
+# keyword (...) -> keyword (...) {
+# {
+s/\(if\|while\|for\|switch\) \((.*)\)\n[[:space:]]*{/\1 \2 {/
+
+# Removes an empty line before closing curly braces
 /^\n[[:space:]]*}/ s/\n//g
 
 t start
